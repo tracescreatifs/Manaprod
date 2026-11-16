@@ -251,3 +251,57 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : `/admin/mot-de-passe-oublie` (demande) et `/admin/nouveau-mot-de-passe` (choix du nouveau mot de passe), inscrites dans le cahier v1.4, section 5.
 - **Raison** : Routes en français, cohérentes avec le reste du site.
 - **Alternative écartée** : Routes en anglais (`/admin/forgot-password`, `/admin/reset-password`).
+
+## D36 : Renumérotation de la feuille de route
+
+- **Date** : 2026-11-16 (Prompt 02)
+- **Décision** : L'ancien Prompt 02 « Fondations » est scindé en deux : Prompt 02 « Interface » (sans base de données) et Prompt 03 « Données » (types, couche de lecture, keepalive, cron, région Vercel). Tous les prompts suivants sont décalés d'un numéro. Correspondance ancien numéro, nouveau numéro :
+
+  | Ancien | Nouveau | Lot |
+  |---|---|---|
+  | 00 | 00 | Initialisation |
+  | 01 | 01 | Socle |
+  | 02 | 02 et 03 | Interface, puis Données |
+  | 03 | 04 | Accueil |
+  | 04 | 05 | Réalisations et fiche projet |
+  | 05 | 06 | Services, Le studio et mentions légales |
+  | 06 | 07 | Contact |
+  | 07 | 08 | Audit 1 |
+  | 08 | 09 | Authentification |
+  | 09 | 10 | Admin projets |
+  | 10 | 11 | Admin clients, équipe et messages |
+  | 11 | 12 | Audit 2 |
+  | 12 | 13 | Qualité |
+  | 13 | 14 | Mise en ligne |
+
+  Les décisions D08 à D35 ne sont pas réécrites : les numéros de prompt qu'elles citent suivent l'ancienne numérotation et se lisent avec cette table.
+- **Raison** : Le projet Supabase n'est pas encore créé : la partie qui n'a pas besoin de la base peut avancer sans attendre.
+- **Alternative écartée** : Attendre la création de Supabase avant tout nouveau prompt (projet bloqué).
+
+## D37 : Région Paris pour Supabase et les fonctions Vercel
+
+- **Date** : 2026-11-16 (Prompt 02)
+- **Décision** : Le projet Supabase est créé en région Paris (`eu-west-3`) et les fonctions Vercel s'exécutent en région Paris (`cdg1`, déclarée dans `vercel.json` au Prompt 03).
+- **Raison** : Paris est la région la plus proche de Dakar parmi celles proposées ; placer la base et les fonctions dans la même région limite la latence entre Vercel et Supabase.
+- **Alternative écartée** : Région par défaut de Vercel (`iad1`, États-Unis), qui ajouterait un aller-retour transatlantique à chaque requête vers la base.
+
+## D38 : Bibliothèques d'interface et de test
+
+- **Date** : 2026-11-16 (Prompt 02)
+- **Décision** : `motion` 14.14.0 (import depuis `motion/react`), `lucide-react` 1.73.0, `vitest` 5.1.0. `@types/node` passe de 20.19.43 à 22.20.5, version exigée par Vitest 5 et alignée sur Node 22 de Vercel. Versions exactes dans `package.json`.
+- **Raison** : `motion` est le nouveau nom de Framer Motion, publié par la même équipe, avec la même API : c'est le paquet maintenu, `framer-motion` n'est plus qu'un alias historique.
+- **Alternative écartée** : `framer-motion` (nom historique, même code, mises à jour qui suivent `motion`).
+
+## D39 : Année du pied de page avec Cache Components
+
+- **Date** : 2026-11-16 (Prompt 02)
+- **Décision** : L'année de la mention © est calculée dans un composant serveur `"use cache"` avec `cacheLife("days")`. La page reste prérendue et statique, et elle est régénérée au plus tard une fois par jour.
+- **Raison** : Avec Cache Components, un appel direct à `new Date()` pendant le prérendu fait échouer le build. Le cache d'un jour garde la page statique et met l'année à jour au plus tard le 2 janvier.
+- **Alternative écartée** : Année calculée au build (fausse après le 1er janvier jusqu'au déploiement suivant) ; `connection()` dans une zone `Suspense` (pied de page rendu à chaque requête) ; calcul dans le navigateur (risque d'écart entre le rendu serveur et l'hydratation).
+
+## D40 : Animations : premier affichage, sans JavaScript et mouvement réduit
+
+- **Date** : 2026-11-16 (Prompt 02)
+- **Décision** : Les éléments animés portent l'attribut `data-reveal`. Une règle CSS les affiche directement (opacité 1, aucun déplacement) quand l'utilisateur demande moins d'animations (`prefers-reduced-motion`), et une règle dans `noscript` fait de même sans JavaScript. La transition entre pages ne joue pas au premier chargement, seulement lors des navigations.
+- **Raison** : Le contenu reste lisible sans JavaScript et dès le premier rendu pour les personnes qui réduisent les animations, sans attendre l'hydratation. Ne pas animer le premier chargement évite de retarder le premier affichage (LCP).
+- **Alternative écartée** : Détection du réglage en JavaScript seulement (contenu caché jusqu'à l'hydratation) ; transition aussi au premier chargement.

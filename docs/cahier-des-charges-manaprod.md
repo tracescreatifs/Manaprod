@@ -1,6 +1,6 @@
 # Cahier des charges : site web MANA PROD
 
-Version 1.4 | 16 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
+Version 1.5 | 16 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
 
 ---
 
@@ -26,7 +26,7 @@ Ziza travaille uniquement en ligne : Claude Code web est connecté au dépôt Gi
 
 Règle d'or : en cas de contradiction entre ce document et les prototypes, le document prime pour le fonctionnel et la sécurité, le prototype prime pour le visuel et les textes. La contradiction est notée dans `decisions.md`.
 
-Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés dans cette version 1.4.
+Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés depuis la version 1.4. La version 1.5 intègre la renumérotation de la feuille de route décidée au Prompt 02 (décision D36) : les numéros de prompt cités dans ce document suivent la nouvelle numérotation.
 
 ---
 
@@ -77,15 +77,15 @@ Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`
 | Framework | Next.js (App Router), TypeScript strict |
 | Style | Tailwind CSS avec tokens CSS (variables) |
 | Animation | Framer Motion (obligatoire pour toutes les animations) |
-| Base de données | Supabase (Postgres) |
+| Base de données | Supabase (Postgres), région Paris (`eu-west-3`) |
 | Authentification | Supabase Auth (email et mot de passe) |
 | Stockage images | Supabase Storage |
-| Hébergement | Vercel |
+| Hébergement | Vercel, fonctions en région Paris (`cdg1`) |
 | Email transactionnel | Resend (à confirmer, voir section 15) |
 | Vidéos | YouTube (liens collés dans le dashboard) |
 | Dépôt | GitHub, push direct sur `main`, sans pull request |
 
-**Tâche récurrente anti-pause Supabase** : un cron tous les 6 jours qui fait une requête simple sur la base (route `/api/keepalive` appelée par Vercel Cron), en place dès le Prompt 02.
+**Tâche récurrente anti-pause Supabase** : un cron tous les 6 jours qui fait une requête simple sur la base (route `/api/keepalive` appelée par Vercel Cron), en place dès le Prompt 03.
 
 **Environnement** : développement exclusivement en ligne, rien à exécuter sur la machine de Ziza. Les variables d'environnement sont saisies par Ziza dans les interfaces web de Vercel et Supabase, Claude Code fournit un fichier `.env.example` commenté.
 
@@ -93,14 +93,14 @@ Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`
 
 | Variable | Usage | Nécessaire à partir du |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase | Prompt 02 |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (lecture) | Prompt 02 |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clé service, serveur uniquement, jamais dans une variable `NEXT_PUBLIC_`. Seul usage : insertion des messages de contact | Prompt 06 |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase | Prompt 03 |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (lecture) | Prompt 03 |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clé service, serveur uniquement, jamais dans une variable `NEXT_PUBLIC_`. Seul usage : insertion des messages de contact | Prompt 07 |
 | `NEXT_PUBLIC_SITE_URL` | URL du site (prévisualisation puis manaprod.com) | Prompt 01 |
-| `CRON_SECRET` | Protège la route `/api/keepalive` | Prompt 02 |
-| `RESEND_API_KEY` | Envoi des emails | Prompt 06 |
-| `CONTACT_TO_EMAIL` | Adresse qui reçoit les demandes | Prompt 06 |
-| `CONTACT_FROM_EMAIL` | Adresse d'expédition (domaine vérifié dans Resend) | Prompt 06 |
+| `CRON_SECRET` | Protège la route `/api/keepalive` | Prompt 03 |
+| `RESEND_API_KEY` | Envoi des emails | Prompt 07 |
+| `CONTACT_TO_EMAIL` | Adresse qui reçoit les demandes | Prompt 07 |
+| `CONTACT_FROM_EMAIL` | Adresse d'expédition (domaine vérifié dans Resend) | Prompt 07 |
 
 Aucune clé dans le code ni dans le dépôt. Le build réussit sans aucune de ces variables : une variable manquante lève une erreur claire à l'exécution, jamais à l'import.
 
@@ -176,7 +176,7 @@ Point à confirmer par Ziza : la police ne doit pas faire « IA ». Les conventi
 
 Menu : Réalisations, Services, Le studio, Contact. Aucun lien vers l'admin sur le site public : accès par URL uniquement.
 
-Jusqu'à la mise en ligne (Prompt 13), tout le site est en `noindex, nofollow`, l'URL Vercel étant publique.
+Jusqu'à la mise en ligne (Prompt 14), tout le site est en `noindex, nofollow`, l'URL Vercel étant publique.
 
 ---
 
@@ -240,7 +240,7 @@ Ordre des blocs :
 - Colonne gauche : lignes téléphone (bouton WhatsApp à côté, lien `https://wa.me/221780114308`), email (bouton Copier), localisation. Bloc « Et ensuite » en 3 étapes.
 - Colonne droite : formulaire dans un panneau : Nom, Organisation, Email, Type de projet (liste des catégories + Autre), Date souhaitée (facultatif), Message.
 - Validation : nom, email valide et message obligatoires, message d'erreur clair.
-- **Envoi (évolution par rapport au prototype)** : enregistrement en base + email de notification à l'adresse de contact + accusé de réception au visiteur. L'accusé de réception ne reprend jamais le contenu du message du visiteur (pour qu'il ne puisse pas servir de relais de spam). Anti-spam : champ piège (honeypot), limitation de débit par IP, validation serveur. La limitation s'appuie sur une table des envois récents (migration `0002_`, Prompt 06) qui ne stocke qu'une empreinte (hachage) de l'IP, jamais l'IP en clair, avec purge des lignes anciennes et sans service externe.
+- **Envoi (évolution par rapport au prototype)** : enregistrement en base + email de notification à l'adresse de contact + accusé de réception au visiteur. L'accusé de réception ne reprend jamais le contenu du message du visiteur (pour qu'il ne puisse pas servir de relais de spam). Anti-spam : champ piège (honeypot), limitation de débit par IP, validation serveur. La limitation s'appuie sur une table des envois récents (migration `0002_`, Prompt 07) qui ne stocke qu'une empreinte (hachage) de l'IP, jamais l'IP en clair, avec purge des lignes anciennes et sans service externe.
 - Message de confirmation dans la page après envoi.
 
 ### 6.8 Pied de page
@@ -249,7 +249,7 @@ Logo, courte description, liens, coordonnées, signature, mention © 2026 Mana P
 ### 6.9 Pages techniques
 404 personnalisée, `robots.txt`, `sitemap.xml`, favicon.
 
-**Mentions légales** (`/mentions-legales`, Prompt 05), avec une section confidentialité, rédigées avec les informations connues : éditeur Mana Prod, hébergeur Vercel, base de données Supabase, données collectées par le formulaire de contact, finalité, durée de conservation, droits des personnes selon la loi sénégalaise n° 2008-12 sur la protection des données à caractère personnel. Les identifiants légaux (NINEA, RCCM, adresse du siège) sont à fournir par le client ; tant qu'ils manquent, leurs blocs sont masqués.
+**Mentions légales** (`/mentions-legales`, Prompt 06), avec une section confidentialité, rédigées avec les informations connues : éditeur Mana Prod, hébergeur Vercel, base de données Supabase, données collectées par le formulaire de contact, finalité, durée de conservation, droits des personnes selon la loi sénégalaise n° 2008-12 sur la protection des données à caractère personnel. Les identifiants légaux (NINEA, RCCM, adresse du siège) sont à fournir par le client ; tant qu'ils manquent, leurs blocs sont masqués.
 
 ---
 
@@ -257,7 +257,7 @@ Logo, courte description, liens, coordonnées, signature, mention © 2026 Mana P
 
 Accès : `/admin`, connexion par email et mot de passe (Supabase Auth). Inscriptions publiques désactivées dans Supabase Auth. Un compte administrateur pour la V1 ; d'autres administrateurs sont ajoutés par SQL (fourni dans un rapport, jamais commité).
 
-**Mot de passe oublié** : vrai parcours de réinitialisation (demande par email sur `/admin/mot-de-passe-oublie`, puis choix d'un nouveau mot de passe sur `/admin/nouveau-mot-de-passe`). Les emails d'authentification de Supabase sont envoyés par le SMTP de Resend, et les URL de redirection de l'authentification sont réglées au Prompt 08.
+**Mot de passe oublié** : vrai parcours de réinitialisation (demande par email sur `/admin/mot-de-passe-oublie`, puis choix d'un nouveau mot de passe sur `/admin/nouveau-mot-de-passe`). Les emails d'authentification de Supabase sont envoyés par le SMTP de Resend, et les URL de redirection de l'authentification sont réglées au Prompt 09.
 
 Interface : barre du haut (logo, adresse de l'administrateur connecté, bouton de déconnexion, lien « Ouvrir le site »), navigation latérale (sur mobile : onglets horizontaux), contenu. Mêmes tokens que le site. Voir le prototype `manaprod-dashboard.html` pour le comportement exact. En cas d'écart, ce document prime : l'onglet « Publication » du prototype (export, import, réinitialisation) et l'état « Modifications non publiées » n'existent pas en production, puisque chaque enregistrement est publié immédiatement.
 
@@ -490,7 +490,7 @@ Le projet est livré quand :
 
 ---
 
-## 13. Feuille de route des prompts (proposition)
+## 13. Feuille de route des prompts
 
 Un prompt à la fois : le suivant n'est rédigé qu'après lecture et validation du rapport du précédent. Claude Code reprend cette feuille de route dans `PROJECT_STATE.md` au Prompt 00 et peut proposer de l'ajuster dans son rapport, avec ses raisons. La branche est `main` jusqu'à la mise en ligne, puis `feat/...` ou `fix/...`.
 
@@ -498,18 +498,19 @@ Un prompt à la fois : le suivant n'est rédigé qu'après lecture et validation
 |---|---|---|---|
 | 00 | Initialisation | Organisation du dépôt, lecture du cahier et des prototypes, création de `CLAUDE.md`, `PROJECT_STATE.md`, `decisions.md`, `.gitignore`, `.env.example`. Aucun code applicatif | Dépôt GitHub créé avec ce kit |
 | 01 | Socle | Intégration des arbitrages du Prompt 00, correction de `0001_init.sql` avant exécution (GRANT, lecture du bucket), projet Next.js (App Router, TypeScript strict, lint, Tailwind), tokens de la charte (section 4.2), Schibsted Grotesk via `next/font`, clients Supabase serveur et navigateur sans crash si variables absentes, favicon et icônes, photos de l'équipe copiées dans `public/team/`, site en `noindex`, page d'accueil minimale déployée. Aucune fonctionnalité métier | Projet Vercel créé et relié au dépôt, `NEXT_PUBLIC_SITE_URL` saisie |
-| 02 | Fondations | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, utilitaires YouTube (section 10) avec tests, composants Logo et Symbole, en-tête, pied de page, boutons, composants de mouvement, transition entre pages, page 404, route `/api/keepalive` et cron Vercel tous les 6 jours | Projet Supabase créé (inscriptions publiques désactivées), `0001_init.sql` puis `0001_seed.sql` exécutés et confirmés, variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `CRON_SECRET` saisies |
-| 03 | Accueil | Page d'accueil complète (section 6.2) | |
-| 04 | Réalisations | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | |
-| 05 | Services, studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité | |
-| 06 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, emails avec Resend (notification et accusé de réception) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, sans toucher aux enregistrements MX), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` |
-| 07 | Audit 1 | Contrôle complet des prompts 01 à 06 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | |
-| 08 | Authentification | Connexion, mot de passe oublié (demande par email, nouveau mot de passe), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (il contient un identifiant de compte, il ne va pas dans le dépôt) |
-| 09 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication | |
-| 10 | Admin suite | Onglets Clients (avec logos), Équipe, Messages | |
-| 11 | Audit 2 | Contrôle complet des prompts 08 à 10, en particulier RLS et stockage | |
-| 12 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | |
-| 13 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 de ce cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les enregistrements MX | Accès au DNS de manaprod.com |
+| 02 | Interface | Fondations de l'interface sans base de données : composants Logo et LogoEmpile, en-tête et menu mobile, pied de page, bouton-lien, composants de mouvement (apparition, mots, transition entre pages), page 404, utilitaires YouTube (section 10) avec tests | |
+| 03 | Données | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, route `/api/keepalive` et cron Vercel tous les 6 jours, région des fonctions Vercel à Paris (`cdg1`) dans `vercel.json` | Projet Supabase créé en région Paris (`eu-west-3`), inscriptions publiques désactivées, `0001_init.sql` puis `0001_seed.sql` exécutés et confirmés, variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `CRON_SECRET` saisies |
+| 04 | Accueil | Page d'accueil complète (section 6.2) | |
+| 05 | Réalisations et fiche projet | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | |
+| 06 | Services, Le studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité | |
+| 07 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, emails avec Resend (notification et accusé de réception) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, sans toucher aux enregistrements MX), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` |
+| 08 | Audit 1 | Contrôle complet des prompts 01 à 07 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | |
+| 09 | Authentification | Connexion, mot de passe oublié (demande par email, nouveau mot de passe), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (il contient un identifiant de compte, il ne va pas dans le dépôt) |
+| 10 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication | |
+| 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | |
+| 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | |
+| 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | |
+| 14 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 de ce cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les enregistrements MX | Accès au DNS de manaprod.com |
 ---
 
 ## 14. Méthode de travail avec Claude Code
@@ -558,7 +559,7 @@ La méthode complète est dans `docs/methode-de-developpement.md` : rôles, prot
 13. **Délai de réponse** : 24h retenu par défaut (la plaquette indique 48h).
 14. **Années des projets** : 2026 enregistré pour les 8 projets, à confirmer.
 15. **Identifiants légaux** pour les mentions légales : NINEA, RCCM, adresse du siège.
-16. **Accès au DNS** de manaprod.com : demandé dès maintenant, nécessaire avant le Prompt 06 (vérification du domaine d'expédition dans Resend). Les enregistrements MX existants (boîte amathndiaye@manaprod.com) ne doivent jamais être modifiés.
+16. **Accès au DNS** de manaprod.com : demandé dès maintenant, nécessaire avant le Prompt 07 (vérification du domaine d'expédition dans Resend). Les enregistrements MX existants (boîte amathndiaye@manaprod.com) ne doivent jamais être modifiés.
 17. **Logos des clients** : PNG à fond transparent de préférence (les SVG sont refusés par le stockage).
 
 ---

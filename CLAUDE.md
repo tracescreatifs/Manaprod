@@ -165,5 +165,5 @@ La branche à utiliser est toujours écrite explicitement dans chaque prompt. Pa
 - `/admin` et toutes ses Server Actions vérifient la session et l'appartenance à `admin_users` côté serveur, à chaque appel.
 - `/api/contact` : validation zod, champ piège, limitation de débit par IP, longueurs maximales, aucun HTML non échappé dans les emails.
 - `/api/keepalive` : protégée par `CRON_SECRET` (en-tête `Authorization: Bearer`).
-- Dashboard exclu de l'indexation (`robots.txt` et `noindex`). Aucun lien public vers `/admin`. Jusqu'à la mise en ligne (Prompt 13), tout le site est en `noindex, nofollow` (D31).
+- Dashboard exclu de l'indexation (`robots.txt` et `noindex`). Aucun lien public vers `/admin`. Jusqu'à la mise en ligne (Prompt 14), tout le site est en `noindex, nofollow` (D31).
 - Le SQL de déclaration d'un administrateur contient un identifiant de compte : il est fourni dans le rapport, jamais commité.

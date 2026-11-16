@@ -61,3 +61,25 @@
     color: inherit;
   }
 }
+
+/* Conteneur de page du prototype (.wrap) : largeur maximale et marges latérales */
+@utility wrap {
+  width: 100%;
+  max-width: 1480px;
+  margin-inline: auto;
+  padding-inline: clamp(20px, 4vw, 64px);
+}
+
+/* Animations réduites : les éléments animés (attribut data-reveal) s'affichent
+   directement, sans mouvement ni fondu. */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+

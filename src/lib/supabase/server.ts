@@ -22,7 +22,7 @@ export async function createClient() {
         } catch {
           // Appel depuis un composant serveur : l'écriture des cookies y est
           // impossible. Le rafraîchissement de session sera assuré par le
-          // proxy d'authentification (Prompt 08).
+          // proxy d'authentification (Prompt 09).
         }
       },
     },
