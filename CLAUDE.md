@@ -95,7 +95,7 @@ Toute autre technologie ou dépendance doit être justifiée dans `decisions.md`
 - Migration fournie : `supabase/migrations/0001_init.sql`. Données de départ : `supabase/seed/0001_seed.sql`, à exécuter après la migration. Les migrations suivantes commencent à `0002_`.
 - Écriture réservée aux administrateurs (table `admin_users`, fonction `is_admin()`).
 - `contact_messages` : aucune lecture ni écriture publique. Insertion par `/api/contact` côté serveur avec la clé service. Lecture, mise à jour et suppression réservées aux admins.
-- Bucket `media` public en lecture, écriture admin uniquement, SVG exclus (JPEG, PNG, WebP, AVIF, 10 Mo maximum). Dossiers : `projects/{id}/`, `thumbs/`, `clients/`, `team/`. Les chemins sont stockés en base, les URL sont construites côté application.
+- Bucket `media` public : fichiers servis par leur URL publique ; par l'API, lecture, écriture et suppression réservées aux administrateurs ; SVG exclus (JPEG, PNG, WebP, AVIF, 10 Mo maximum). Droits d'accès aux tables accordés par GRANT explicites dans les migrations, la RLS restant la seule règle métier. Dossiers : `projects/{id}/`, `thumbs/`, `clients/`, `team/`. Les chemins sont stockés en base, les URL sont construites côté application.
 - Un chemin d'image qui commence par `/` désigne un fichier du dossier `public` (photos de l'équipe de départ, dans `public/team/`), sinon un fichier du bucket `media`.
 - Catégories autorisées (contrainte SQL) : Film institutionnel, Film corporate, Spot publicitaire, Film publicitaire, Documentaire, Reportage industriel, Couverture événement, Motion design, Photographie, Campagne multi-supports.
 - Toute modification enregistrée dans le dashboard est visible sur le site en moins de 10 secondes : revalidation du cache Next.js par étiquette à chaque enregistrement.
@@ -165,5 +165,5 @@ La branche à utiliser est toujours écrite explicitement dans chaque prompt. Pa
 - `/admin` et toutes ses Server Actions vérifient la session et l'appartenance à `admin_users` côté serveur, à chaque appel.
 - `/api/contact` : validation zod, champ piège, limitation de débit par IP, longueurs maximales, aucun HTML non échappé dans les emails.
 - `/api/keepalive` : protégée par `CRON_SECRET` (en-tête `Authorization: Bearer`).
-- Dashboard exclu de l'indexation (`robots.txt` et `noindex`). Aucun lien public vers `/admin`.
+- Dashboard exclu de l'indexation (`robots.txt` et `noindex`). Aucun lien public vers `/admin`. Jusqu'à la mise en ligne (Prompt 13), tout le site est en `noindex, nofollow` (D31).
 - Le SQL de déclaration d'un administrateur contient un identifiant de compte : il est fourni dans le rapport, jamais commité.

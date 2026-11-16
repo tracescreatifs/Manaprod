@@ -1,83 +1,94 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-16, fin du Prompt 00.
+Dernière mise à jour : 2026-11-16, fin du Prompt 01.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 00 (initialisation du dépôt et fichiers mémoire). En attente de validation par Claude et du Go de Ziza.
-- **Prochaine étape** : Prompt 01 (socle Next.js), après le Go.
+- **Dernier prompt terminé** : Prompt 01 (socle Next.js, arbitrages du Prompt 00, correction de `0001_init.sql`). En attente de validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 02 (fondations, keepalive et cron), après le Go et les actions Ziza listées dans le rapport du Prompt 01.
 - **Branche de travail** : `main` (développement, avant mise en ligne).
-- **Code applicatif** : aucun pour l'instant.
+- **Code applicatif** : socle Next.js 16.4.6 déployable, page d'accueil minimale, site entier en `noindex`. Aucune fonctionnalité métier.
 
 ## 2. Feuille de route des prompts
 
-Reprise de la section 13 du cahier des charges. Un prompt à la fois : le suivant n'est rédigé qu'après validation du rapport du précédent. Branche `main` jusqu'à la mise en ligne, puis `feat/...` ou `fix/...`.
+Reprise de la section 13 du cahier des charges (version 1.4). Un prompt à la fois : le suivant n'est rédigé qu'après validation du rapport du précédent. Branche `main` jusqu'à la mise en ligne, puis `feat/...` ou `fix/...`.
 
 | Prompt | Lot | Contenu | Prérequis côté Ziza | État |
 |---|---|---|---|---|
-| 00 | Initialisation | Organisation du dépôt, lecture du cahier et des prototypes, création de `CLAUDE.md`, `PROJECT_STATE.md`, `decisions.md`, `.gitignore`, `.env.example`. Aucun code applicatif | Dépôt GitHub créé avec le kit | Fait, en attente de validation |
-| 01 | Socle | Projet Next.js (App Router, TypeScript strict, lint, Tailwind), tokens de la charte (section 4.2), Schibsted Grotesk via `next/font`, clients Supabase serveur et navigateur sans crash si variables absentes, favicon et icônes, photos de l'équipe copiées dans `public/team/`, page d'accueil minimale déployée. Aucune fonctionnalité métier | Projets Supabase et Vercel créés, Vercel relié au dépôt, 4 variables du Prompt 01 saisies | À faire |
-| 02 | Fondations | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, utilitaires YouTube (section 10) avec tests, composants Logo et Symbole, en-tête, pied de page, boutons, composants de mouvement, transition entre pages, page 404 | `0001_init.sql` puis `seed/0001_seed.sql` exécutés et confirmés | À faire |
-| 03 | Accueil | Page d'accueil complète (section 6.2) | | À faire |
+| 00 | Initialisation | Organisation du dépôt, lecture du cahier et des prototypes, création de `CLAUDE.md`, `PROJECT_STATE.md`, `decisions.md`, `.gitignore`, `.env.example`. Aucun code applicatif | Dépôt GitHub créé avec le kit | Fait, validé |
+| 01 | Socle | Arbitrages du Prompt 00, correction de `0001_init.sql` avant exécution (GRANT, lecture du bucket), projet Next.js (App Router, TypeScript strict, lint, Tailwind), tokens de la charte, Schibsted Grotesk via `next/font`, clients Supabase serveur et navigateur sans crash si variables absentes, favicon et icônes, photos de l'équipe dans `public/team/`, site en `noindex`, page d'accueil minimale. Aucune fonctionnalité métier | Projet Vercel créé et relié au dépôt, `NEXT_PUBLIC_SITE_URL` saisie | Fait, en attente de validation |
+| 02 | Fondations | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, utilitaires YouTube (section 10) avec tests, composants Logo et Symbole, en-tête, pied de page, boutons, composants de mouvement, transition entre pages, page 404, route `/api/keepalive` et cron Vercel tous les 6 jours | Projet Supabase créé (inscriptions publiques désactivées), `0001_init.sql` puis `seed/0001_seed.sql` exécutés et confirmés, variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `CRON_SECRET` saisies | À faire |
+| 03 | Accueil | Page d'accueil complète (section 6.2) : hero rendu côté serveur, iframe chargée ensuite, filigrane à 6 %, sélection avec repli sur les 6 premiers projets publiés | | À faire |
 | 04 | Réalisations | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | | À faire |
-| 05 | Services et studio | Pages Services et Le studio (compteurs, équipe, équipement) | | À faire |
-| 06 | Contact | Formulaire, validation serveur, pot de miel, limitation de fréquence, enregistrement en base, emails avec Resend (notification et accusé de réception) | Compte Resend, domaine vérifié, 3 variables du Prompt 06 | À faire |
+| 05 | Services, studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité (blocs NINEA, RCCM, siège masqués tant qu'ils manquent) | | À faire |
+| 06 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, client Supabase service, emails avec Resend (notification et accusé de réception sans le message du visiteur) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, MX intouchés), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` | À faire |
 | 07 | Audit 1 | Contrôle complet des prompts 01 à 06 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | | À faire |
-| 08 | Authentification | Connexion, protection de `/admin`, coquille du dashboard, onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SQL de déclaration de l'administrateur fourni dans le rapport (il contient un identifiant de compte, il ne va pas dans le dépôt) | À faire |
-| 09 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication | | À faire |
+| 08 | Authentification | Connexion, mot de passe oublié (`/admin/mot-de-passe-oublie`, `/admin/nouveau-mot-de-passe`), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (jamais commité) | À faire |
+| 09 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication, client et titre obligatoires, « Voir la page » désactivé si non publié | | À faire |
 | 10 | Admin suite | Onglets Clients (avec logos), Équipe, Messages | | À faire |
 | 11 | Audit 2 | Contrôle complet des prompts 08 à 10, en particulier RLS et stockage | | À faire |
-| 12 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11), route `/api/keepalive` et cron Vercel tous les 6 jours | Variable `CRON_SECRET` | À faire |
-| 13 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 du cahier, guide pas à pas pour pointer manaprod.com vers Vercel | Accès au DNS de manaprod.com | À faire |
+| 12 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | | À faire |
+| 13 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 du cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les MX | Accès au DNS de manaprod.com | À faire |
 
-### Ajustements proposés au Prompt 00 (non appliqués, en attente de décision)
+### Ajustements validés (arbitrage du rapport du Prompt 00)
 
-Détail et raisons dans le rapport du Prompt 00. La feuille de route ci-dessus reste celle du cahier tant que Ziza n'a pas validé.
+Détail dans `decisions.md` (D08 à D31) et dans le cahier v1.4.
 
-1. Avancer la route `/api/keepalive` et le cron (et donc `CRON_SECRET`) du Prompt 12 au Prompt 02 : la base peut être mise en pause pendant le développement, dès 7 jours sans activité.
-2. Avancer l'accès au DNS de manaprod.com (ou au moins la possibilité d'y ajouter des enregistrements) avant le Prompt 06 : Resend exige des enregistrements DNS pour vérifier le domaine d'expédition, sans quoi l'accusé de réception aux visiteurs est impossible.
-3. Ajouter au Prompt 06 une migration `0002_` pour la limitation de débit du formulaire (stockage des envois récents par IP hachée), car une limite en mémoire ne fonctionne pas de façon fiable sur Vercel.
-4. Ajouter la page des mentions légales (avec une section confidentialité) à un prompt explicite (Prompt 05 ou 12) : elle est demandée (cahier 6.9, méthode section 12) mais absente de l'arborescence et de la feuille de route.
+1. Keepalive et cron Vercel avancés du Prompt 12 au Prompt 02, `CRON_SECRET` nécessaire au Prompt 02 (D08).
+2. Accès au DNS de manaprod.com requis avant le Prompt 06 ; les MX existants ne sont jamais modifiés (D09).
+3. Migration `0002_` au Prompt 06 pour la limitation des envois du formulaire, IP hachée et purge (D10).
+4. Page `/mentions-legales` avec section confidentialité au Prompt 05 (D11).
+5. `SUPABASE_SERVICE_ROLE_KEY` et client service seulement au Prompt 06 (D13).
+6. Mot de passe oublié au Prompt 08, avec SMTP de Resend dans Supabase Auth (D25).
+7. Site entier en `noindex` jusqu'au Prompt 13 (D31).
 
 ## 3. Fait
 
-- Prompt 00 : archive extraite selon l'arborescence de la section 0 du cahier, archive supprimée, cahier déplacé dans `docs/`. Lecture complète de la méthode, du cahier, des deux prototypes, du dossier du logo, de la plaquette et des fichiers SQL. Création de `CLAUDE.md`, `PROJECT_STATE.md`, `decisions.md`, `.gitignore`, `.env.example`.
+- **Prompt 00** : archive extraite et supprimée, cahier déplacé dans `docs/`, lecture complète de la documentation, création de `CLAUDE.md`, `PROJECT_STATE.md`, `decisions.md`, `.gitignore`, `.env.example`.
+- **Prompt 01** :
+  - Arbitrages inscrits dans `decisions.md` (D08 à D31), plus D32 à D35 (versions, configuration par défaut, `server-only`, noms des routes de réinitialisation).
+  - Cahier des charges passé en version 1.4.
+  - `0001_init.sql` corrigé avant exécution : GRANT explicites, lecture du bucket `media` réservée aux administrateurs. Validé par pglast et par une exécution réelle (deux passes) dans Postgres 16 avec schémas `auth` et `storage` simulés, plus tests des droits par rôle.
+  - Socle Next.js 16.4.6 : TypeScript strict, `src/`, alias `@/`, ESLint, Tailwind 4 avec tokens de la charte, Schibsted Grotesk via `next/font`, métadonnées de base, `noindex` global, icônes, clients Supabase serveur et navigateur (non appelés), photos de l'équipe dans `public/team/`, logo empilé dans `public/brand/`, page d'accueil minimale.
 
 ## 4. Reste à faire
 
-- Prompts 01 à 13 (voir la feuille de route).
-- Décisions à prendre par Ziza sur les ambiguïtés listées dans le rapport du Prompt 00 (section 5 ci-dessous pour les plus importantes).
+- Prompts 02 à 13 (voir la feuille de route).
+- Actions Ziza avant le Prompt 02 (rapport du Prompt 01).
 
 ## 5. Problèmes ouverts
 
-| N° | Problème | Bloque | Recommandation |
+| N° | Problème | Bloque | État |
 |---|---|---|---|
-| P1 | Vérification du domaine d'expédition dans Resend impossible sans accès au DNS de manaprod.com (actuellement chez WordPress.com) | Prompt 06 (accusé de réception) | Obtenir l'accès DNS avant le Prompt 06 |
-| P2 | Limitation de débit par IP sans stockage partagé prévu dans `0001_init.sql` | Prompt 06 | Migration `0002_` au Prompt 06 |
-| P3 | Cron anti-pause prévu seulement au Prompt 12 | Stabilité de la base pendant le développement | Avancer au Prompt 02 |
-| P4 | Page mentions légales (et confidentialité) absente de l'arborescence | Mise en ligne | L'ajouter à un prompt explicite |
-| P5 | Le cahier demande une case « Publié », un slug modifiable et le changement de mot de passe, absents du prototype du dashboard ; le prototype contient un onglet « Publication » (export, import, réinitialisation) sans objet en production | Prompts 08 et 09 | Suivre le cahier, ne pas reprendre l'onglet Publication |
-| P6 | Chiffre « Délai de réponse » : 24h sur le site et dans la base, 48h « Réactivité » dans la plaquette | Prompt 05 | Garder 24h (cahier et prototype), à confirmer par le client |
+| P1 | Vérification du domaine d'expédition dans Resend impossible sans accès au DNS de manaprod.com (WordPress.com) | Prompt 06 | Arbitré (D09) : accès DNS demandé dès maintenant, à obtenir avant le Prompt 06 |
+| P2 | Limitation de débit par IP sans stockage partagé dans `0001_init.sql` | Prompt 06 | Arbitré (D10) : migration `0002_` au Prompt 06 |
+| P3 | Cron anti-pause prévu trop tard | Stabilité de la base | Résolu dans la feuille de route (D08) : Prompt 02 |
+| P4 | Page mentions légales absente de l'arborescence | Mise en ligne | Résolu dans le cahier v1.4 (D11) : Prompt 05 ; identifiants légaux à fournir |
+| P5 | Écarts entre le cahier et le prototype du dashboard | Prompts 08 et 09 | Arbitré (D21, D22, D25, D27) : le cahier prime |
+| P6 | Délai de réponse : 24h (site, base) ou 48h (plaquette) | Prompt 05 | Arbitré (D16) : 24h par défaut, à confirmer par le client |
+| P7 | `npm audit` signale une vulnérabilité modérée (minimatch, dépendance de développement d'ESLint via `eslint-config-next` 16.4.6) ; le correctif proposé rétrograde `eslint-config-next` en 15.x | Aucun (outil de développement, absent du site déployé) | À revoir lors d'une mise à jour de `eslint-config-next` |
 
 ## 6. Contenus à fournir par le client
 
-Section 15 du cahier des charges.
+Section 15 du cahier des charges (version 1.4).
 
 | N° | Contenu | Utilisé à partir du | État |
 |---|---|---|---|
 | 1 | Validation du logo Éclipse par Amath (version empilée proposée comme principale) | Prompt 01 | En attente |
 | 2 | Validation de la typographie Schibsted Grotesk | Prompt 01 | En attente |
 | 3 | Lien YouTube du showreel de l'agence | Prompt 03 (saisi dans le dashboard après le Prompt 08) | En attente |
-| 4 | Contenus des 8 projets : liens YouTube, miniatures, photos, descriptions et livrables (années à confirmer, 2026 par défaut dans la base) | Prompt 04 (saisis dans le dashboard après le Prompt 09) | En attente |
-| 5 | Confirmation des chiffres clés : 20+ réalisations, 8+ clients majeurs (et 24h ou 48h) | Prompt 05 | En attente |
-| 6 | Équipe : nom complet de Babou, présentations courtes éventuelles, autres membres | Prompt 05 | En attente |
-| 7 | Confirmation de la liste d'équipement | Prompt 05 | En attente |
-| 8 | Email : fournisseur d'envoi (Resend proposé), adresse d'expédition, adresse de réception des demandes | Prompt 06 | En attente |
-| 9 | Accès au DNS de manaprod.com (WordPress.com) | Prompt 06 (Resend) et Prompt 13 (domaine) | En attente |
-| 10 | Contenu des mentions légales | Prompt 12 ou 13 | En attente |
-| 11 | Version anglaise souhaitée en V2 ? | Hors V1 | En attente |
-| 12 | Adresse email de l'administrateur principal | Prompt 08 | En attente |
-| 13 | Logos des 8 clients (PNG transparent recommandé, pas de SVG) | Prompt 10 (saisis dans le dashboard) | En attente |
+| 4 | Contenus des 8 projets : liens YouTube, miniatures, photos, descriptions et livrables | Prompt 04 (saisis dans le dashboard après le Prompt 09) | En attente |
+| 5 | Années des 8 projets (2026 enregistré par défaut) | Prompt 04 | En attente |
+| 6 | Confirmation des chiffres clés : 20+ réalisations, 8+ clients majeurs, délai de réponse 24h (la plaquette indique 48h) | Prompt 05 | En attente |
+| 7 | Équipe : nom complet de Babou, présentations courtes éventuelles, autres membres | Prompt 05 | En attente |
+| 8 | Confirmation de la liste d'équipement | Prompt 05 | En attente |
+| 9 | Identifiants légaux pour les mentions légales : NINEA, RCCM, adresse du siège | Prompt 05 (blocs masqués tant qu'ils manquent) | En attente |
+| 10 | Contenu complémentaire éventuel des mentions légales | Prompt 05 | En attente |
+| 11 | Accès au DNS de manaprod.com (WordPress.com), demandé dès maintenant | Prompt 06 (Resend) et Prompt 13 (domaine) | En attente |
+| 12 | Email : adresse d'expédition et adresse de réception des demandes (Resend retenu) | Prompt 06 | En attente |
+| 13 | Adresse email de l'administrateur principal | Prompt 08 | En attente |
+| 14 | Logos des 8 clients (PNG transparent recommandé, pas de SVG) | Prompt 10 (saisis dans le dashboard) | En attente |
+| 15 | Version anglaise souhaitée en V2 ? | Hors V1 | En attente |
 
 ## 7. Registre des migrations
 
@@ -85,7 +96,7 @@ Claude Code ne marque jamais une migration comme exécutée : seul Ziza le confi
 
 | N° | Fichier | Objet | Exécutée par Ziza |
 |---|---|---|---|
-| 0001 | `supabase/migrations/0001_init.sql` | Migration de structure : tables, fonctions `is_admin()` et `set_updated_at()`, index, RLS, bucket `media` et ses policies | Non |
+| 0001 | `supabase/migrations/0001_init.sql` | Migration de structure : tables, fonctions `is_admin()` et `set_updated_at()`, GRANT explicites, index, RLS, bucket `media` et ses policies (lecture par l'API réservée aux administrateurs). Corrigée au Prompt 01, avant toute exécution | Non |
 | 0001 (seed) | `supabase/seed/0001_seed.sql` | Données de départ : réglages, 8 projets, 8 clients, 3 membres de l'équipe. À exécuter après la migration `0001_init.sql` | Non |
 
 ## 8. Variables d'environnement
@@ -94,11 +105,11 @@ Saisies par Ziza dans Vercel. Noms et commentaires dans `.env.example`.
 
 | Variable | Usage | Côté | Nécessaire à partir du | Saisie par Ziza |
 |---|---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase | Public | Prompt 01 | Non |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (lecture soumise à la RLS) | Public | Prompt 01 | Non |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clé service, insertion des messages de contact | Serveur uniquement | Prompt 01 | Non |
-| `NEXT_PUBLIC_SITE_URL` | URL du site (Vercel puis manaprod.com) | Public | Prompt 01 | Non |
+| `NEXT_PUBLIC_SITE_URL` | URL du site (Vercel puis manaprod.com) | Public | Prompt 01 | Oui (URL Vercel) |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase | Public | Prompt 02 | Non |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (lecture soumise à la RLS) | Public | Prompt 02 | Non |
+| `CRON_SECRET` | Protège `/api/keepalive` | Serveur uniquement | Prompt 02 | Non |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clé service, seul usage : insertion des messages de contact | Serveur uniquement | Prompt 06 | Non |
 | `RESEND_API_KEY` | Envoi des emails | Serveur uniquement | Prompt 06 | Non |
 | `CONTACT_TO_EMAIL` | Adresse qui reçoit les demandes | Serveur uniquement | Prompt 06 | Non |
 | `CONTACT_FROM_EMAIL` | Adresse d'expédition (domaine vérifié dans Resend) | Serveur uniquement | Prompt 06 | Non |
-| `CRON_SECRET` | Protège `/api/keepalive` | Serveur uniquement | Prompt 12 | Non |

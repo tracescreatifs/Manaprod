@@ -1,6 +1,9 @@
 -- =====================================================================
 -- MANA PROD : migration 0001_init
--- Contenu : tables, fonctions, index, sécurité (RLS), stockage des images.
+-- Contenu : tables, fonctions, index, droits d'accès (GRANT explicites),
+-- sécurité (RLS), stockage des images (bucket media et ses policies).
+-- Version corrigée au Prompt 01, avant toute exécution : ajout des GRANT
+-- explicites et lecture du bucket media réservée aux administrateurs.
 -- Où l'exécuter : Supabase > SQL Editor > New query > coller tout le fichier > Run.
 -- Idempotente : peut être exécutée plusieurs fois sans casser les données.
 -- Les données de départ sont dans supabase/seed/0001_seed.sql (à exécuter après).
@@ -143,7 +146,50 @@ create trigger trg_site_settings_updated_at
   for each row execute function public.set_updated_at();
 
 -- ---------------------------------------------------------------------
--- 3. Index
+-- 3. Droits d'accès (GRANT explicites)
+-- Ces droits ouvrent l'accès aux tables par l'API de Supabase, sans
+-- dépendre des droits par défaut du projet. Ils ne suffisent jamais à eux
+-- seuls : la RLS (section 5) reste la seule règle métier.
+-- Idempotent : un GRANT déjà accordé est simplement ignoré.
+-- ---------------------------------------------------------------------
+
+grant usage on schema public to anon, authenticated;
+
+-- Visiteurs anonymes : lecture du contenu public uniquement
+-- (les projets non publiés restent filtrés par la RLS).
+grant select on
+  public.site_settings,
+  public.projects,
+  public.project_videos,
+  public.project_photos,
+  public.clients,
+  public.team_members
+to anon;
+
+-- Utilisateurs connectés : droits ouverts, la RLS n'autorise l'écriture
+-- (et la lecture des messages) qu'aux administrateurs (is_admin()).
+grant select, insert, update, delete on
+  public.site_settings,
+  public.projects,
+  public.project_videos,
+  public.project_photos,
+  public.clients,
+  public.team_members,
+  public.contact_messages
+to authenticated;
+
+-- admin_users : lecture seule, limitée par la RLS à sa propre ligne.
+grant select on public.admin_users to authenticated;
+
+-- Clé service (côté serveur uniquement) : tous les droits.
+grant usage on schema public to service_role;
+grant all on all tables in schema public to service_role;
+
+-- Fonction utilisée par les policies.
+grant execute on function public.is_admin() to anon, authenticated;
+
+-- ---------------------------------------------------------------------
+-- 4. Index
 -- ---------------------------------------------------------------------
 
 create index if not exists idx_projects_position on public.projects (position);
@@ -154,7 +200,7 @@ create index if not exists idx_team_members_position on public.team_members (pos
 create index if not exists idx_contact_messages_created on public.contact_messages (created_at desc);
 
 -- ---------------------------------------------------------------------
--- 4. Sécurité : Row Level Security
+-- 5. Sécurité : Row Level Security
 -- Lecture publique du contenu, écriture réservée aux administrateurs.
 -- Les messages de contact sont insérés côté serveur avec la clé service.
 -- ---------------------------------------------------------------------
@@ -233,8 +279,11 @@ create policy "admin_users_soi" on public.admin_users
   for select to authenticated using (user_id = auth.uid());
 
 -- ---------------------------------------------------------------------
--- 5. Stockage des images : bucket public « media »
--- Lecture publique, écriture réservée aux administrateurs.
+-- 6. Stockage des images : bucket public « media »
+-- Les fichiers sont servis par leur URL publique sans aucune policy
+-- (bucket public). Les policies ci-dessous ne concernent que l'API de
+-- stockage : lecture (liste des fichiers), ajout, remplacement et
+-- suppression, tous réservés aux administrateurs.
 -- SVG volontairement exclu (sécurité).
 -- ---------------------------------------------------------------------
 
@@ -243,9 +292,15 @@ values ('media', 'media', true, 10485760,
         array['image/jpeg','image/png','image/webp','image/avif'])
 on conflict (id) do nothing;
 
+-- Ancienne policy de lecture publique (permettait de lister tout le
+-- bucket) : supprimée si elle existe.
 drop policy if exists "mana_media_lecture" on storage.objects;
-create policy "mana_media_lecture" on storage.objects
-  for select using (bucket_id = 'media');
+
+-- Lecture par l'API réservée aux administrateurs (nécessaire pour
+-- remplacer et supprimer des fichiers).
+drop policy if exists "mana_media_lecture_admin" on storage.objects;
+create policy "mana_media_lecture_admin" on storage.objects
+  for select to authenticated using (bucket_id = 'media' and public.is_admin());
 
 drop policy if exists "mana_media_ajout" on storage.objects;
 create policy "mana_media_ajout" on storage.objects

@@ -1,6 +1,6 @@
 # Cahier des charges : site web MANA PROD
 
-Version 1.3 | 15 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
+Version 1.4 | 16 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
 
 ---
 
@@ -19,12 +19,14 @@ Contenu du dépôt au démarrage (déposé par Ziza) :
 | `docs/reference/presentation-manaprod.pdf` | Plaquette de l'entreprise |
 | `docs/reference/logo/` | Dossier complet du logo Éclipse : `svg/` (logo empilé, logo horizontal, symbole, en 5 versions), `png/`, `icones/` (favicon, icône app, photo de profil), `LISEZ-MOI.md` (règles d’usage) |
 | `docs/reference/team/*.jpg` | Photos de l'équipe, recadrées en 4:5 (1200 x 1500) |
-| `supabase/migrations/0001_init.sql` | Migration de structure : tables, fonctions, index, sécurité (RLS), bucket de stockage `media` |
+| `supabase/migrations/0001_init.sql` | Migration de structure : tables, fonctions, index, droits d'accès (GRANT explicites), sécurité (RLS), bucket de stockage `media` |
 | `supabase/seed/0001_seed.sql` | Données de départ : réglages, 8 projets, 8 clients, 3 membres de l'équipe |
 
-Ziza travaille uniquement en ligne : Claude Code web est connecté au dépôt GitHub (compte `zizcreatifdev`) et écrit directement dessus, Vercel déploie chaque push, l'URL Vercel est le seul environnement de test. Rien ne s'exécute sur la machine de Ziza.
+Ziza travaille uniquement en ligne : Claude Code web est connecté au dépôt GitHub `tracescreatifs/Manaprod` et écrit directement dessus, Vercel déploie chaque push, l'URL Vercel est le seul environnement de test. Rien ne s'exécute sur la machine de Ziza.
 
 Règle d'or : en cas de contradiction entre ce document et les prototypes, le document prime pour le fonctionnel et la sécurité, le prototype prime pour le visuel et les textes. La contradiction est notée dans `decisions.md`.
+
+Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés dans cette version 1.4.
 
 ---
 
@@ -83,7 +85,7 @@ Règle d'or : en cas de contradiction entre ce document et les prototypes, le do
 | Vidéos | YouTube (liens collés dans le dashboard) |
 | Dépôt | GitHub, push direct sur `main`, sans pull request |
 
-**Tâche récurrente anti-pause Supabase** : un cron toutes les 6 jours qui fait une requête simple sur la base (route `/api/keepalive` appelée par Vercel Cron ou GitHub Action).
+**Tâche récurrente anti-pause Supabase** : un cron tous les 6 jours qui fait une requête simple sur la base (route `/api/keepalive` appelée par Vercel Cron), en place dès le Prompt 02.
 
 **Environnement** : développement exclusivement en ligne, rien à exécuter sur la machine de Ziza. Les variables d'environnement sont saisies par Ziza dans les interfaces web de Vercel et Supabase, Claude Code fournit un fichier `.env.example` commenté.
 
@@ -91,11 +93,11 @@ Règle d'or : en cas de contradiction entre ce document et les prototypes, le do
 
 | Variable | Usage | Nécessaire à partir du |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase | Prompt 01 |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (lecture) | Prompt 01 |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clé service, serveur uniquement, jamais dans une variable `NEXT_PUBLIC_` | Prompt 01 |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase | Prompt 02 |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (lecture) | Prompt 02 |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clé service, serveur uniquement, jamais dans une variable `NEXT_PUBLIC_`. Seul usage : insertion des messages de contact | Prompt 06 |
 | `NEXT_PUBLIC_SITE_URL` | URL du site (prévisualisation puis manaprod.com) | Prompt 01 |
-| `CRON_SECRET` | Protège la route `/api/keepalive` | Prompt 12 |
+| `CRON_SECRET` | Protège la route `/api/keepalive` | Prompt 02 |
 | `RESEND_API_KEY` | Envoi des emails | Prompt 06 |
 | `CONTACT_TO_EMAIL` | Adresse qui reçoit les demandes | Prompt 06 |
 | `CONTACT_FROM_EMAIL` | Adresse d'expédition (domaine vérifié dans Resend) | Prompt 06 |
@@ -112,7 +114,7 @@ Aucune clé dans le code ni dans le dépôt. Le build réussit sans aucune de ce
 Nouveau logo : un disque d’ombre cerné d’un anneau de lumière turquoise, avec un point brillant (« celui qui éclaire demeure dans l’obscurité »). Le nom MANA PROD est vectorisé à partir de Schibsted Grotesk (MANA en 800, PROD en 500). Tous les fichiers sont dans `docs/reference/logo/`, avec leurs règles dans `docs/reference/logo/LISEZ-MOI.md`.
 
 Usage sur le site :
-- **En-tête, pied de page, dashboard** : logo horizontal. Le prototype l’intègre en SVG avec les textes en `currentColor` (constante `LOGO`) : en faire un composant React `Logo`, l’anneau reste turquoise `#2EC4CF` et le disque `#060A0C`.
+- **En-tête, pied de page, dashboard** : logo horizontal. Le prototype l’intègre en SVG avec les textes en `currentColor` (constante `LOGO`) : en faire un composant React `Logo`, l’anneau reste turquoise `#2EC4CF` et le disque `#060A0C`. Sur fond sombre, MANA prend la couleur du texte et PROD la couleur `#8FA3A8` (charte du logo), et non une opacité de 60 % comme dans le prototype.
 - **Filigrane du hero de repli** : le symbole seul en blanc, opacité 6 % (constante `SYM` du prototype).
 - **Favicon et icônes** : `docs/reference/logo/icones/` (`favicon.ico`, `favicon.svg`, `apple-touch-icon-180.png`, `icone-app-512.png`). Image de partage par défaut : construite à partir du logo empilé sur fond `#0A1013`.
 - **Ne jamais** colorer MANA ou PROD en turquoise, déformer le logo, ou utiliser la version avec halo hors écran.
@@ -164,12 +166,17 @@ Point à confirmer par Ziza : la police ne doit pas faire « IA ». Les conventi
 | `/services` | Services, méthode, pourquoi Mana Prod |
 | `/studio` | Présentation, chiffres, équipe, équipement |
 | `/contact` | Contact et formulaire |
+| `/mentions-legales` | Mentions légales et confidentialité |
 | `/admin` | Dashboard (protégé) |
 | `/admin/login` | Connexion |
+| `/admin/mot-de-passe-oublie` | Demande de réinitialisation du mot de passe (envoi d'un email) |
+| `/admin/nouveau-mot-de-passe` | Choix d'un nouveau mot de passe (lien reçu par email) |
 | `/api/contact` | Réception du formulaire |
 | `/api/keepalive` | Maintien de la base active (cron tous les 6 jours) |
 
-Menu : Réalisations, Services, Le studio, Contact. Lien discret vers l'admin non affiché publiquement (accès par URL).
+Menu : Réalisations, Services, Le studio, Contact. Aucun lien vers l'admin sur le site public : accès par URL uniquement.
+
+Jusqu'à la mise en ligne (Prompt 13), tout le site est en `noindex, nofollow`, l'URL Vercel étant publique.
 
 ---
 
@@ -186,9 +193,10 @@ Menu : Réalisations, Services, Le studio, Contact. Lien discret vers l'admin no
    - Ligne au-dessus : « Mana Prod, production audiovisuelle à Dakar ».
    - Titre : la signature, révélé mot par mot.
    - Bouton carré play + titre du showreel + « Lecture avec le son » : ouvre une fenêtre modale avec la vidéo avec son. Échap pour fermer.
-   - **Repli sans showreel** : fond sombre avec une lumière turquoise qui dérive lentement et le logo en filigrane (opacité 5 %).
+   - **Repli sans showreel** : fond sombre avec une lumière turquoise qui dérive lentement et le logo en filigrane (opacité 6 %).
+   - **Performance** : le texte du hero est rendu côté serveur ; l'iframe YouTube n'est chargée qu'ensuite, pour préserver le LCP.
 2. **Le studio** : phrase d'accroche (voir section 9) et bouton-lien « Découvrir le studio ».
-3. **Sélection** : projets marqués « à la une » dans le dashboard, grille éditoriale, bouton-lien « Toutes les réalisations ».
+3. **Sélection** : projets publiés marqués « à la une » dans le dashboard ; s'il n'y en a aucun, les 6 premiers projets publiés selon leur ordre. Grille éditoriale, bouton-lien « Toutes les réalisations ».
 4. **Ils nous font confiance** : bandeau défilant des clients (logo si présent, sinon nom en texte).
 5. **Appel final** : « Parlons de votre projet » en très grand, lien vers /contact, rappel de la promesse de réponse.
 
@@ -232,22 +240,26 @@ Ordre des blocs :
 - Colonne gauche : lignes téléphone (bouton WhatsApp à côté, lien `https://wa.me/221780114308`), email (bouton Copier), localisation. Bloc « Et ensuite » en 3 étapes.
 - Colonne droite : formulaire dans un panneau : Nom, Organisation, Email, Type de projet (liste des catégories + Autre), Date souhaitée (facultatif), Message.
 - Validation : nom, email valide et message obligatoires, message d'erreur clair.
-- **Envoi (évolution par rapport au prototype)** : enregistrement en base + email de notification à l'adresse de contact + accusé de réception au visiteur. Anti-spam : champ piège (honeypot), limitation de débit par IP, validation serveur.
+- **Envoi (évolution par rapport au prototype)** : enregistrement en base + email de notification à l'adresse de contact + accusé de réception au visiteur. L'accusé de réception ne reprend jamais le contenu du message du visiteur (pour qu'il ne puisse pas servir de relais de spam). Anti-spam : champ piège (honeypot), limitation de débit par IP, validation serveur. La limitation s'appuie sur une table des envois récents (migration `0002_`, Prompt 06) qui ne stocke qu'une empreinte (hachage) de l'IP, jamais l'IP en clair, avec purge des lignes anciennes et sans service externe.
 - Message de confirmation dans la page après envoi.
 
 ### 6.8 Pied de page
 Logo, courte description, liens, coordonnées, signature, mention © 2026 Mana Prod.
 
 ### 6.9 Pages techniques
-404 personnalisée, `robots.txt`, `sitemap.xml`, favicon, mentions légales (contenu à fournir par le client).
+404 personnalisée, `robots.txt`, `sitemap.xml`, favicon.
+
+**Mentions légales** (`/mentions-legales`, Prompt 05), avec une section confidentialité, rédigées avec les informations connues : éditeur Mana Prod, hébergeur Vercel, base de données Supabase, données collectées par le formulaire de contact, finalité, durée de conservation, droits des personnes selon la loi sénégalaise n° 2008-12 sur la protection des données à caractère personnel. Les identifiants légaux (NINEA, RCCM, adresse du siège) sont à fournir par le client ; tant qu'ils manquent, leurs blocs sont masqués.
 
 ---
 
 ## 7. Dashboard d'administration
 
-Accès : `/admin`, connexion par email et mot de passe (Supabase Auth). Un compte administrateur pour la V1, ajout possible d'autres admins.
+Accès : `/admin`, connexion par email et mot de passe (Supabase Auth). Inscriptions publiques désactivées dans Supabase Auth. Un compte administrateur pour la V1 ; d'autres administrateurs sont ajoutés par SQL (fourni dans un rapport, jamais commité).
 
-Interface : barre du haut (logo, état, lien « Ouvrir le site »), navigation latérale (sur mobile : onglets horizontaux), contenu. Mêmes tokens que le site. Voir le prototype `manaprod-dashboard.html` pour le comportement exact.
+**Mot de passe oublié** : vrai parcours de réinitialisation (demande par email sur `/admin/mot-de-passe-oublie`, puis choix d'un nouveau mot de passe sur `/admin/nouveau-mot-de-passe`). Les emails d'authentification de Supabase sont envoyés par le SMTP de Resend, et les URL de redirection de l'authentification sont réglées au Prompt 08.
+
+Interface : barre du haut (logo, adresse de l'administrateur connecté, bouton de déconnexion, lien « Ouvrir le site »), navigation latérale (sur mobile : onglets horizontaux), contenu. Mêmes tokens que le site. Voir le prototype `manaprod-dashboard.html` pour le comportement exact. En cas d'écart, ce document prime : l'onglet « Publication » du prototype (export, import, réinitialisation) et l'état « Modifications non publiées » n'existent pas en production, puisque chaque enregistrement est publié immédiatement.
 
 ### 7.1 Showreel
 - Champ lien YouTube (tous formats : watch, youtu.be, embed, shorts, live, identifiant seul) + titre du bouton.
@@ -255,9 +267,9 @@ Interface : barre du haut (logo, état, lien « Ouvrir le site »), navigation l
 - Message d'aide : vidéo en « Non répertoriée » ou « Publique », intégration autorisée.
 
 ### 7.2 Projets
-- Liste : miniature, client, titre, indicateur « à l'accueil », catégorie, année, nombre de vidéos et photos. Actions : monter, descendre, voir la page, modifier, supprimer (avec confirmation en deux temps).
+- Liste : miniature, client, titre, indicateur « à l'accueil », catégorie, année, nombre de vidéos et photos. Actions : monter, descendre, voir la page (désactivé si le projet n'est pas publié), modifier, supprimer (avec confirmation en deux temps).
 - Éditeur :
-  - Informations : client, titre, catégorie, année, description, case « Afficher dans la sélection de l'accueil », case « Publié ».
+  - Informations : client et titre (obligatoires tous les deux), catégorie, année, description, case « Afficher dans la sélection de l'accueil », case « Publié ».
   - Livrables : une ligne par livrable (champ multiligne), vide autorisé.
   - Miniature : téléversement, ou automatique (première vidéo YouTube, sinon première photo).
   - Vidéos YouTube : lignes avec lien, titre facultatif, aperçu, réordonner, supprimer. Validation immédiate du lien.
@@ -383,7 +395,9 @@ create table admin_users (user_id uuid primary key references auth.users(id) on 
 - `contact_messages` : aucune lecture ni écriture publique. L'insertion passe par la route `/api/contact` (clé service, côté serveur). Lecture et mise à jour réservées aux admins.
 - La clé service n'est jamais exposée au navigateur.
 
-**Stockage** : un bucket `media` en lecture publique, écriture admin uniquement. Dossiers : `projects/{id}/`, `thumbs/`, `clients/`, `team/`. Les chemins sont stockés en base, les URL sont construites côté application.
+**Droits d'accès (GRANT explicites)** : la migration accorde explicitement les droits, sans dépendre des réglages par défaut du projet : usage du schéma `public` pour `anon` et `authenticated` ; lecture des 6 tables de contenu pour `anon` ; lecture et écriture de ces 6 tables et de `contact_messages` pour `authenticated` ; lecture de `admin_users` pour `authenticated` ; tous les droits pour `service_role` ; exécution de `is_admin()` pour `anon` et `authenticated`. Ces droits ouvrent l'accès à l'API, la RLS reste la seule règle métier.
+
+**Stockage** : un bucket `media` public : les fichiers sont servis par leur URL publique sans policy. Par l'API de stockage, la lecture (liste des fichiers), l'ajout, le remplacement et la suppression sont réservés aux administrateurs ; aucune policy ne permet de lister le bucket publiquement. Dossiers : `projects/{id}/`, `thumbs/`, `clients/`, `team/`. Les chemins sont stockés en base, les URL sont construites côté application.
 
 **Index** : `projects(position)`, `project_videos(project_id, position)`, `project_photos(project_id, position)`.
 
@@ -397,7 +411,7 @@ create table admin_users (user_id uuid primary key references auth.users(id) on 
 
 **Studio** : « Une signature visuelle forte. » Puis : « MANA PROD est une agence de production audiovisuelle basée à Dakar, portée par Amath NDIAYE, vidéaste et monteur professionnel. » Puis : « Nous créons des contenus visuels qui marquent, émeuvent et restent, pour des institutions internationales comme pour les marques les plus ambitieuses. De la captation à la livraison finale, nous maîtrisons toute la chaîne de production avec une exigence créative totale et des standards internationaux. »
 
-**Chiffres (à confirmer par le client)** : 20+ Réalisations, 8+ Clients majeurs, 4K Standard de production, 24h Délai de réponse.
+**Chiffres (à confirmer par le client)** : 20+ Réalisations, 8+ Clients majeurs, 4K Standard de production, 24h Délai de réponse (24h retenu par défaut ; la plaquette indique 48h).
 
 **Français et wolof** : « Des contenus pensés pour le public sénégalais et ouest-africain. Nous travaillons en français et en wolof, avec la qualité des grandes agences, livrée depuis Dakar. »
 
@@ -432,7 +446,9 @@ create table admin_users (user_id uuid primary key references auth.users(id) on 
 | Réalités SN | Réalités Sénégal | Documentaire | non |
 | Port de Dakar | Reportage maritime | Reportage industriel | non |
 
-Les descriptions et livrables sont à rédiger par le client. Ne rien inventer : les blocs vides sont masqués.
+Les descriptions et livrables sont à rédiger par le client. Ne rien inventer : les blocs vides sont masqués. L'année 2026 est enregistrée pour les 8 projets, à confirmer par le client.
+
+**Textes du prototype** : quand le prototype donne une version plus détaillée qu'une liste ci-dessus (équipement, « Pourquoi Mana Prod », libellé « Votre projet » du formulaire), c'est le texte du prototype qui fait foi.
 
 ---
 
@@ -452,7 +468,7 @@ Les descriptions et livrables sont à rédiger par le client. Ne rien inventer :
 
 **Performance** : LCP inférieur à 2,5 s sur mobile 4G, CLS inférieur à 0,1, scores Lighthouse supérieurs à 90 (performance, accessibilité, bonnes pratiques, SEO). Images servies via `next/image` (AVIF/WebP, tailles responsives), chargement différé hors écran, iframes YouTube en façade, police auto-hébergée avec `next/font`.
 
-**SEO** : titre et description par page, Open Graph et Twitter cards, image de partage par projet (miniature), `sitemap.xml` dynamique (projets publiés), `robots.txt` (le dashboard est exclu et en `noindex`), données structurées Organization et VideoObject sur les fiches projet.
+**SEO** : titre et description par page, Open Graph et Twitter cards, image de partage par projet (miniature), `sitemap.xml` dynamique (projets publiés), `robots.txt` (le dashboard est exclu et en `noindex` ; jusqu'à la mise en ligne, tout le site est en `noindex`), données structurées Organization et VideoObject sur les fiches projet.
 
 **Accessibilité (WCAG AA)** : contrastes vérifiés, navigation clavier complète, focus visible (contour turquoise), modales avec piégeage du focus et fermeture par Échap, textes alternatifs, libellés de formulaires, `aria-live` pour les erreurs, respect de `prefers-reduced-motion`, cibles tactiles d'au moins 44 px.
 
@@ -481,20 +497,19 @@ Un prompt à la fois : le suivant n'est rédigé qu'après lecture et validation
 | Prompt | Lot | Contenu | Prérequis côté Ziza |
 |---|---|---|---|
 | 00 | Initialisation | Organisation du dépôt, lecture du cahier et des prototypes, création de `CLAUDE.md`, `PROJECT_STATE.md`, `decisions.md`, `.gitignore`, `.env.example`. Aucun code applicatif | Dépôt GitHub créé avec ce kit |
-| 01 | Socle | Projet Next.js (App Router, TypeScript strict, lint, Tailwind), tokens de la charte (section 4.2), Schibsted Grotesk via `next/font`, clients Supabase serveur et navigateur sans crash si variables absentes, favicon et icônes, photos de l'équipe copiées dans `public/team/`, page d'accueil minimale déployée. Aucune fonctionnalité métier | Projets Supabase et Vercel créés, Vercel relié au dépôt, 4 variables du Prompt 01 saisies |
-| 02 | Fondations | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, utilitaires YouTube (section 10) avec tests, composants Logo et Symbole, en-tête, pied de page, boutons, composants de mouvement, transition entre pages, page 404 | `0001_init.sql` puis `0001_seed.sql` exécutés et confirmés |
+| 01 | Socle | Intégration des arbitrages du Prompt 00, correction de `0001_init.sql` avant exécution (GRANT, lecture du bucket), projet Next.js (App Router, TypeScript strict, lint, Tailwind), tokens de la charte (section 4.2), Schibsted Grotesk via `next/font`, clients Supabase serveur et navigateur sans crash si variables absentes, favicon et icônes, photos de l'équipe copiées dans `public/team/`, site en `noindex`, page d'accueil minimale déployée. Aucune fonctionnalité métier | Projet Vercel créé et relié au dépôt, `NEXT_PUBLIC_SITE_URL` saisie |
+| 02 | Fondations | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, utilitaires YouTube (section 10) avec tests, composants Logo et Symbole, en-tête, pied de page, boutons, composants de mouvement, transition entre pages, page 404, route `/api/keepalive` et cron Vercel tous les 6 jours | Projet Supabase créé (inscriptions publiques désactivées), `0001_init.sql` puis `0001_seed.sql` exécutés et confirmés, variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `CRON_SECRET` saisies |
 | 03 | Accueil | Page d'accueil complète (section 6.2) | |
 | 04 | Réalisations | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | |
-| 05 | Services et studio | Pages Services et Le studio (compteurs, équipe, équipement) | |
-| 06 | Contact | Formulaire, validation serveur, pot de miel, limitation de fréquence, enregistrement en base, emails avec Resend (notification et accusé de réception) | Compte Resend, domaine vérifié, 3 variables du Prompt 06 |
+| 05 | Services, studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité | |
+| 06 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, emails avec Resend (notification et accusé de réception) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, sans toucher aux enregistrements MX), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` |
 | 07 | Audit 1 | Contrôle complet des prompts 01 à 06 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | |
-| 08 | Authentification | Connexion, protection de `/admin`, coquille du dashboard, onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SQL de déclaration de l'administrateur fourni dans le rapport (il contient un identifiant de compte, il ne va pas dans le dépôt) |
+| 08 | Authentification | Connexion, mot de passe oublié (demande par email, nouveau mot de passe), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (il contient un identifiant de compte, il ne va pas dans le dépôt) |
 | 09 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication | |
 | 10 | Admin suite | Onglets Clients (avec logos), Équipe, Messages | |
 | 11 | Audit 2 | Contrôle complet des prompts 08 à 10, en particulier RLS et stockage | |
-| 12 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11), route `/api/keepalive` et cron Vercel tous les 6 jours | Variable `CRON_SECRET` |
-| 13 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 de ce cahier, guide pas à pas pour pointer manaprod.com vers Vercel | Accès au DNS de manaprod.com |
-
+| 12 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | |
+| 13 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 de ce cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les enregistrements MX | Accès au DNS de manaprod.com |
 ---
 
 ## 14. Méthode de travail avec Claude Code
@@ -504,14 +519,14 @@ La méthode complète est dans `docs/methode-de-developpement.md` : rôles, prot
 ### 14.1 Base de données
 - Migration fournie : `supabase/migrations/0001_init.sql`. Données de départ fournies : `supabase/seed/0001_seed.sql`, à exécuter après la migration. Les deux sont inscrites « Non exécutée » au registre des migrations de `PROJECT_STATE.md` jusqu'à confirmation de Ziza.
 - Les migrations suivantes sont numérotées à partir de `0002_`. Les types de `src/types/database.ts` sont mis à jour dans le même prompt que la migration.
-- Écriture réservée aux administrateurs (fonction `is_admin()`), messages de contact insérés côté serveur avec la clé service, bucket `media` public en lecture, SVG exclus.
+- Écriture réservée aux administrateurs (fonction `is_admin()`), messages de contact insérés côté serveur avec la clé service, droits d'accès accordés par GRANT explicites, bucket `media` servi publiquement par URL, lecture par l'API réservée aux administrateurs, SVG exclus.
 
 ### 14.2 Règles de code et de contenu
 - TypeScript strict, composants serveur par défaut, actions serveur pour le dashboard, validation avec zod.
 - Framer Motion pour toutes les animations, respect de `prefers-reduced-motion`.
 - Icônes lucide-react au trait, aucun emoji. Aucun tiret long ni tiret moyen, dans le code, les textes, les commentaires et les commits.
 - Textes en français, accents corrects, apostrophe typographique (’) dans les textes affichés.
-- Zéro placeholder, zéro `TODO`, zéro contenu client inventé : uniquement la section 9 et la base de données.
+- Zéro placeholder, zéro `TODO`, zéro contenu client inventé : uniquement la section 9 et la base de données. La règle vise les contenus factices : l'attribut HTML `placeholder` (aide de saisie dans un champ) est autorisé.
 - Le logo n'est jamais déformé : on fixe sa largeur ou sa hauteur, jamais les deux.
 - Mobile-first : vérification à 360 px, cibles tactiles de 44 px minimum, fenêtres modales limitées à 85 % de la hauteur d'écran.
 - Pour tout travail d'interface, Claude Code ouvre le prototype correspondant dans `docs/reference/` et s'y conforme.
@@ -535,11 +550,16 @@ La méthode complète est dans `docs/methode-de-developpement.md` : rôles, prot
 5. **Chiffres clés** : confirmer 20+ réalisations, 8+ clients majeurs.
 6. **Équipe** : nom complet de Babou, présentations courtes éventuelles, autres membres.
 7. **Équipement** : confirmer la liste.
-8. **Email** : fournisseur d'envoi (Resend proposé), adresse d'expédition, adresse de réception des demandes.
-9. **Domaine** : accès au DNS de manaprod.com (actuellement chez WordPress.com) pour le pointer vers Vercel.
+8. **Email** : fournisseur d'envoi (Resend retenu), adresse d'expédition, adresse de réception des demandes.
+9. **Domaine** : accès au DNS de manaprod.com (actuellement chez WordPress.com) pour le pointer vers Vercel (voir aussi le point 16).
 10. **Mentions légales** : contenu à fournir.
 11. **Langues** : la version anglaise est-elle souhaitée en V2 ?
 12. **Comptes admin** : adresse email de l'administrateur principal.
+13. **Délai de réponse** : 24h retenu par défaut (la plaquette indique 48h).
+14. **Années des projets** : 2026 enregistré pour les 8 projets, à confirmer.
+15. **Identifiants légaux** pour les mentions légales : NINEA, RCCM, adresse du siège.
+16. **Accès au DNS** de manaprod.com : demandé dès maintenant, nécessaire avant le Prompt 06 (vérification du domaine d'expédition dans Resend). Les enregistrements MX existants (boîte amathndiaye@manaprod.com) ne doivent jamais être modifiés.
+17. **Logos des clients** : PNG à fond transparent de préférence (les SVG sont refusés par le stockage).
 
 ---
 

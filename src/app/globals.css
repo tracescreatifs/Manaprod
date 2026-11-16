@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* Tokens de la charte (cahier des charges, section 4.2) */
+:root {
+  --bg: #0a1013;
+  --bg-2: #10191d;
+  --bg-3: #18262c;
+  --line: #223239;
+  --text: #edf2f3;
+  --muted: #8fa3a8;
+  --teal: #2ec4cf;
+  --teal-hi: #5ad6df;
+  --ink: #04161a;
+  --danger: #ff7a6b;
+}
+
+/* Exposition des tokens à Tailwind (bg-bg, text-muted, border-line, etc.) */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-teal: var(--teal);
+  --color-teal-hi: var(--teal-hi);
+  --color-ink: var(--ink);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-schibsted), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --tracking-display: -0.035em;
+}
+
+@layer base {
+  /* Angles droits par défaut sur tout le site */
+  *,
+  ::before,
+  ::after {
+    border-radius: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: #0a1013;
+    color: #edf2f3;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Focus visible : contour turquoise */
+  :focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 3px;
+  }
+
+  a {
+    color: inherit;
+  }
+}
