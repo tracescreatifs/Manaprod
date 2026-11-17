@@ -349,3 +349,13 @@ export const teamMemberSchema = z.object({
 
 /** Ordre d'une liste (clients, équipe) : tous les identifiants, sans doublon. */
 export const orderSchema = projectOrderSchema;
+
+// ---------------------------------------------------------------------
+// Coulisses (onglet Coulisses, D99)
+// ---------------------------------------------------------------------
+
+export const BACKSTAGE_LIMITS = { alt: 200, photos: 60 } as const;
+
+export const backstageAltSchema = z.object({
+  alt: optionalLine(BACKSTAGE_LIMITS.alt, `${BACKSTAGE_LIMITS.alt} caractères au maximum.`),
+});

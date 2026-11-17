@@ -28,9 +28,12 @@ export function PhotoGallery({
   photos,
   label,
   eagerFirst = false,
+  layout = "masonry",
 }: {
   photos: GalleryPhoto[];
   label: string;
+  /** « masonry » : fiche projet ; « editorial » : coulisses du studio (rythme 7/5 puis 4/8, D99). */
+  layout?: "masonry" | "editorial";
   /** Première photo chargée tout de suite (fiche sans vidéo : c'est l'image principale, LCP). */
   eagerFirst?: boolean;
 }) {
@@ -67,9 +70,15 @@ export function PhotoGallery({
 
   return (
     <>
-      <ul className="mt-7 columns-1 gap-x-[clamp(14px,1.6vw,24px)] min-[561px]:columns-2 min-[1001px]:columns-3">
+      <ul
+        className={
+          layout === "editorial"
+            ? "grid-backstage"
+            : "mt-7 columns-1 gap-x-[clamp(14px,1.6vw,24px)] min-[561px]:columns-2 min-[1001px]:columns-3"
+        }
+      >
         {photos.map((photo, i) => (
-          <li key={photo.id} className="mb-[clamp(14px,1.6vw,24px)] break-inside-avoid">
+          <li key={photo.id} className={layout === "editorial" ? "min-w-0" : "mb-[clamp(14px,1.6vw,24px)] break-inside-avoid"}>
             <button
               ref={(el) => {
                 thumbRefs.current[i] = el;
@@ -84,7 +93,11 @@ export function PhotoGallery({
                 alt=""
                 width={photo.width ?? FALLBACK_WIDTH}
                 height={photo.height ?? FALLBACK_HEIGHT}
-                sizes="(min-width: 1001px) 33vw, (min-width: 561px) 50vw, 100vw"
+                sizes={
+                  layout === "editorial"
+                    ? "(min-width: 821px) 60vw, 100vw"
+                    : "(min-width: 1001px) 33vw, (min-width: 561px) 50vw, 100vw"
+                }
                 {...(eagerFirst && i === 0 ? { loading: "eager" as const, fetchPriority: "high" as const } : {})}
                 className="h-auto w-full transition-transform duration-[600ms] group-hover:scale-[1.03]"
               />

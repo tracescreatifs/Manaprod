@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Film, FolderOpen, Mail, Settings, UserRound, Users } from "lucide-react";
+import { Camera, Film, FolderOpen, Mail, Settings, UserRound, Users } from "lucide-react";
 
 // Onglets du dashboard (prototype .adm__side), dans l'ordre du cahier.
 // Navigation latérale, horizontale sous 1000 px. L'onglet Messages porte le
@@ -12,6 +12,7 @@ const TABS = [
   { href: "/admin/projets", label: "Projets", Icon: FolderOpen },
   { href: "/admin/clients", label: "Clients", Icon: Users },
   { href: "/admin/equipe", label: "Équipe", Icon: UserRound },
+  { href: "/admin/coulisses", label: "Coulisses", Icon: Camera },
   { href: "/admin/reglages", label: "Réglages", Icon: Settings },
   { href: "/admin/messages", label: "Messages", Icon: Mail },
 ];

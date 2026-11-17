@@ -95,3 +95,21 @@ export function cropRect(
   const y = position === "haut" ? 0 : position === "bas" ? free : Math.round(free / 2);
   return { x: 0, y, width, height: h };
 }
+
+/** Photos des coulisses : backstage/<identifiant unique>.<ext> (D99). */
+export function backstagePath(fileId: string, ext: ImageExtension): string {
+  return `backstage/${fileId}.${ext}`;
+}
+
+/** Photo d'ouverture du studio : studio/<identifiant unique>.<ext> (D99). */
+export function studioHeroPath(fileId: string, ext: ImageExtension): string {
+  return `studio/${fileId}.${ext}`;
+}
+
+export function isBackstagePath(path: string): boolean {
+  return new RegExp(`^backstage/${UUID}\\.${EXT}$`).test(path);
+}
+
+export function isStudioHeroPath(path: string): boolean {
+  return new RegExp(`^studio/${UUID}\\.${EXT}$`).test(path);
+}

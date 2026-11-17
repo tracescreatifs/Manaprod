@@ -74,3 +74,20 @@ describe("cropRect (format 4:5)", () => {
     expect(cropRect(800, 1000, 4 / 5, "bas")).toEqual({ x: 0, y: 0, width: 800, height: 1000 });
   });
 });
+
+import { backstagePath, isBackstagePath, isStudioHeroPath, studioHeroPath } from "./images";
+
+describe("chemins des coulisses et de la photo d'ouverture", () => {
+  it("construit et reconnaît les chemins", () => {
+    expect(backstagePath(F, "webp")).toBe(`backstage/${F}.webp`);
+    expect(studioHeroPath(F, "jpg")).toBe(`studio/${F}.jpg`);
+    expect(isBackstagePath(backstagePath(F, "jpg"))).toBe(true);
+    expect(isStudioHeroPath(studioHeroPath(F, "webp"))).toBe(true);
+  });
+  it("refuse les autres chemins", () => {
+    expect(isBackstagePath(`backstage/${F}.png`)).toBe(false);
+    expect(isBackstagePath(`backstage/../projects/${F}.webp`)).toBe(false);
+    expect(isStudioHeroPath("/team/amath-ndiaye.jpg")).toBe(false);
+    expect(isStudioHeroPath(backstagePath(F, "webp"))).toBe(false);
+  });
+});

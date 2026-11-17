@@ -1,13 +1,13 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-17, fin du Prompt 13.
+Dernière mise à jour : 2026-11-17, fin du Prompt 14.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 13 (qualité finale : SEO prêt à activer, HSTS et CSP, codes HTTP documentés, finitions). En attente de validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 14 (mise en ligne : passage d'`INDEXING_ENABLED` à `true`, vérifications de la section 12 de la méthode), après le Go.
+- **Dernier prompt terminé** : Prompt 14 (page Le studio immersive, photo d'ouverture dans Réglages, onglet Coulisses, retrait de l'équipement). En attente de l'exécution de `0004_studio.sql` puis `seed/0002_studio.sql`, de la validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 15 (mise en ligne : passage d'`INDEXING_ENABLED` à `true`, vérifications de la section 12 de la méthode), après le Go.
 - **Branche de travail** : `main` (développement, avant mise en ligne).
-- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), dashboard complet (Showreel, Projets, Clients, Équipe, Réglages, Messages) publié immédiatement sur le site, effacement automatique des messages de plus de 24 mois.
+- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), page Le studio immersive (D99), dashboard complet (Showreel, Projets, Clients, Équipe, Coulisses, Réglages, Messages) publié immédiatement sur le site, effacement automatique des messages de plus de 24 mois.
 
 ## 2. Feuille de route des prompts
 
@@ -28,8 +28,9 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 | 10 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication, client et titre obligatoires, « Voir la page » désactivé si non publié | Exécution de `0003_project_photo_size.sql` | Fait, validé |
 | 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | | Fait, validé |
 | 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | | Fait, validé |
-| 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | | Fait, en attente de validation |
-| 14 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 du cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les MX | Accès au DNS de manaprod.com | À faire |
+| 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | | Fait, validé |
+| 14 | Studio immersif et Coulisses | Page Le studio immersive d'après la maquette (cahier 6.6, v1.9), photo d'ouverture dans Réglages, onglet Coulisses, retrait de l'équipement (D99) | Exécution de `0004_studio.sql` puis `seed/0002_studio.sql` | Fait, en attente de validation |
+| 15 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 du cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les MX | Accès au DNS de manaprod.com | À faire |
 
 ### Ajustements validés (arbitrage du rapport du Prompt 00)
 
@@ -41,7 +42,7 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 4. Page `/mentions-legales` avec section confidentialité au Prompt 06 (D11).
 5. `SUPABASE_SERVICE_ROLE_KEY` et client service seulement au Prompt 07 (D13).
 6. Mot de passe oublié au Prompt 09, avec SMTP de Resend dans Supabase Auth (D25).
-7. Site entier en `noindex` jusqu'au Prompt 14 (D31).
+7. Site entier en `noindex` jusqu'à la mise en ligne, désormais Prompt 15 (D31, D99).
 8. Ancien Prompt 02 scindé en Prompt 02 « Interface » et Prompt 03 « Données », prompts suivants décalés d'un numéro (D36).
 9. Supabase en région Paris (`eu-west-3`), fonctions Vercel en région Paris (`cdg1`) (D37).
 
@@ -145,10 +146,17 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - Finitions : confirmations en deux temps pour le showreel et la miniature, « 1er » dans les dates, titre des fiches aligné sur le prototype, première photo prioritaire sur une fiche sans vidéo (D98).
   - Vérifié : axe 0 violation sur les pages publiques et du dashboard à 360 et 1440 px ; Lighthouse mobile 99 à 100 en performance sur les pages sans image principale, 90 à 95 sur une fiche dont l'image est l'élément principal (LCP estimé 2,9 à 3,3 s, mesuré à 1,7 s avec un ralentissement réel) ; aucune bibliothèque serveur dans le code envoyé au navigateur.
 
+- **Prompt 14 (studio immersif et coulisses)** :
+  - Migration `0004_studio.sql` (colonne `site_settings.studio_hero_path`, table `backstage_photos` avec RLS, GRANT et index) et données `seed/0002_studio.sql` (photo de départ, seulement si vide). Validées deux fois sur Postgres 16, droits testés par rôle.
+  - Page `/studio` refaite d'après la maquette : ouverture (photo réglable, titre mot à mot, image prioritaire), récit avec l'éclipse qui se forme, chiffres en panneaux horizontaux avec compteurs, langues qui glissent, équipe en piste horizontale (portraits noir et blanc, présentation dépliable, focus clavier amené à l'écran), coulisses (grille éditoriale et visionneuse), appel final. Un seul contrôleur de mouvement (`StudioMotion`), page à plat avec mouvement réduit ou sans JavaScript. Page toujours statique.
+  - Dashboard : « Photo d'ouverture du studio » dans Réglages (téléversement direct dans `studio/`, aperçu, remplacement, retour à la photo de départ) ; onglet Coulisses (`/admin/coulisses`, téléversement multiple dans `backstage/`, texte alternatif, ordre, suppression en deux temps, aucun fichier orphelin). Le site fonctionne avant et après la migration.
+  - Équipement retiré du contenu, du code et du cahier (v1.9) ; feuille de route renumérotée (14 Studio, 15 Mise en ligne).
+  - Vérifié : axe 0 violation sur `/studio` (à plusieurs positions de défilement) et `/admin/coulisses` à 360 et 1440 px ; Lighthouse mobile `/studio` : performance 98 à 99, accessibilité 100, LCP 0,9 s, CLS 0 ; aucun défilement horizontal de 360 à 1920 px ; pas de régression (projets, clients, équipe, messages, CSP, C1).
+
 ## 4. Reste à faire
 
-- Prompts 13 et 14 (voir la feuille de route).
-- Vérifications avant le Prompt 14 (rapport du Prompt 13) : en-têtes servis sur manaprod.com, aperçus de partage, PageSpeed Insights en production.
+- Prompt 15 (voir la feuille de route).
+- Vérifications avant le Prompt 15 (rapport du Prompt 13) : en-têtes servis sur manaprod.com, aperçus de partage, PageSpeed Insights en production.
 - Recommandations de l’audit 1 non appliquées (rapport du Prompt 08) : CSP, code 404 à la première visite (P10).
 
 ## 5. Problèmes ouverts
@@ -183,14 +191,17 @@ Section 15 du cahier des charges (version 1.5).
 | 5 | Années des 8 projets (2026 enregistré par défaut) | Prompt 05 | En attente |
 | 6 | Confirmation des chiffres clés : 20+ réalisations, 8+ clients majeurs, délai de réponse 24h (la plaquette indique 48h) | Prompt 06 | En attente |
 | 7 | Équipe : nom complet de Babou, présentations courtes éventuelles, autres membres | Prompt 06 | En attente |
-| 8 | Confirmation de la liste d'équipement | Prompt 06 | En attente |
+| 8 | Confirmation de la liste d'équipement | Prompt 06 | Sans objet : section retirée au Prompt 14 (D99) |
 | 9 | Identifiants légaux pour les mentions légales : NINEA, RCCM, adresse du siège (à saisir dans `src/content/mentions-legales.ts`) | Prompt 06 (blocs masqués tant qu'ils manquent) | En attente |
 | 10 | Validation par le client de toute la page Mentions légales, dont la durée de conservation des messages (24 mois après le dernier échange) l'adresse de l'hébergeur Vercel étant publiée depuis le Prompt 07 (D64) | Prompt 06 | En attente |
-| 11 | Accès au DNS de manaprod.com (WordPress.com) | Prompt 07 (Resend) et Prompt 14 (domaine) | Obtenu : utilisé pour Resend, à réutiliser au Prompt 14 |
+| 11 | Accès au DNS de manaprod.com (WordPress.com) | Prompt 07 (Resend) et Prompt 15 (domaine) | Obtenu : utilisé pour Resend, à réutiliser au Prompt 15 |
 | 12 | Email : adresse d'expédition et adresse de réception des demandes (Resend retenu) | Prompt 07 | En attente |
 | 13 | Adresse email de l'administrateur principal | Prompt 09 | Obtenu : premier administrateur Ziza (adresse personnelle, déclarée par SQL hors dépôt) ; Amath ajouté plus tard par le même SQL |
 | 14 | Logos des 8 clients (PNG transparent recommandé, pas de SVG) | Saisie dans le dashboard (onglet Clients, depuis le Prompt 11) | En attente |
 | 15 | Version anglaise souhaitée en V2 ? | Hors V1 | En attente |
+| 16 | Confirmation que le service est aussi proposé en anglais (« English. » dans « Nos langues » de la page Le studio) | Prompt 14 | En attente |
+| 17 | Photos de coulisses (tournages, plateau), à ajouter dans l'onglet Coulisses ; la section reste masquée sans photo | Prompt 14 | En attente |
+| 18 | Validation de la photo d'ouverture du studio (photo d'Amath NDIAYE par défaut, modifiable dans Réglages) | Prompt 14 | En attente |
 
 ## 7. Registre des migrations
 
@@ -202,6 +213,8 @@ Claude Code ne marque jamais une migration comme exécutée : seul Ziza le confi
 | 0001 (seed) | `supabase/seed/0001_seed.sql` | Données de départ : réglages, 8 projets, 8 clients, 3 membres de l'équipe. À exécuter après la migration `0001_init.sql` | Oui (2026-11-17, contrôle 1, 8, 8, 3) |
 | 0002 | `supabase/migrations/0002_contact_rate_limit.sql` | Table `contact_submissions` (empreintes d'IP des envois récents du formulaire), RLS sans policy, accès réservé à la clé service. À exécuter après `0001_init.sql` | Oui (2026-11-17) |
 | 0003 | `supabase/migrations/0003_project_photo_size.sql` | Colonnes `width` et `height` de `project_photos` (nullables, strictement positives si renseignées). À exécuter après `0002` | Oui (2026-11-17) |
+| 0004 | `supabase/migrations/0004_studio.sql` | Colonne `site_settings.studio_hero_path` (photo d'ouverture du studio), table `backstage_photos` (photos des coulisses : lecture publique, écriture `is_admin()`, GRANT, index sur `position`). À exécuter après `0003` | Non |
+| 0002 (seed) | `supabase/seed/0002_studio.sql` | Photo d'ouverture de départ (`/team/amath-ndiaye.jpg`), seulement si la colonne est vide. À exécuter après `0004_studio.sql` | Non |
 
 ## 8. Variables d'environnement
 

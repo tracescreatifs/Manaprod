@@ -5,6 +5,7 @@ export const CACHE_TAGS = {
   projects: "projects",
   clients: "clients",
   team: "team",
+  backstage: "backstage",
 } as const;
 
 /** Étiquette d'un projet précis, pour une revalidation ciblée de sa fiche. */

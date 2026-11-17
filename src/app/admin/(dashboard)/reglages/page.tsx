@@ -4,6 +4,7 @@ import { PageHead, PanelLoading } from "@/components/admin/page-head";
 import { getAdminSettings } from "@/lib/admin/settings";
 import { PasswordForm } from "./password-form";
 import { SettingsForm } from "./settings-form";
+import { StudioHeroPanel } from "./studio-hero-panel";
 
 export const metadata: Metadata = { title: "Réglages | Dashboard MANA PROD" };
 
@@ -22,6 +23,8 @@ async function SettingsContent() {
           stats: Array.isArray(s.stats) ? s.stats.map(({ value, label }) => ({ value, label })) : [],
         }}
       />
+      {/* Colonne absente tant que la migration 0004 n'est pas exécutée. */}
+      <StudioHeroPanel path={s.studio_hero_path ?? null} available={"studio_hero_path" in s} />
       <PasswordForm />
     </>
   );
@@ -30,7 +33,7 @@ async function SettingsContent() {
 export default function SettingsPage() {
   return (
     <>
-      <PageHead title="Réglages" lead="Textes du hero, chiffres clés et coordonnées affichés sur le site." />
+      <PageHead title="Réglages" lead="Textes du hero, chiffres clés, coordonnées et photo d’ouverture du studio affichés sur le site." />
       <Suspense fallback={<PanelLoading />}>
         <SettingsContent />
       </Suspense>

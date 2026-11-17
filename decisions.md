@@ -711,3 +711,18 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : Retrait du showreel et de la miniature confirmés en deux temps dans la page (`ConfirmButton`), comme le reste du dashboard (C11) ; focus replacé sur le champ du lien ou le bouton de téléversement. Dates affichées avec « 1er » pour le premier jour du mois (`formatDateFr`, `formatMessageDate`). Sur une fiche sans vidéo, la première photo est chargée tout de suite, avec une priorité haute (image principale).
 - **Raison** : Prompt 13, D ; cohérence et performance.
 - **Alternative écartée** : Aucune.
+
+## D99 : Page Le studio immersive et onglet Coulisses
+
+- **Date** : 2026-11-17 (Prompt 14)
+- **Décision** : La page `/studio` suit la maquette `docs/reference/mana-prod-studio-maquette.html` (structure, mouvement, textes), avec les ajustements validés par Ziza : photo d'ouverture d'Amath NDIAYE (et non le showreel), réglable dans Réglages (`site_settings.studio_hero_path`, fichier dans `media/studio/`, photo de départ `/team/amath-ndiaye.jpg`, jamais supprimée) ; phrase de la maquette sous le titre non reprise ; « Nos langues » avec Français, Wolof et English (anglais à confirmer par le client) ; titre de l'équipe « Ceux qui éclairent. » sans carte finale ; section « Dans les coulisses » alimentée par l'onglet Coulisses (`/admin/coulisses`, table `backstage_photos`, fichiers dans `media/backstage/`, étiquette de cache `backstage`), masquée sans photo ; section Équipement retirée partout (contenu, code, cahier v1.9, nouvelle section 6.6). Feuille de route : 14 Studio immersif et Coulisses, 15 Mise en ligne (ancien 14).
+- **Mise en œuvre** : sections rendues côté serveur et à plat par défaut ; un seul composant client (`StudioMotion`) pose `data-studio-js` et, sans mouvement réduit, `data-motion="on"`, qui active la mise en page immersive en CSS. Positions des sections mesurées au chargement et au redimensionnement (ResizeObserver), seule la position de défilement est lue à chaque image ; un seul écouteur passif, mises à jour en `requestAnimationFrame`, `transform` et `opacity` seulement. L'anneau de l'éclipse est dessiné par deux demi-plans qui tournent dans un masque SVG (géométrie du logo officiel), le disque glisse par translation. Les valeurs finales des chiffres sont dans le HTML (texte pour les lecteurs d'écran, compteur visuel masqué). Calculs purs dans `src/lib/studio.ts`, testés. Avant la migration 0004, la colonne et la table absentes sont tolérées : photo de départ, section masquée, onglet et panneau qui expliquent la migration à exécuter.
+- **Raison** : Prompt 14 ; performance (page statique, LCP sur l'image d'ouverture) et accessibilité (page lisible sans mouvement).
+- **Alternative écartée** : Framer Motion avec `useScroll` pour chaque section (plusieurs écouteurs et un rendu React à chaque image) ; showreel en ouverture (image plus lourde et sans contrôle du LCP).
+
+## D100 : Détails de la page Le studio
+
+- **Date** : 2026-11-17 (Prompt 14)
+- **Décision** : L'image d'ouverture utilise `preload` et `fetchPriority="high"` de `next/image` (`priority` est déprécié depuis Next.js 16). L'en-tête est transparent en haut de `/studio`, comme sur l'accueil, puisque la page s'ouvre sur une image plein cadre. La couleur du titre « En chiffres » suit le panneau qu'il recouvre (encre sur le panneau turquoise). Les cartes de l'équipe n'ont un bouton de dépliage que si une présentation existe ; le focus clavier sur ce bouton amène la carte à l'écran.
+- **Raison** : Conformité à la maquette, contrastes AA à toutes les positions de défilement, API actuelle de Next.js.
+- **Alternative écartée** : Aucune.

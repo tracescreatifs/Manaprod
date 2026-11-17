@@ -37,7 +37,9 @@ function HeaderContent({ pathname: currentPath }: { pathname: string | null }) {
   const headerRef = useRef<HTMLElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const isHome = pathname === "/";
+  // Pages à ouverture plein écran (accueil, Le studio) : en-tête transparent
+  // en haut de page, opaque après 60 px de défilement.
+  const isHome = pathname === "/" || pathname === "/studio";
   const solid = !isHome || scrolled;
 
   const close = useCallback((restoreFocus: boolean) => {

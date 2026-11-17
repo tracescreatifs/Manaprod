@@ -44,6 +44,8 @@ type SiteSettingsRow = {
   city: string | null;
   reply_promise: string;
   stats: SiteStat[];
+  /** Photo d'ouverture de la page Le studio (migration 0004), null si vide. */
+  studio_hero_path: string | null;
   updated_at: string;
 };
 
@@ -119,6 +121,16 @@ type ContactSubmissionsRow = {
   created_at: string;
 };
 
+type BackstagePhotosRow = {
+  id: string;
+  storage_path: string;
+  alt: string | null;
+  width: number | null;
+  height: number | null;
+  position: number;
+  created_at: string;
+};
+
 type AdminUsersRow = {
   user_id: string;
   created_at: string;
@@ -138,6 +150,7 @@ type TeamMembersInsert = InsertOf<TeamMembersRow, "name">;
 type ContactMessagesInsert = InsertOf<ContactMessagesRow, "name" | "email" | "message">;
 type ContactSubmissionsInsert = InsertOf<ContactSubmissionsRow, "ip_hash">;
 type AdminUsersInsert = InsertOf<AdminUsersRow, "user_id">;
+type BackstagePhotosInsert = InsertOf<BackstagePhotosRow, "storage_path">;
 
 type ProjectRelationship<Name extends string> = {
   foreignKeyName: Name;
@@ -200,6 +213,13 @@ export type Database = {
         Relationships: [];
       };
       // user_id référence auth.users (schéma auth, hors de ce type).
+      // Photos « Dans les coulisses » (migration 0004).
+      backstage_photos: {
+        Row: BackstagePhotosRow;
+        Insert: BackstagePhotosInsert;
+        Update: Partial<BackstagePhotosRow>;
+        Relationships: [];
+      };
       admin_users: {
         Row: AdminUsersRow;
         Insert: AdminUsersInsert;

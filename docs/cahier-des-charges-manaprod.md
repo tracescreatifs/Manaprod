@@ -1,6 +1,6 @@
 # Cahier des charges : site web MANA PROD
 
-Version 1.8 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
+Version 1.9 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
 
 ---
 
@@ -26,7 +26,7 @@ Ziza travaille uniquement en ligne : Claude Code web est connecté au dépôt Gi
 
 Règle d'or : en cas de contradiction entre ce document et les prototypes, le document prime pour le fonctionnel et la sécurité, le prototype prime pour le visuel et les textes. La contradiction est notée dans `decisions.md`.
 
-Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés depuis la version 1.4. La version 1.5 intègre la renumérotation de la feuille de route décidée au Prompt 02 (décision D36) : les numéros de prompt cités dans ce document suivent la nouvelle numérotation. La version 1.6 intègre les corrections de l'audit 1 (Prompt 08).
+Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés depuis la version 1.4. La version 1.5 intègre la renumérotation de la feuille de route décidée au Prompt 02 (décision D36) : les numéros de prompt cités dans ce document suivent la nouvelle numérotation. La version 1.6 intègre les corrections de l'audit 1 (Prompt 08). La version 1.9 intègre la page Le studio immersive, l'onglet Coulisses et la nouvelle numérotation des prompts 14 et 15 (décision D99) ; la section « Équipement » est retirée.
 
 ---
 
@@ -164,10 +164,11 @@ Point à confirmer par Ziza : la police ne doit pas faire « IA ». Les conventi
 | `/realisations` | Liste des projets avec filtres |
 | `/realisations/[slug]` | Fiche projet |
 | `/services` | Services, méthode, pourquoi Mana Prod |
-| `/studio` | Présentation, chiffres, équipe, équipement |
+| `/studio` | Page immersive : ouverture, récit, chiffres, langues, équipe, coulisses, appel final |
 | `/contact` | Contact et formulaire |
 | `/mentions-legales` | Mentions légales et confidentialité |
 | `/admin` | Dashboard (protégé) |
+| `/admin/coulisses` | Onglet Coulisses (photos de la page Le studio) |
 | `/admin/login` | Connexion |
 | `/admin/mot-de-passe-oublie` | Demande de réinitialisation du mot de passe (envoi d'un email) |
 | `/admin/nouveau-mot-de-passe` | Choix d'un nouveau mot de passe (lien reçu par email) |
@@ -176,7 +177,7 @@ Point à confirmer par Ziza : la police ne doit pas faire « IA ». Les conventi
 
 Menu : Réalisations, Services, Le studio, Contact. Aucun lien vers l'admin sur le site public : accès par URL uniquement.
 
-Jusqu'à la mise en ligne (Prompt 14), tout le site est en `noindex, nofollow`, l'URL Vercel étant publique.
+Jusqu'à la mise en ligne (Prompt 15), tout le site est en `noindex, nofollow`, l'URL Vercel étant publique.
 
 ---
 
@@ -229,11 +230,16 @@ Ordre des blocs :
 - « Pourquoi Mana Prod » : 4 arguments en deux colonnes.
 
 ### 6.6 Le studio
-- Titre, bloc de présentation (« Une signature visuelle forte. » + 2 paragraphes).
-- « En chiffres » : 4 valeurs animées (voir section 9).
-- « Français et wolof ».
-- **L'équipe** : grille de portraits 4:5 (photo, nom, titre en turquoise, présentation courte facultative). Initiales sur fond sombre si pas de photo.
-- « Équipement » : liste en deux colonnes (catégorie, détail).
+Page immersive d'après la maquette `docs/reference/mana-prod-studio-maquette.html` (structure, mouvement, textes), avec les ajustements de la décision D99. Sections dans l'ordre :
+1. **Ouverture** : photo d'ouverture (réglable dans Réglages, « Photo d'ouverture du studio » ; photo de départ : Amath NDIAYE), titre « Une signature visuelle forte. » révélé mot à mot. La phrase de la maquette sous le titre n'est pas reprise. L'image est prioritaire pour le LCP.
+2. **Récit** (« Qui sommes-nous ») : scène fixe pendant le défilement, l'éclipse du logo se forme (géométrie exacte du logo officiel) au fil de 3 phrases, indicateur de progression.
+3. **En chiffres** : panneaux plein cadre qui défilent à l'horizontale, compteurs, le troisième panneau en turquoise (un panneau sur deux s'il y en a moins de 3). La valeur finale est dans le HTML. Section masquée sans chiffres ; pas de défilement horizontal avec une seule valeur.
+4. **Nos langues** : « Français. », « Wolof. », « English. » glissent en sens opposés, puis le texte de la section 9.
+5. **L'équipe** (« Ceux qui éclairent. ») : piste horizontale menée par le défilement vertical, portraits en noir et blanc qui passent en couleur au survol ou au focus, présentation dépliée au clic ou à Entrée, carte qui reçoit le focus du clavier amenée à l'écran. Pas de carte finale.
+6. **Dans les coulisses** : photos gérées dans l'onglet Coulisses, grille éditoriale 7/5 puis 4/8 (une colonne sur mobile), dimensions réservées, visionneuse des fiches projet. Section masquée sans photo.
+7. **Appel final** « Parlons de votre projet. » : téléphone, email et promesse de réponse des Réglages, anneau en filigrane.
+
+Mouvement : un seul écouteur de défilement passif, mises à jour en `requestAnimationFrame`, `transform` et `opacity` uniquement, aucune mesure de mise en page à chaque image. Avec `prefers-reduced-motion` ou sans JavaScript, la page est à plat et toutes les valeurs finales sont visibles. Aucun défilement horizontal de la page sur mobile. Un seul `h1`, titres de section en `h2`.
 
 ### 6.7 Contact
 - Titre « Parlons de votre projet », phrase d'accroche avec la promesse de réponse.
@@ -285,19 +291,23 @@ Interface : barre du haut (logo, adresse de l'administrateur connecté, bouton d
 ### 7.4 Équipe
 - Liste ordonnable : photo (portrait, recadrée en 4:5 avec position verticale Haut, Centre ou Bas, réduite à 1000 px de large), nom, titre, présentation courte facultative (300 caractères), D86.
 
-### 7.5 Réglages
+### 7.5 Coulisses
+- Photos de la section « Dans les coulisses » de la page Le studio : téléversement multiple (réduction à 2400 px, WebP, JPEG si le WebP n'est pas disponible), texte alternatif, réordonner, supprimer (confirmation en deux temps). Fichiers dans `backstage/`, aucun fichier orphelin. Sans photo, la section est masquée sur le site.
+
+### 7.6 Réglages
 - Phrase du hero et ligne au-dessus.
 - 4 chiffres clés (valeur et libellé).
 - Coordonnées : téléphone, email, localisation, promesse de réponse.
+- Photo d'ouverture du studio : téléversement (2400 px, WebP, JPEG si le WebP n'est pas disponible, fichier dans `studio/`), aperçu, remplacement, retour à la photo de départ. Un chemin statique (`/team/...`) n'est jamais supprimé.
 - Changement du mot de passe de l'administrateur.
 
-### 7.6 Messages reçus (nouveau par rapport au prototype)
+### 7.7 Messages reçus (nouveau par rapport au prototype)
 - Liste des demandes du formulaire de contact : date, nom, organisation, email, type, message, statut « traité ».
 - Marquer comme traité, supprimer, répondre par email (lien mailto).
 - Filtres Tous, À traiter, Traités ; 30 messages par page ; nombre de messages à traiter à côté de l'onglet (D88).
 - Effacement automatique 24 mois après la réception, par la route `/api/keepalive` (D87).
 
-### 7.7 Comportement général
+### 7.8 Comportement général
 - Toute modification publiée est visible sur le site immédiatement (revalidation du cache Next.js par étiquette à chaque enregistrement).
 - Notification de succès ou d'erreur après chaque action.
 - Aucun champ ne doit perdre sa saisie lors d'un réordonnancement ou d'un ajout de ligne.
@@ -320,6 +330,7 @@ create table site_settings (
   phone text, email text, city text,
   reply_promise text default 'Réponse sous 24h',
   stats jsonb not null default '[]',      -- [{ "value": "20+", "label": "Réalisations" }, ...]
+  studio_hero_path text,                  -- photo d'ouverture du studio (migration 0004)
   updated_at timestamptz default now()
 );
 
@@ -374,6 +385,16 @@ create table team_members (
   position int not null default 0
 );
 
+-- Photos des coulisses de la page Le studio (migration 0004)
+create table backstage_photos (
+  id uuid primary key default gen_random_uuid(),
+  storage_path text not null,
+  alt text,
+  width int, height int,                  -- positives si renseignées
+  position int not null default 0,
+  created_at timestamptz default now()
+);
+
 create table contact_messages (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -392,16 +413,16 @@ create table admin_users (user_id uuid primary key references auth.users(id) on 
 **Catégories autorisées** (liste fixe, modifiable plus tard) : Film institutionnel, Film corporate, Spot publicitaire, Film publicitaire, Documentaire, Reportage industriel, Couverture événement, Motion design, Photographie, Campagne multi-supports.
 
 **Sécurité (RLS activée sur toutes les tables)**
-- Lecture publique : `site_settings`, `projects` (si `published`), `project_videos`, `project_photos`, `clients`, `team_members`.
+- Lecture publique : `site_settings`, `projects` (si `published`), `project_videos`, `project_photos`, `clients`, `team_members`, `backstage_photos`.
 - Écriture : uniquement si l'utilisateur est dans `admin_users` (fonction `is_admin()`).
 - `contact_messages` : aucune lecture ni écriture publique. L'insertion passe par la route `/api/contact` (clé service, côté serveur). Lecture et mise à jour réservées aux admins.
 - La clé service n'est jamais exposée au navigateur. Elle sert uniquement à `/api/contact` et à `/api/keepalive` (effacement des messages de plus de 24 mois, D87).
 
 **Droits d'accès (GRANT explicites)** : la migration accorde explicitement les droits, sans dépendre des réglages par défaut du projet : usage du schéma `public` pour `anon` et `authenticated` ; lecture des 6 tables de contenu pour `anon` ; lecture et écriture de ces 6 tables et de `contact_messages` pour `authenticated` ; lecture de `admin_users` pour `authenticated` ; tous les droits pour `service_role` ; exécution de `is_admin()` pour `anon` et `authenticated`. Ces droits ouvrent l'accès à l'API, la RLS reste la seule règle métier.
 
-**Stockage** : un bucket `media` public : les fichiers sont servis par leur URL publique sans policy. Par l'API de stockage, la lecture (liste des fichiers), l'ajout, le remplacement et la suppression sont réservés aux administrateurs ; aucune policy ne permet de lister le bucket publiquement. Dossiers : `projects/{id}/`, `thumbs/`, `clients/`, `team/`. Les chemins sont stockés en base, les URL sont construites côté application.
+**Stockage** : un bucket `media` public : les fichiers sont servis par leur URL publique sans policy. Par l'API de stockage, la lecture (liste des fichiers), l'ajout, le remplacement et la suppression sont réservés aux administrateurs ; aucune policy ne permet de lister le bucket publiquement. Dossiers : `projects/{id}/`, `thumbs/`, `clients/`, `team/`, `studio/`, `backstage/`. Les chemins sont stockés en base, les URL sont construites côté application.
 
-**Index** : `projects(position)`, `project_videos(project_id, position)`, `project_photos(project_id, position)`.
+**Index** : `projects(position)`, `project_videos(project_id, position)`, `project_photos(project_id, position)`, `backstage_photos(position)`.
 
 ---
 
@@ -411,11 +432,11 @@ create table admin_users (user_id uuid primary key references auth.users(id) on 
 
 **Accueil, bloc Le studio** : « Agence de production audiovisuelle à Dakar, portée par Amath NDIAYE, vidéaste et monteur professionnel. Nous réalisons des films institutionnels, des spots, des documentaires et des couvertures d'événements, de la captation à la livraison finale. »
 
-**Studio** : « Une signature visuelle forte. » Puis : « MANA PROD est une agence de production audiovisuelle basée à Dakar, portée par Amath NDIAYE, vidéaste et monteur professionnel. » Puis : « Nous créons des contenus visuels qui marquent, émeuvent et restent, pour des institutions internationales comme pour les marques les plus ambitieuses. De la captation à la livraison finale, nous maîtrisons toute la chaîne de production avec une exigence créative totale et des standards internationaux. »
+**Studio** : titre « Une signature visuelle forte. » Récit en 3 phrases : « MANA PROD est une agence de production audiovisuelle basée à Dakar, portée par Amath NDIAYE, vidéaste et monteur professionnel. » ; « Nous créons des contenus visuels qui marquent, émeuvent et restent, pour des institutions internationales comme pour les marques les plus ambitieuses. » ; « De la captation à la livraison finale, nous maîtrisons toute la chaîne de production, avec une exigence créative totale et des standards internationaux. » Équipe : « Ceux qui éclairent. » Coulisses : « Dans les coulisses. » Appel final : « Un projet en tête ? », « Parlons de votre projet. »
 
 **Chiffres (à confirmer par le client)** : 20+ Réalisations, 8+ Clients majeurs, 4K Standard de production, 24h Délai de réponse (24h retenu par défaut ; la plaquette indique 48h).
 
-**Français et wolof** : « Des contenus pensés pour le public sénégalais et ouest-africain. Nous travaillons en français et en wolof, avec la qualité des grandes agences, livrée depuis Dakar. »
+**Nos langues** : « Français. Wolof. English. » Puis : « La langue n’est pas une barrière. Nous travaillons en français, en wolof et en anglais, pour le public sénégalais, ouest-africain et international, avec la qualité des grandes agences, livrée depuis Dakar. » (service en anglais à confirmer par le client)
 
 **Services**
 1. Production vidéo : Films institutionnels, corporate, publicités, documentaires.
@@ -428,8 +449,6 @@ create table admin_users (user_id uuid primary key references auth.users(id) on 
 **Méthode** : Brief (objectif, cible et ton, un seul interlocuteur), Tournage (captation 4K, multi-caméras si besoin, lumière et son maîtrisés), Post-production (montage, étalonnage, motion design, validation à chaque étape), Livraison (livrables aux formats demandés, dans les délais convenus).
 
 **Pourquoi Mana Prod** : Qualité internationale depuis Dakar ; Un interlocuteur unique ; Réactivité et délais tenus ; Toute la chaîne maîtrisée.
-
-**Équipement** : Caméra Sony FX3 (Full Frame 4K cinématique) ; Optiques série G Master (16-35, 24-70, 85 mm) ; Stabilisation DJI Ronin RS ; Aérien drone DJI ; Éclairage Aputure 300 et 600, Amaran F22 ; Son micros directionnels et cravates sans fil ; Post-production DaVinci Resolve, Premiere Pro, After Effects ; Communication casque Hollyland.
 
 **Équipe de départ** : Amath NDIAYE (vidéaste et monteur professionnel), Babou (cadreur), Sidy SARR (motion designer). Photos fournies.
 
@@ -450,7 +469,7 @@ create table admin_users (user_id uuid primary key references auth.users(id) on 
 
 Les descriptions et livrables sont à rédiger par le client. Ne rien inventer : les blocs vides sont masqués. L'année 2026 est enregistrée pour les 8 projets, à confirmer par le client.
 
-**Textes du prototype** : quand le prototype donne une version plus détaillée qu'une liste ci-dessus (équipement, « Pourquoi Mana Prod », libellé « Votre projet » du formulaire), c'est le texte du prototype qui fait foi.
+**Textes du prototype** : quand le prototype donne une version plus détaillée qu'une liste ci-dessus (« Pourquoi Mana Prod », libellé « Votre projet » du formulaire), c'est le texte du prototype qui fait foi.
 
 ---
 
@@ -504,7 +523,7 @@ Un prompt à la fois : le suivant n'est rédigé qu'après lecture et validation
 | 03 | Données | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, route `/api/keepalive` et cron Vercel tous les 6 jours, région des fonctions Vercel à Paris (`cdg1`) dans `vercel.json` | Projet Supabase créé en région Paris (`eu-west-3`), inscriptions publiques désactivées, `0001_init.sql` puis `0001_seed.sql` exécutés et confirmés, variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `CRON_SECRET` saisies |
 | 04 | Accueil | Page d'accueil complète (section 6.2) | |
 | 05 | Réalisations et fiche projet | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | |
-| 06 | Services, Le studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité | |
+| 06 | Services, Le studio et mentions légales | Pages Services et Le studio (compteurs, équipe), page `/mentions-legales` avec section confidentialité | |
 | 07 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, emails avec Resend (notification et accusé de réception) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, sans toucher aux enregistrements MX), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` |
 | 08 | Audit 1 | Contrôle complet des prompts 01 à 07 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | |
 | 09 | Authentification | Connexion, mot de passe oublié (demande par email, nouveau mot de passe), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (il contient un identifiant de compte, il ne va pas dans le dépôt) |
@@ -512,7 +531,8 @@ Un prompt à la fois : le suivant n'est rédigé qu'après lecture et validation
 | 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | |
 | 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | |
 | 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | |
-| 14 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 de ce cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les enregistrements MX | Accès au DNS de manaprod.com |
+| 14 | Studio immersif et Coulisses | Page Le studio immersive (section 6.6), photo d'ouverture dans Réglages, onglet Coulisses, migration `0004_studio.sql` et données `0002_studio.sql`, retrait de l'équipement | Exécution de `0004_studio.sql` puis `0002_studio.sql` |
+| 15 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 de ce cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les enregistrements MX | Accès au DNS de manaprod.com |
 ---
 
 ## 14. Méthode de travail avec Claude Code
@@ -552,7 +572,7 @@ La méthode complète est dans `docs/methode-de-developpement.md` : rôles, prot
 4. **Contenus des projets** : liens YouTube, miniatures, photos, descriptions et livrables des 8 projets.
 5. **Chiffres clés** : confirmer 20+ réalisations, 8+ clients majeurs.
 6. **Équipe** : nom complet de Babou, présentations courtes éventuelles, autres membres.
-7. **Équipement** : confirmer la liste.
+7. **Langues** : confirmer que le service est aussi proposé en anglais (section « Nos langues » de la page Le studio). Fournir des photos de coulisses (onglet Coulisses).
 8. **Email** : fournisseur d'envoi (Resend retenu), adresse d'expédition, adresse de réception des demandes.
 9. **Domaine** : accès au DNS de manaprod.com (actuellement chez WordPress.com) pour le pointer vers Vercel (voir aussi le point 16).
 10. **Mentions légales** : contenu à fournir.
