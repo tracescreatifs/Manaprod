@@ -25,3 +25,37 @@ export function paragraphs(text: string | null | undefined): string[] {
     .map((p) => p.trim())
     .filter(Boolean);
 }
+
+/**
+ * Chiffre clé découpé pour l'animation : partie numérique en tête et reste
+ * conservé tel quel (« 20+ » donne 20 et « + », « 4K » donne 4 et « K »).
+ * Null si la valeur ne commence pas par un chiffre (affichée directement).
+ */
+export function parseStatValue(value: string): { number: number; suffix: string } | null {
+  const match = /^(\d+)(.*)$/.exec(value.trim());
+  if (!match) return null;
+  return { number: Number(match[1]), suffix: match[2] };
+}
+
+/** Initiales d'un nom (deux au plus), pour un portrait sans photo. */
+export function initials(name: string): string {
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "M"
+  );
+}
+
+/** Date sans heure (AAAA-MM-JJ) affichée en français, sans décalage de fuseau. */
+export function formatDateFr(date: string): string {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${date}T12:00:00`));
+}

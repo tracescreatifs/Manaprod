@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { paragraphs, plural, truncate } from "./format";
+import { formatDateFr, initials, paragraphs, parseStatValue, plural, truncate } from "./format";
 
 describe("plural", () => {
   it("singulier pour 1, pluriel au-delà", () => {
@@ -44,5 +44,45 @@ describe("paragraphs", () => {
   it("renvoie une liste vide pour un texte vide ou null", () => {
     expect(paragraphs("")).toEqual([]);
     expect(paragraphs(null)).toEqual([]);
+  });
+});
+
+describe("parseStatValue", () => {
+  it("sépare la partie numérique du reste", () => {
+    expect(parseStatValue("20+")).toEqual({ number: 20, suffix: "+" });
+    expect(parseStatValue("8+")).toEqual({ number: 8, suffix: "+" });
+    expect(parseStatValue("4K")).toEqual({ number: 4, suffix: "K" });
+    expect(parseStatValue("24h")).toEqual({ number: 24, suffix: "h" });
+    expect(parseStatValue("150")).toEqual({ number: 150, suffix: "" });
+  });
+
+  it("ignore les espaces autour", () => {
+    expect(parseStatValue(" 12 ans ")).toEqual({ number: 12, suffix: " ans" });
+  });
+
+  it("renvoie null sans chiffre en tête", () => {
+    expect(parseStatValue("HD")).toBeNull();
+    expect(parseStatValue("")).toBeNull();
+    expect(parseStatValue("+20")).toBeNull();
+  });
+});
+
+describe("initials", () => {
+  it("prend la première lettre des deux premiers mots", () => {
+    expect(initials("Amath NDIAYE")).toBe("AN");
+    expect(initials("Sidy SARR")).toBe("SS");
+    expect(initials("Babou")).toBe("B");
+    expect(initials("  jean  paul  martin ")).toBe("JP");
+  });
+
+  it("renvoie M pour un nom vide", () => {
+    expect(initials("")).toBe("M");
+  });
+});
+
+describe("formatDateFr", () => {
+  it("affiche une date en français sans décalage de fuseau", () => {
+    expect(formatDateFr("2026-11-17")).toBe("17 novembre 2026");
+    expect(formatDateFr("2027-01-01")).toBe("1 janvier 2027");
   });
 });

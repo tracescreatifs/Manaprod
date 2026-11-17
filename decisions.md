@@ -424,3 +424,31 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : Les vignettes de la maçonnerie utilisent `next/image` avec des dimensions de référence 1800 x 1200 et une hauteur automatique : l'image garde ses proportions réelles une fois chargée. La visionneuse affiche la photo en `object-contain` dans un cadre fixe.
 - **Raison** : La base ne stocke pas les dimensions des photos ; la plupart des photos de tournage sont en paysage 3:2. Les vignettes sont sous la ligne de flottaison et chargées à la demande.
 - **Alternative écartée** : Ajouter les dimensions en base (nouvelle migration, hors périmètre de ce prompt).
+
+## D58 : Textes fixes de la marque dans le code
+
+- **Date** : 2026-11-17 (Prompt 06)
+- **Décision** : Les textes des pages Services et Le studio (services, méthode, arguments, présentation, français et wolof, équipement) sont regroupés dans `src/content/marque.ts` ; les identifiants légaux et la date des mentions légales dans `src/content/mentions-legales.ts`. Ils ne sont pas en base.
+- **Raison** : Ce sont des textes stables de la marque, validés dans le prototype, que le dashboard ne prévoit pas de modifier (cahier 7) : un fichier unique de contenu les rend faciles à relire et à corriger dans un prompt, sans migration.
+- **Alternative écartée** : Tables en base et écrans d'administration pour ces textes (hors périmètre du cahier).
+
+## D59 : Première rangée d'une page sans animation d'apparition
+
+- **Date** : 2026-11-17 (Prompt 06)
+- **Décision** : Le composant `SectionRow` (rangée éditoriale du prototype) anime son apparition au défilement, sauf la première rangée d'une page (`first`), affichée directement.
+- **Raison** : La première rangée est visible dès l'ouverture : animée, elle attendait JavaScript puis 0,8 s d'animation, et son paragraphe devenait l'élément LCP (3 s mesurées sur Le studio). Sans animation : LCP de 0,8 s.
+- **Alternative écartée** : Animer toutes les rangées, comme le prototype.
+
+## D60 : Compteurs de la page Le studio
+
+- **Date** : 2026-11-17 (Prompt 06)
+- **Décision** : Chaque chiffre clé est rendu côté serveur à sa valeur finale (lisible sans JavaScript, copie unique pour les lecteurs d'écran). Dans le navigateur, sauf mouvement réduit, il repart de 0 puis monte jusqu'à la valeur en 1,3 s quand il est visible à 60 %, une seule fois, avec `animate` et `useInView` de Motion. Seule la partie numérique en tête est animée (« 20+ », « 4K », « 24h ») ; une valeur sans chiffre en tête s'affiche telle quelle.
+- **Raison** : Comportement du prototype et du cahier 4.5, avec Motion pour l'animation (CLAUDE.md), sans perte d'information sans JavaScript.
+- **Alternative écartée** : Compteur en CSS (impossible de compter un nombre sans JavaScript) ; valeur 0 rendue côté serveur (illisible sans JavaScript).
+
+## D61 : Hébergeur dans les mentions légales
+
+- **Date** : 2026-11-17 (Prompt 06)
+- **Décision** : Les mentions légales indiquent « Vercel Inc. » et le site vercel.com, sans adresse postale.
+- **Raison** : L'adresse publiée par Vercel n'a pas pu être vérifiée depuis la session de développement (site injoignable) : aucune information non vérifiée n'est publiée.
+- **Alternative écartée** : Recopier une adresse de mémoire, sans vérification.

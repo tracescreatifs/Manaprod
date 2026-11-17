@@ -1,13 +1,13 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-17, fin du Prompt 05.
+Dernière mise à jour : 2026-11-17, fin du Prompt 06.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 05 (réalisations et fiche projet). En attente de validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 06 (Services, Le studio et mentions légales), après le Go.
+- **Dernier prompt terminé** : Prompt 06 (Services, Le studio et mentions légales). En attente de validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 07 (Contact), après le Go et les prérequis (accès DNS, Resend, variables).
 - **Branche de travail** : `main` (développement, avant mise en ligne).
-- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, route `/api/keepalive` et cron, intégration continue, site entier en `noindex`.
+- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio et Mentions légales, route `/api/keepalive` et cron, intégration continue, site entier en `noindex`.
 
 ## 2. Feuille de route des prompts
 
@@ -20,8 +20,8 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 | 02 | Interface | Logo et LogoEmpile, en-tête et menu mobile, pied de page, bouton-lien, apparition au défilement, révélation mot par mot, transition entre pages, page 404, utilitaires YouTube avec tests. Sans base de données | | Fait, validé |
 | 03 | Données | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, route `/api/keepalive` et cron Vercel tous les 6 jours, région des fonctions Vercel à Paris (`cdg1`) dans `vercel.json` | Projet Supabase créé en région Paris (`eu-west-3`), inscriptions publiques désactivées, `0001_init.sql` puis `seed/0001_seed.sql` exécutés et confirmés, variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `CRON_SECRET` saisies | Fait, validé |
 | 04 | Accueil | Page d'accueil complète (section 6.2) : hero rendu côté serveur, iframe chargée ensuite, filigrane à 6 % (composant Symbole), sélection avec repli sur les 6 premiers projets publiés | | Fait, validé |
-| 05 | Réalisations et fiche projet | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | | Fait, en attente de validation |
-| 06 | Services, Le studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité (blocs NINEA, RCCM, siège masqués tant qu'ils manquent) | | À faire |
+| 05 | Réalisations et fiche projet | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | | Fait, validé |
+| 06 | Services, Le studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité (blocs NINEA, RCCM, siège masqués tant qu'ils manquent) | | Fait, en attente de validation |
 | 07 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, client Supabase service, emails avec Resend (notification et accusé de réception sans le message du visiteur) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, MX intouchés), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` | À faire |
 | 08 | Audit 1 | Contrôle complet des prompts 01 à 07 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | | À faire |
 | 09 | Authentification | Connexion, mot de passe oublié (`/admin/mot-de-passe-oublie`, `/admin/nouveau-mot-de-passe`), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (jamais commité) | À faire |
@@ -83,11 +83,18 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - Utilitaires `plural`, `truncate`, `paragraphs`, `categorySlug` et leurs tests (66 tests au total) ; `vitest.config.ts` pour l'alias `@/`.
   - Lighthouse mobile (données simulées) : accueil, Réalisations et fiche à 99 ou 100 en performance, 100 en accessibilité, LCP 0,8 s, CLS 0.
   - Décisions D53 à D57.
+- **Prompt 06** :
+  - Page `/services` : introduction, 6 services (titre turquoise au survol), « Comment nous travaillons », « Pourquoi Mana Prod », appel final.
+  - Page `/studio` : présentation, chiffres clés de `site_settings.stats` avec compteurs animés (D60), « Français et wolof », équipe (`getTeam()`, étiquette `team`, portraits 4:5, initiales sans photo), équipement, appel final.
+  - Page `/mentions-legales` : éditeur, hébergement, données et stockage, confidentialité, cookies, propriété intellectuelle, date de mise à jour ; blocs NINEA, RCCM et siège masqués tant qu'ils sont vides.
+  - Contenus fixes dans `src/content/` (D58) ; composant `SectionRow` (première rangée sans animation, D59) ; utilitaires `parseStatValue`, `initials`, `formatDateFr` et leurs tests (72 tests au total).
+  - Lighthouse mobile (données simulées) : Services, Le studio, Mentions légales et accueil à 100 en performance, accessibilité et bonnes pratiques, LCP 0,8 s, CLS 0.
+  - Décisions D58 à D61.
 
 ## 4. Reste à faire
 
-- Prompts 06 à 14 (voir la feuille de route).
-- Vérifications Ziza du Prompt 05 sur Vercel, avec le SQL de test (rapport du Prompt 05).
+- Prompts 07 à 14 (voir la feuille de route).
+- Vérifications Ziza du Prompt 06 sur Vercel (rapport du Prompt 06).
 
 ## 5. Problèmes ouverts
 
@@ -100,7 +107,7 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 | P5 | Écarts entre le cahier et le prototype du dashboard | Prompts 09 et 10 | Arbitré (D21, D22, D25, D27) : le cahier prime |
 | P6 | Délai de réponse : 24h (site, base) ou 48h (plaquette) | Prompt 06 | Arbitré (D16) : 24h par défaut, à confirmer par le client |
 | P7 | `npm audit` signale une vulnérabilité modérée (minimatch, dépendance de développement d'ESLint via `eslint-config-next` 16.4.6) ; le correctif proposé rétrograde `eslint-config-next` en 15.x | Aucun (outil de développement, absent du site déployé) | À revoir lors d'une mise à jour de `eslint-config-next` |
-| P8 | Les liens Services, Le studio, Contact (en-tête, pied de page, accueil) et Mentions légales (pied de page) mènent à la page 404 personnalisée tant que leurs pages n'existent pas ; la console affiche les 404 du préchargement automatique de ces liens. Réalisations et les fiches projet n'ouvrent plus la 404 depuis le Prompt 05 | Aucun (état transitoire attendu) | Se ferme au Prompt 06 (Services, Le studio, Mentions légales) et au Prompt 07 (Contact) |
+| P8 | Seuls les liens vers `/contact` (en-tête, pied de page, appel final « Parlons de votre projet ») mènent encore à la page 404 personnalisée ; la console affiche les 404 du préchargement automatique de ce lien. Réalisations, fiches, Services, Le studio et Mentions légales n'ouvrent plus la 404 | Aucun (état transitoire attendu) | Se ferme au Prompt 07 (Contact) |
 | P9 | Fenêtre modale du showreel : quand le focus est dans le lecteur YouTube (après un clic dans la vidéo), Échap est reçue par la page de YouTube et ne ferme pas la fenêtre | Aucun (bouton de fermeture et clic sur le fond disponibles) | Limite connue des iframes d'un autre domaine (D51), acceptée sauf avis contraire |
 | P10 | Première visite d'une adresse de fiche inexistante (`/realisations/nimporte-quoi`) : la page 404 s'affiche mais la réponse HTTP vaut 200, puis 404 aux visites suivantes (rendu en flux de Cache Components). La page porte `noindex` | Aucun pour le visiteur ; léger pour le référencement après la mise en ligne | À revoir au Prompt 13 (qualité, SEO) |
 
@@ -118,8 +125,8 @@ Section 15 du cahier des charges (version 1.5).
 | 6 | Confirmation des chiffres clés : 20+ réalisations, 8+ clients majeurs, délai de réponse 24h (la plaquette indique 48h) | Prompt 06 | En attente |
 | 7 | Équipe : nom complet de Babou, présentations courtes éventuelles, autres membres | Prompt 06 | En attente |
 | 8 | Confirmation de la liste d'équipement | Prompt 06 | En attente |
-| 9 | Identifiants légaux pour les mentions légales : NINEA, RCCM, adresse du siège | Prompt 06 (blocs masqués tant qu'ils manquent) | En attente |
-| 10 | Contenu complémentaire éventuel des mentions légales | Prompt 06 | En attente |
+| 9 | Identifiants légaux pour les mentions légales : NINEA, RCCM, adresse du siège (à saisir dans `src/content/mentions-legales.ts`) | Prompt 06 (blocs masqués tant qu'ils manquent) | En attente |
+| 10 | Validation par le client de toute la page Mentions légales, dont la durée de conservation des messages (24 mois après le dernier échange) et l'adresse de l'hébergeur Vercel (non publiée faute de vérification, D61) | Prompt 06 | En attente |
 | 11 | Accès au DNS de manaprod.com (WordPress.com), demandé dès maintenant | Prompt 07 (Resend) et Prompt 14 (domaine) | En attente |
 | 12 | Email : adresse d'expédition et adresse de réception des demandes (Resend retenu) | Prompt 07 | En attente |
 | 13 | Adresse email de l'administrateur principal | Prompt 09 | En attente |
