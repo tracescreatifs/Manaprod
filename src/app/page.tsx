@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import { ButtonLink } from "@/components/button-link";
+import { ContactCta } from "@/components/contact-cta";
 import { ClientMarquee } from "@/components/home/client-marquee";
 import { Hero } from "@/components/home/hero";
 import { Reveal } from "@/components/motion/reveal";
 import { ProjectCard } from "@/components/project-card";
 import { getClients } from "@/lib/data/clients";
 import { getHomeProjects } from "@/lib/data/projects";
-import { getSiteSettings, siteContact } from "@/lib/data/settings";
+import { getSiteSettings } from "@/lib/data/settings";
 import { mediaUrl } from "@/lib/media";
 
 export const metadata: Metadata = {
@@ -27,14 +26,6 @@ export default async function Home() {
     getHomeProjects(),
     getClients(),
   ]);
-
-  const contact = siteContact(settings);
-  const replyPromise = filled(settings?.reply_promise);
-  const ctaLine = replyPromise
-    ? [`${replyPromise}.`, [contact.phone, contact.email].filter(Boolean).join(", ")]
-        .filter(Boolean)
-        .join(" ")
-    : null;
 
   return (
     <main>
@@ -114,20 +105,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      <section className="border-t border-line py-[clamp(80px,12vw,180px)]">
-        <div className="wrap">
-          <Reveal>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-[0.3em] text-[clamp(34px,7.4vw,124px)] leading-none font-extrabold tracking-[-0.04em] text-balance transition-colors duration-[250ms] hover:text-teal"
-            >
-              Parlons de votre projet
-              <ArrowRight aria-hidden="true" className="size-[0.6em] shrink-0" strokeWidth={1.8} />
-            </Link>
-            {ctaLine ? <p className="mt-7 text-sm text-muted">{ctaLine}</p> : null}
-          </Reveal>
-        </div>
-      </section>
+      <ContactCta settings={settings} />
     </main>
   );
 }

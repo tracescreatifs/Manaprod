@@ -1,13 +1,13 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-17, fin du Prompt 04.
+Dernière mise à jour : 2026-11-17, fin du Prompt 05.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 04 (accueil complet). En attente de validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 05 (réalisations et fiche projet), après le Go.
+- **Dernier prompt terminé** : Prompt 05 (réalisations et fiche projet). En attente de validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 06 (Services, Le studio et mentions légales), après le Go.
 - **Branche de travail** : `main` (développement, avant mise en ligne).
-- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`.
+- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, route `/api/keepalive` et cron, intégration continue, site entier en `noindex`.
 
 ## 2. Feuille de route des prompts
 
@@ -19,8 +19,8 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 | 01 | Socle | Arbitrages du Prompt 00, correction de `0001_init.sql` avant exécution (GRANT, lecture du bucket), projet Next.js (App Router, TypeScript strict, lint, Tailwind), tokens de la charte, Schibsted Grotesk via `next/font`, clients Supabase serveur et navigateur sans crash si variables absentes, favicon et icônes, photos de l'équipe dans `public/team/`, site en `noindex`, page d'accueil minimale | Projet Vercel créé et relié au dépôt, `NEXT_PUBLIC_SITE_URL` saisie | Fait, validé |
 | 02 | Interface | Logo et LogoEmpile, en-tête et menu mobile, pied de page, bouton-lien, apparition au défilement, révélation mot par mot, transition entre pages, page 404, utilitaires YouTube avec tests. Sans base de données | | Fait, validé |
 | 03 | Données | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, route `/api/keepalive` et cron Vercel tous les 6 jours, région des fonctions Vercel à Paris (`cdg1`) dans `vercel.json` | Projet Supabase créé en région Paris (`eu-west-3`), inscriptions publiques désactivées, `0001_init.sql` puis `seed/0001_seed.sql` exécutés et confirmés, variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `CRON_SECRET` saisies | Fait, validé |
-| 04 | Accueil | Page d'accueil complète (section 6.2) : hero rendu côté serveur, iframe chargée ensuite, filigrane à 6 % (composant Symbole), sélection avec repli sur les 6 premiers projets publiés | | Fait, en attente de validation |
-| 05 | Réalisations et fiche projet | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | | À faire |
+| 04 | Accueil | Page d'accueil complète (section 6.2) : hero rendu côté serveur, iframe chargée ensuite, filigrane à 6 % (composant Symbole), sélection avec repli sur les 6 premiers projets publiés | | Fait, validé |
+| 05 | Réalisations et fiche projet | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | | Fait, en attente de validation |
 | 06 | Services, Le studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité (blocs NINEA, RCCM, siège masqués tant qu'ils manquent) | | À faire |
 | 07 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, client Supabase service, emails avec Resend (notification et accusé de réception sans le message du visiteur) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, MX intouchés), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` | À faire |
 | 08 | Audit 1 | Contrôle complet des prompts 01 à 07 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | | À faire |
@@ -74,11 +74,20 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - Composants `Symbole`, `YouTubeThumbnail`, `ProjectCard`, `Hero`, `HeroBackground`, `ShowreelPlayer`, `ClientMarquee` ; `WordReveal` et `LogoEmpile` supprimés (plus utilisés).
   - Lighthouse mobile de l'accueil (sans showreel, données simulées) : performance 97 à 99, accessibilité 100, bonnes pratiques 100, SEO 60 (seul échec : `noindex` voulu), LCP 0,8 s sur le titre, CLS 0.
   - Décisions D47 à D52.
+- **Prompt 05** :
+  - Miniatures YouTube servies sans l'optimisation de Vercel (D53).
+  - `getProjects()` (une requête : première vidéo, nombre de vidéos et de photos), `getProject(slug)`, `getNextProject(slug)` ; étiquettes `projects` et `project:<slug>` (`projectTag()`).
+  - Page `/realisations` : compteur, filtres des catégories utilisées reflétés dans l'URL (D54), grille éditoriale 7/5 puis 5/7, `ProjectCard` étendue (nombre de vidéos et de photos, niveau de titre).
+  - Fiche `/realisations/[slug]` : retour, titre, méta, vidéo principale en façade, description, livrables, autres vidéos, photos en maçonnerie avec visionneuse, projet suivant, message si aucun contenu ; pages prérendues (D55) ; métadonnées et image de partage par projet.
+  - Appel final partagé (`ContactCta`) entre l'accueil et Réalisations ; piégeage du focus des fenêtres modales (D56).
+  - Utilitaires `plural`, `truncate`, `paragraphs`, `categorySlug` et leurs tests (66 tests au total) ; `vitest.config.ts` pour l'alias `@/`.
+  - Lighthouse mobile (données simulées) : accueil, Réalisations et fiche à 99 ou 100 en performance, 100 en accessibilité, LCP 0,8 s, CLS 0.
+  - Décisions D53 à D57.
 
 ## 4. Reste à faire
 
-- Prompts 05 à 14 (voir la feuille de route).
-- Vérifications Ziza du Prompt 04 sur Vercel (rapport du Prompt 04).
+- Prompts 06 à 14 (voir la feuille de route).
+- Vérifications Ziza du Prompt 05 sur Vercel, avec le SQL de test (rapport du Prompt 05).
 
 ## 5. Problèmes ouverts
 
@@ -91,8 +100,9 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 | P5 | Écarts entre le cahier et le prototype du dashboard | Prompts 09 et 10 | Arbitré (D21, D22, D25, D27) : le cahier prime |
 | P6 | Délai de réponse : 24h (site, base) ou 48h (plaquette) | Prompt 06 | Arbitré (D16) : 24h par défaut, à confirmer par le client |
 | P7 | `npm audit` signale une vulnérabilité modérée (minimatch, dépendance de développement d'ESLint via `eslint-config-next` 16.4.6) ; le correctif proposé rétrograde `eslint-config-next` en 15.x | Aucun (outil de développement, absent du site déployé) | À revoir lors d'une mise à jour de `eslint-config-next` |
-| P8 | Les liens Réalisations, Services, Le studio, Contact (en-tête et pied de page) et Mentions légales (pied de page) mènent à la page 404 personnalisée tant que leurs pages n'existent pas. Conséquence : la console du navigateur affiche des erreurs 404 (préchargement automatique de ces liens par Next.js, et chargement de la page 404 elle-même) | Aucun (état transitoire attendu) | Liens concernés aussi depuis l'accueil (Le studio, Toutes les réalisations, cartes projet, Parlons de votre projet). Se ferme au fil des Prompts 05 (Réalisations), 06 (Services, Le studio, Mentions légales) et 07 (Contact) ; à fermer au Prompt 06 pour tout sauf Contact, au Prompt 07 pour Contact |
+| P8 | Les liens Services, Le studio, Contact (en-tête, pied de page, accueil) et Mentions légales (pied de page) mènent à la page 404 personnalisée tant que leurs pages n'existent pas ; la console affiche les 404 du préchargement automatique de ces liens. Réalisations et les fiches projet n'ouvrent plus la 404 depuis le Prompt 05 | Aucun (état transitoire attendu) | Se ferme au Prompt 06 (Services, Le studio, Mentions légales) et au Prompt 07 (Contact) |
 | P9 | Fenêtre modale du showreel : quand le focus est dans le lecteur YouTube (après un clic dans la vidéo), Échap est reçue par la page de YouTube et ne ferme pas la fenêtre | Aucun (bouton de fermeture et clic sur le fond disponibles) | Limite connue des iframes d'un autre domaine (D51), acceptée sauf avis contraire |
+| P10 | Première visite d'une adresse de fiche inexistante (`/realisations/nimporte-quoi`) : la page 404 s'affiche mais la réponse HTTP vaut 200, puis 404 aux visites suivantes (rendu en flux de Cache Components). La page porte `noindex` | Aucun pour le visiteur ; léger pour le référencement après la mise en ligne | À revoir au Prompt 13 (qualité, SEO) |
 
 ## 6. Contenus à fournir par le client
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Play } from "lucide-react";
 import { YouTubeThumbnail } from "@/components/youtube-thumbnail";
+import { plural } from "@/lib/format";
 import { youTubeHeroEmbedUrl } from "@/lib/youtube";
 
 const PREVIEW_DELAY = 450;
@@ -20,6 +21,9 @@ export type ProjectCardData = {
   imageUrl: string | null;
   /** Identifiant YouTube de la première vidéo. */
   videoId: string | null;
+  /** Nombre de vidéos et de photos (page Réalisations), masqués si 0. */
+  videoCount?: number;
+  photoCount?: number;
 };
 
 // Aperçu au survol seulement à la souris, sans mouvement réduit (cahier 10).
@@ -33,7 +37,16 @@ function canPreview() {
 // Carte projet (prototype .tile) : lien vers la fiche, miniature, titre et
 // ligne « client, catégorie, année ». Miniature par ordre de priorité :
 // image téléversée, miniature YouTube, sinon carte typographique.
-export function ProjectCard({ project, sizes }: { project: ProjectCardData; sizes: string }) {
+export function ProjectCard({
+  project,
+  sizes,
+  headingLevel = 3,
+}: {
+  project: ProjectCardData;
+  sizes: string;
+  /** Niveau du titre : 3 sous une section (accueil), 2 sous le titre de page. */
+  headingLevel?: 2 | 3;
+}) {
   const [preview, setPreview] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -58,6 +71,13 @@ export function ProjectCard({ project, sizes }: { project: ProjectCardData; size
   };
 
   const meta = [project.client, project.category, project.year].filter(Boolean).join(", ");
+  const counts = [
+    project.videoCount ? plural(project.videoCount, "vidéo") : null,
+    project.photoCount ? plural(project.photoCount, "photo") : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const Heading = headingLevel === 2 ? "h2" : "h3";
 
   return (
     <Link
@@ -112,11 +132,14 @@ export function ProjectCard({ project, sizes }: { project: ProjectCardData; size
         </span>
       </div>
 
-      <div className="mt-4">
-        <h3 className="text-[clamp(18px,1.7vw,24px)] leading-[1.05] font-bold tracking-[-0.01em] transition-colors duration-200 group-hover:text-teal group-focus-visible:text-teal">
-          {project.title}
-        </h3>
-        <p className="mt-1 text-sm text-muted">{meta}</p>
+      <div className="mt-4 flex flex-wrap justify-between gap-x-6 gap-y-1.5">
+        <div className="min-w-0">
+          <Heading className="text-[clamp(18px,1.7vw,24px)] leading-[1.05] font-bold tracking-[-0.01em] transition-colors duration-200 group-hover:text-teal group-focus-visible:text-teal">
+            {project.title}
+          </Heading>
+          <p className="mt-1 text-sm text-muted">{meta}</p>
+        </div>
+        {counts ? <p className="text-sm whitespace-nowrap text-muted">{counts}</p> : null}
       </div>
     </Link>
   );

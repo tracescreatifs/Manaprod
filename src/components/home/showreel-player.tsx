@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Play, X } from "lucide-react";
+import { trapTab } from "@/lib/focus-trap";
 import { youTubeEmbedUrl } from "@/lib/youtube";
 
 // Bouton du hero (cahier 6.2) et fenêtre modale du showreel avec le son.
@@ -54,6 +55,7 @@ export function ShowreelPlayer({ videoId, title }: { videoId: string; title: str
           setOpen(false);
           buttonRef.current?.focus();
         }}
+        onKeyDown={trapTab}
         onClick={(event) => {
           // Clic hors de la vidéo (sur le fond de la fenêtre) : fermeture.
           if (event.target === event.currentTarget) close();

@@ -389,3 +389,38 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : La sélection de l'accueil reprend la grille du prototype pour l'accueil (classe `.grid` : deux colonnes égales au-dessus de 820 px, une colonne en dessous). Le rythme 7/5, 5/7 (`.grid--ed`) est réservé à la page Réalisations (Prompt 05).
 - **Raison** : Le prototype prime pour le visuel : sur l'accueil, il utilise la grille à deux colonnes égales.
 - **Alternative écartée** : Rythme 7/5, 5/7 sur l'accueil aussi.
+
+## D53 : Miniatures YouTube sans l'optimisation de Vercel
+
+- **Date** : 2026-11-17 (Prompt 05)
+- **Décision** : Toutes les miniatures `i.ytimg.com` (accueil, réalisations, fiches) sont affichées avec `unoptimized` dans `YouTubeThumbnail`, dans un conteneur de ratio fixe (16:10 ou 16:9) avec `fill` : CLS nul. Les images du bucket `media` restent optimisées par `next/image`.
+- **Raison** : Le quota d'optimisation d'images de l'offre gratuite de Vercel est réservé aux images du site ; YouTube sert déjà des miniatures JPEG compressées à des tailles fixes.
+- **Alternative écartée** : Optimisation de toutes les images par Vercel (quota consommé par des images déjà légères).
+
+## D54 : Filtre de la page Réalisations dans le navigateur
+
+- **Date** : 2026-11-17 (Prompt 05)
+- **Décision** : La page Réalisations est entièrement statique : le serveur rend tous les projets publiés, le filtre par catégorie s'applique dans le navigateur. La catégorie active est écrite dans l'URL (`?categorie=film-institutionnel`, forme sans accents ni espaces) avec `history.replaceState`, et relue au chargement avec `useSyncExternalStore` (aucune lecture de `searchParams` côté serveur). Une valeur inconnue revient à « Tous ».
+- **Raison** : Moins de 40 projets : filtrer dans le navigateur est instantané et garde la page prérendue (performance, Lighthouse). L'URL permet de partager ou recharger un filtre.
+- **Alternative écartée** : Lecture de `searchParams` côté serveur (page rendue à chaque requête) ; une page par catégorie.
+
+## D55 : Paramètres statiques des fiches projet
+
+- **Date** : 2026-11-17 (Prompt 05)
+- **Décision** : `generateStaticParams` prérend la fiche de chaque projet publié. Un projet publié plus tard est rendu à sa première visite puis mis en cache. Si la liste est vide (build sans base, hors Vercel), une valeur de validation `aucun-projet` est renvoyée, car Cache Components exige au moins un paramètre ; sa page est une 404.
+- **Raison** : Pages des projets servies statiquement, sans redéploiement quand un projet est publié, et build sans variables toujours possible.
+- **Alternative écartée** : `dynamicParams = false` (un projet publié après le build resterait en 404 jusqu'au déploiement suivant).
+
+## D56 : Piégeage explicite du focus dans les fenêtres modales
+
+- **Date** : 2026-11-17 (Prompt 05)
+- **Décision** : Les fenêtres `<dialog>` (showreel, visionneuse de photos) bouclent Tab et Maj+Tab sur leurs éléments focusables (`src/lib/focus-trap.ts`), en plus du comportement natif de `showModal()`.
+- **Raison** : Sans cela, la tabulation sortait vers l'interface du navigateur avant de revenir dans la fenêtre (constaté au test de la visionneuse).
+- **Alternative écartée** : Comportement natif seul de `<dialog>`.
+
+## D57 : Dimensions des photos de projet
+
+- **Date** : 2026-11-17 (Prompt 05)
+- **Décision** : Les vignettes de la maçonnerie utilisent `next/image` avec des dimensions de référence 1800 x 1200 et une hauteur automatique : l'image garde ses proportions réelles une fois chargée. La visionneuse affiche la photo en `object-contain` dans un cadre fixe.
+- **Raison** : La base ne stocke pas les dimensions des photos ; la plupart des photos de tournage sont en paysage 3:2. Les vignettes sont sous la ligne de flottaison et chargées à la demande.
+- **Alternative écartée** : Ajouter les dimensions en base (nouvelle migration, hors périmètre de ce prompt).

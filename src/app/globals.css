@@ -116,6 +116,20 @@
   }
 }
 
+/* Grille éditoriale de la page Réalisations (prototype .grid--ed, D52) :
+   rythme 7/5 puis 5/7 au-dessus de 820 px. */
+@media (min-width: 821px) {
+  .grid-ed > li:nth-child(4n + 1),
+  .grid-ed > li:nth-child(4n + 4) {
+    grid-column: span 7;
+  }
+
+  .grid-ed > li:nth-child(4n + 2),
+  .grid-ed > li:nth-child(4n + 3) {
+    grid-column: span 5;
+  }
+}
+
 @keyframes hero-word-up {
   to {
     transform: none;
