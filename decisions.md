@@ -347,3 +347,45 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : `.github/workflows/ci.yml` : à chaque push et pull request vers `main`, Node 22, `npm ci`, lint, types, tests et build, sans aucune variable d'environnement ni secret, avec des droits en lecture seule sur le dépôt.
 - **Raison** : Vérifie automatiquement chaque push, y compris la règle « build sans secrets ».
 - **Alternative écartée** : Vérifications seulement dans la session de Claude Code (aucune trace sur GitHub).
+
+## D47 : Build Vercel sans variables Supabase : échec (complète D43)
+
+- **Date** : 2026-11-17 (Prompt 04)
+- **Décision** : D43 reste valable hors de Vercel : sans variables Supabase, un build de l'intégration continue ou un build local réussit avec un avertissement et des pages sans données. Sur Vercel (`process.env.VERCEL` vaut "1"), l'absence d'une variable fait échouer le build avec le message de `getSupabaseEnv()` (nom de la variable, où la saisir). La logique est centralisée dans `publicDataClient()` (`src/lib/data/source.ts`), utilisée par toutes les lectures publiques.
+- **Raison** : Un oubli de variable dans Vercel ne doit jamais déployer silencieusement un site sans données ; l'intégration continue doit continuer à tourner sans secret. Testé : `VERCEL=1` sans variables, échec ; sans `VERCEL` ni variables, succès avec avertissement.
+- **Alternative écartée** : Garder D43 telle quelle (déploiement possible sans données, seul signal dans les logs du build).
+
+## D48 : Hero : pas de vidéo de fond sur mobile
+
+- **Date** : 2026-11-17 (Prompt 04)
+- **Décision** : La vidéo de fond du showreel n'est chargée que sur écran large (plus de 820 px), sans `prefers-reduced-motion` et sans économiseur de données (Save-Data), après l'hydratation. Sinon, la miniature du showreel est affichée en fond avec un voile sombre. Le bouton et la fenêtre modale avec le son restent disponibles partout.
+- **Raison** : Économie de données mobiles (une vidéo en boucle consomme plusieurs mégaoctets), respect des préférences de l'utilisateur, et LCP préservé : le titre du hero reste l'élément LCP.
+- **Alternative écartée** : Vidéo de fond sur tous les écrans, comme le prototype.
+
+## D49 : Bandeau des clients en CSS
+
+- **Date** : 2026-11-17 (Prompt 04)
+- **Décision** : Le bandeau « Ils nous font confiance » défile par une animation CSS (`@keyframes marquee`), en pause au survol et au focus (bandeau focusable au clavier), avec une grille fixe sans copie quand les animations sont réduites.
+- **Raison** : Boucle infinie sans coût JavaScript, active dès le premier rendu, avant l'hydratation, comme dans le prototype.
+- **Alternative écartée** : Animation Motion (JavaScript chargé et exécuté pour une simple boucle).
+
+## D50 : Animations décoratives du hero en CSS
+
+- **Date** : 2026-11-17 (Prompt 04)
+- **Décision** : La lumière turquoise qui dérive (repli sans showreel) et l'apparition de la ligne au-dessus du titre et du bouton du showreel sont aussi en CSS, comme le titre (D41), coupées avec `prefers-reduced-motion`.
+- **Raison** : Même raison que D41 : le hero s'anime dès le premier rendu, sans attendre l'hydratation, et ne retarde pas le LCP.
+- **Alternative écartée** : Motion pour ces animations (dépendance au chargement de JavaScript dans le hero).
+
+## D51 : Fenêtre modale du showreel en élément <dialog> natif
+
+- **Date** : 2026-11-17 (Prompt 04)
+- **Décision** : La fenêtre modale utilise `<dialog>` avec `showModal()` : reste de la page inerte, focus maintenu dans la fenêtre, fermeture par Échap, par le bouton et par un clic sur le fond, retour du focus au bouton d'ouverture, défilement bloqué, iframe créée à l'ouverture et retirée à la fermeture.
+- **Raison** : Comportement d'accessibilité fourni par le navigateur, plus fiable qu'un piégeage du focus écrit à la main. Limite connue : quand le focus est à l'intérieur du lecteur YouTube (après un clic dans la vidéo), la touche Échap est reçue par la page de YouTube, d'un autre domaine, et ne ferme pas la fenêtre ; le bouton de fermeture et le clic sur le fond restent disponibles.
+- **Alternative écartée** : Fenêtre modale écrite à la main avec piégeage du focus en JavaScript (même limite avec une iframe d'un autre domaine).
+
+## D52 : Grille de la sélection de l'accueil
+
+- **Date** : 2026-11-17 (Prompt 04)
+- **Décision** : La sélection de l'accueil reprend la grille du prototype pour l'accueil (classe `.grid` : deux colonnes égales au-dessus de 820 px, une colonne en dessous). Le rythme 7/5, 5/7 (`.grid--ed`) est réservé à la page Réalisations (Prompt 05).
+- **Raison** : Le prototype prime pour le visuel : sur l'accueil, il utilise la grille à deux colonnes égales.
+- **Alternative écartée** : Rythme 7/5, 5/7 sur l'accueil aussi.

@@ -99,7 +99,7 @@ Toute autre technologie ou dépendance doit être justifiée dans `decisions.md`
 - Un chemin d'image qui commence par `/` désigne un fichier du dossier `public` (photos de l'équipe de départ, dans `public/team/`), sinon un fichier du bucket `media`.
 - Catégories autorisées (contrainte SQL) : Film institutionnel, Film corporate, Spot publicitaire, Film publicitaire, Documentaire, Reportage industriel, Couverture événement, Motion design, Photographie, Campagne multi-supports.
 - Toute modification enregistrée dans le dashboard est visible sur le site en moins de 10 secondes : revalidation du cache Next.js par étiquette à chaque enregistrement.
-- Lectures publiques : fonctions `"use cache"` de `src/lib/data/`, avec `cacheTag` (constantes de `src/lib/data/tags.ts`) et `cacheLife` explicite, via le client sans session `src/lib/supabase/public.ts`. Le client à cookies (`src/lib/supabase/server.ts`) n'est jamais utilisé dans une fonction `"use cache"`.
+- Lectures publiques : fonctions `"use cache"` de `src/lib/data/`, avec `cacheTag` (constantes de `src/lib/data/tags.ts`) et `cacheLife` explicite, via `publicDataClient()` (`src/lib/data/source.ts`, client sans session `src/lib/supabase/public.ts`), qui applique la règle des variables absentes (D43, D47). Toute URL d'image tirée d'un chemin en base passe par `mediaUrl()` (`src/lib/media.ts`). Le client à cookies (`src/lib/supabase/server.ts`) n'est jamais utilisé dans une fonction `"use cache"`.
 
 ### Code et contenu
 - TypeScript strict, composants serveur par défaut, Server Actions pour le dashboard, validation avec zod.

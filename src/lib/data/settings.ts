@@ -1,7 +1,6 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { getSupabaseEnv, isBuildPhase, readSupabaseEnv } from "@/lib/env";
-import { createPublicClient } from "@/lib/supabase/public";
+import { dataError, publicDataClient } from "@/lib/data/source";
 import { CACHE_TAGS } from "@/lib/data/tags";
 import { telHref } from "@/lib/phone";
 import type { Tables } from "@/types/database";
@@ -10,28 +9,17 @@ export type SiteSettings = Tables<"site_settings">;
 
 /**
  * Réglages du site (ligne unique de site_settings), mis en cache.
- * Renvoie null si la ligne n'existe pas.
- *
- * Variables Supabase absentes (décision D43) :
- * - pendant le build : avertissement dans les logs et null, la page est
- *   prérendue sans les blocs qui dépendent de la base ;
- * - à l'exécution : erreur claire, jamais masquée.
+ * Renvoie null si la ligne n'existe pas, ou pendant un build hors de Vercel
+ * sans variables Supabase (voir publicDataClient).
  */
 export async function getSiteSettings(): Promise<SiteSettings | null> {
   "use cache";
   cacheTag(CACHE_TAGS.settings);
   cacheLife("max");
 
-  // Hors build, getSupabaseEnv() lève l'erreur explicite sur la variable manquante.
-  const env = readSupabaseEnv() ?? (isBuildPhase() ? null : getSupabaseEnv());
-  if (!env) {
-    console.warn(
-      "[MANA PROD] Variables Supabase absentes pendant le build : pages prérendues sans les réglages de la base. En production, saisissez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY dans Vercel puis redéployez.",
-    );
-    return null;
-  }
+  const supabase = publicDataClient();
+  if (!supabase) return null;
 
-  const supabase = createPublicClient(env);
   const { data, error } = await supabase
     .from("site_settings")
     .select("*")
@@ -39,7 +27,7 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Lecture des réglages du site impossible (Supabase) : ${error.message}`);
+    throw dataError("des réglages du site", error.message);
   }
   return data;
 }

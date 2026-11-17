@@ -23,6 +23,11 @@ export function isBuildPhase(): boolean {
   return process.env.NEXT_PHASE === "phase-production-build";
 }
 
+// Vrai sur les serveurs de build et d'exécution de Vercel.
+export function isVercel(): boolean {
+  return process.env.VERCEL === "1";
+}
+
 export function getSupabaseEnv(): { url: string; anonKey: string } {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

@@ -64,9 +64,13 @@ export function extractYouTubeId(input: string | null | undefined): string | nul
 
 const BASE_PARAMS = "rel=0&modestbranding=1&playsinline=1&iv_load_policy=3";
 
-/** URL du lecteur youtube-nocookie.com (fiches projet, fenêtre modale). */
-export function youTubeEmbedUrl(id: string): string {
-  return `https://www.youtube-nocookie.com/embed/${id}?${BASE_PARAMS}`;
+/**
+ * URL du lecteur youtube-nocookie.com (fiches projet, fenêtre modale).
+ * Option autoplay : lecture immédiate avec le son, après un clic du visiteur.
+ */
+export function youTubeEmbedUrl(id: string, options: { autoplay?: boolean } = {}): string {
+  const autoplay = options.autoplay ? "&autoplay=1" : "";
+  return `https://www.youtube-nocookie.com/embed/${id}?${BASE_PARAMS}${autoplay}`;
 }
 
 /** URL du lecteur du hero : muet, en boucle, sans contrôles. */

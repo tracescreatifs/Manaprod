@@ -2,4 +2,6 @@
 // la revalidation après un enregistrement dans le dashboard (Prompt 09).
 export const CACHE_TAGS = {
   settings: "settings",
+  projects: "projects",
+  clients: "clients",
 } as const;

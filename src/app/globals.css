@@ -70,6 +70,84 @@
   padding-inline: clamp(20px, 4vw, 64px);
 }
 
+/* Accueil, hero (décision D41) : titre révélé mot par mot en CSS, sans
+   attendre l'hydratation. Chaque mot monte derrière un masque, 60 ms de
+   décalage par mot (variable --i). */
+@layer components {
+  .hero-word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+
+  .hero-word > span {
+    display: inline-block;
+    transform: translateY(112%);
+    animation: hero-word-up 1s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: calc(0.3s + var(--i, 0) * 60ms);
+  }
+
+  /* Ligne au-dessus du titre et bouton du showreel (prototype .rise). */
+  .hero-rise {
+    animation: hero-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  /* Repli sans showreel : lumière turquoise qui dérive lentement. */
+  .hero-glow {
+    animation: hero-drift 16s ease-in-out infinite alternate;
+  }
+
+  /* Bandeau des clients (décision D49) : boucle infinie en CSS, en pause au
+     survol et au focus. La durée est donnée par la variable --mq-duration. */
+  .marquee-track {
+    animation: marquee var(--mq-duration, 40s) linear infinite;
+  }
+
+  .marquee:hover .marquee-track,
+  .marquee:focus-within .marquee-track,
+  .marquee:focus .marquee-track {
+    animation-play-state: paused;
+  }
+
+  .marquee {
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+}
+
+@keyframes hero-word-up {
+  to {
+    transform: none;
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-18vw, 16vh) scale(1.25);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 /* Animations réduites : les éléments animés (attribut data-reveal) s'affichent
    directement, sans mouvement ni fondu. */
 @media (prefers-reduced-motion: reduce) {
@@ -80,6 +158,34 @@
 
   html {
     scroll-behavior: auto;
+  }
+
+  .hero-word > span,
+  .hero-rise,
+  .hero-glow {
+    animation: none;
+    transform: none;
+  }
+
+  /* Bandeau des clients : grille fixe, sans duplication ni fondu. */
+  .marquee {
+    mask-image: none;
+  }
+
+  .marquee-track {
+    animation: none;
+    width: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .marquee-track [aria-hidden="true"] {
+    display: none;
+  }
+
+  .marquee-track > ul {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
 

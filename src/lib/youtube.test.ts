@@ -79,6 +79,19 @@ describe("URL générées", () => {
     );
   });
 
+  it("lecteur standard sans autoplay par défaut", () => {
+    expect(youTubeEmbedUrl(ID, {})).toBe(youTubeEmbedUrl(ID));
+    expect(youTubeEmbedUrl(ID, { autoplay: false })).not.toContain("autoplay");
+  });
+
+  it("lecteur avec autoplay, sans couper le son", () => {
+    const url = new URL(youTubeEmbedUrl(ID, { autoplay: true }));
+    expect(url.origin).toBe("https://www.youtube-nocookie.com");
+    expect(url.searchParams.get("autoplay")).toBe("1");
+    expect(url.searchParams.get("rel")).toBe("0");
+    expect(url.searchParams.has("mute")).toBe(false);
+  });
+
   it("lecteur du hero : muet, en boucle, sans contrôles", () => {
     const url = new URL(youTubeHeroEmbedUrl(ID));
     expect(url.origin).toBe("https://www.youtube-nocookie.com");
