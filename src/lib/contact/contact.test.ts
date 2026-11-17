@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { acknowledgementEmail, notificationEmail } from "./emails";
 import { escapeHtml, escapeMultiline } from "./escape";
 import { clientIp, deriveIpHashKey, hashIp } from "./ip-hash";
+import { PURGE_AFTER_MS, RATE_LIMIT, RATE_WINDOW_MS, isRateLimited } from "./rate-limit";
 import { isHoneypotFilled, parseContact } from "./schema";
 
 const valid = {
@@ -152,5 +153,19 @@ describe("emails", () => {
     const mail = acknowledgementEmail({ name: "Awa", replyPromise: null, phone: null });
     expect(mail.text).not.toContain("appeler");
     expect(mail.text).toContain("elle nous est bien parvenue.\n");
+  });
+});
+
+describe("limitation des envois", () => {
+  it("accepte jusqu'à 5 envois par heure, refuse le 6e", () => {
+    expect(RATE_LIMIT).toBe(5);
+    expect(RATE_WINDOW_MS).toBe(3_600_000);
+    for (let recent = 0; recent < 5; recent++) expect(isRateLimited(recent)).toBe(false);
+    expect(isRateLimited(5)).toBe(true);
+    expect(isRateLimited(12)).toBe(true);
+  });
+
+  it("purge les envois de plus de 24 heures", () => {
+    expect(PURGE_AFTER_MS).toBe(86_400_000);
   });
 });

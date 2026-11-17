@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import { getSupabaseEnv } from "@/lib/env";
+import { getSupabaseEnv, missingVariableError } from "@/lib/env";
 import { deriveIpHashKey } from "@/lib/contact/ip-hash";
 import type { Database } from "@/types/database";
 
@@ -11,11 +11,7 @@ import type { Database } from "@/types/database";
 
 function serviceRoleKey(): string {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) {
-    throw new Error(
-      "Variable d'environnement manquante : SUPABASE_SERVICE_ROLE_KEY. Ajoutez-la dans Vercel (Settings, Environment Variables), puis redéployez le site.",
-    );
-  }
+  if (!key) throw missingVariableError("SUPABASE_SERVICE_ROLE_KEY");
   return key;
 }
 

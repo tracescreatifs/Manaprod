@@ -16,7 +16,11 @@ export default function Template({ children }: { children: ReactNode }) {
   }, []);
 
   return (
+    // Cible du lien d'évitement « Aller au contenu » (layout).
     <motion.div
+      id="contenu"
+      tabIndex={-1}
+      className="outline-none"
       data-reveal=""
       initial={animate ? { opacity: 0, y: 14 } : false}
       animate={{ opacity: 1, y: 0 }}

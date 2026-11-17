@@ -174,6 +174,13 @@
     scroll-behavior: auto;
   }
 
+  /* Transitions (survols, fondus) quasi instantanées, comme le prototype. */
+  *,
+  ::before,
+  ::after {
+    transition-duration: 0.01ms !important;
+  }
+
   .hero-word > span,
   .hero-rise,
   .hero-glow {

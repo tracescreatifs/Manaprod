@@ -480,3 +480,31 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : `zod` 4.6.7 (validation partagée entre le navigateur et le serveur) et `resend` 6.38.1 (SDK officiel d'envoi des emails). Versions exactes dans `package.json`.
 - **Raison** : Choix de la stack (CLAUDE.md) ; versions stables les plus récentes au 17 novembre 2026.
 - **Alternative écartée** : Validation écrite à la main ; appels HTTP directs à l'API de Resend.
+
+## D66 : Limite du formulaire portée à 5 envois par heure (complète D62)
+
+- **Date** : 2026-11-17 (Prompt 08)
+- **Décision** : La limite du formulaire de contact passe de 3 à 5 envois par heure glissante et par empreinte d'IP. Les constantes et la règle sont regroupées dans `src/lib/contact/rate-limit.ts`, couvert par les tests.
+- **Raison** : Les opérateurs mobiles sénégalais partagent souvent une même adresse IP entre de nombreux abonnés : 3 envois risquaient de bloquer de vrais visiteurs.
+- **Alternative écartée** : Garder 3 envois par heure (D62).
+
+## D67 : En-têtes de sécurité HTTP
+
+- **Date** : 2026-11-17 (Prompt 08)
+- **Décision** : Toutes les réponses portent `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin` et `Permissions-Policy: camera=(), microphone=(), geolocation=()` (`next.config.ts`). Les réponses JSON de `/api/contact` portent `Cache-Control: no-store`. Une politique de sécurité du contenu (CSP) complète est reportée au Prompt 13.
+- **Raison** : Protection de base sans effet sur le site : aucune page n'a besoin d'être intégrée dans un cadre, et la politique de référent reste celle par défaut des navigateurs, compatible avec les lecteurs YouTube.
+- **Alternative écartée** : Aucun en-tête (situation avant l'audit) ; CSP complète dès maintenant (à régler finement avec YouTube, Supabase et les styles de Next.js).
+
+## D68 : Page d'erreur du site
+
+- **Date** : 2026-11-17 (Prompt 08)
+- **Décision** : `src/app/error.tsx` affiche, dans la charte de la page 404, « Une erreur est survenue », un bouton « Réessayer » et un lien vers l'accueil, quand une page ne peut pas être rendue (base de données indisponible par exemple).
+- **Raison** : Sans elle, le visiteur voyait la page d'erreur brute de Next.js.
+- **Alternative écartée** : Page d'erreur par défaut de Next.js.
+
+## D69 : Lectures mises en cache sans erreur levée dans le cache
+
+- **Date** : 2026-11-17 (Prompt 08)
+- **Décision** : Chaque lecture publique est découpée en deux : une fonction `"use cache"` qui passe par `cachedRead()` (`src/lib/data/source.ts`) et renvoie un résultat (données, ou message d'erreur), puis une fonction publique qui appelle `unwrap()` et lève l'erreur hors du cache. `cacheLife` est conditionnel : `max` en cas de succès, `seconds` en cas d'échec (l'échec n'est pas gardé). `getNextProject()` n'a plus de cache propre : il est calculé à partir de `getProjects()`.
+- **Raison** : Constaté à l'audit : une erreur levée à l'intérieur d'une fonction `"use cache"` pendant un rendu à la demande (fiche d'un projet publié après le build, base indisponible) bloquait la réponse au visiteur plus de 110 s, jusqu'au délai maximal de Vercel. Avec ce découpage, la page d'erreur répond immédiatement ; une erreur au build fait toujours échouer le build (jamais avalée, D43, D47).
+- **Alternative écartée** : Lever l'erreur dans la fonction mise en cache (réponse bloquée) ; avaler l'erreur et renvoyer des données vides (erreur masquée).

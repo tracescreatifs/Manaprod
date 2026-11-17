@@ -42,6 +42,13 @@ export default function RootLayout({
         <noscript>
           <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
         </noscript>
+        {/* Lien d'évitement : premier élément atteint au clavier. */}
+        <a
+          href="#contenu"
+          className="sr-only z-50 bg-teal px-4 py-3 font-semibold text-ink focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+        >
+          Aller au contenu
+        </a>
         <SiteHeader />
         {children}
         <SiteFooter />

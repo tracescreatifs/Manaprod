@@ -1,16 +1,13 @@
 import "server-only";
 import { Resend } from "resend";
+import { missingVariableError } from "@/lib/env";
 
 // Envoi des emails avec Resend (D03). Variables lues seulement à l'envoi :
 // le build et le prérendu n'en ont pas besoin.
 
 function required(name: "RESEND_API_KEY" | "CONTACT_TO_EMAIL" | "CONTACT_FROM_EMAIL"): string {
   const value = process.env[name];
-  if (!value) {
-    throw new Error(
-      `Variable d'environnement manquante : ${name}. Ajoutez-la dans Vercel (Settings, Environment Variables), puis redéployez le site.`,
-    );
-  }
+  if (!value) throw missingVariableError(name);
   return value;
 }
 

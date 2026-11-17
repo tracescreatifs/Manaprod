@@ -103,17 +103,20 @@ export default async function ContactPage() {
             <h2 className="text-[15px] font-semibold text-muted">Et ensuite</h2>
             <ol className="grid gap-2.5 text-base text-[#C5D3D6]">
               {[
-                "Nous vous répondons sous 24h.",
+                // Délai lu dans les réglages, étape masquée s'il est vide.
+                replyPromise ? `${replyPromise}.` : null,
                 "Un échange court pour cadrer le brief, le budget et le calendrier.",
                 "Une proposition claire, puis le tournage.",
-              ].map((step, i) => (
-                <li key={step} className="grid grid-cols-[28px_minmax(0,1fr)]">
-                  <span aria-hidden="true" className="font-bold text-teal">
-                    {i + 1}
-                  </span>
-                  <span>{step}</span>
-                </li>
-              ))}
+              ]
+                .filter((step): step is string => Boolean(step))
+                .map((step, i) => (
+                  <li key={step} className="grid grid-cols-[28px_minmax(0,1fr)]">
+                    <span aria-hidden="true" className="font-bold text-teal">
+                      {i + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
             </ol>
           </div>
         </div>

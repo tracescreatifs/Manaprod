@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { connection } from "next/server";
-import { getSupabaseEnv } from "@/lib/env";
+import { getSupabaseEnv, missingVariableError } from "@/lib/env";
 import { createPublicClient } from "@/lib/supabase/public";
 
 // Maintien de la base active (cahier 3, décision D08) : appelée par Vercel Cron
@@ -20,11 +20,7 @@ export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
     return Response.json(
-      {
-        ok: false,
-        error:
-          "Variable d'environnement manquante : CRON_SECRET. Ajoutez-la dans Vercel (Settings, Environment Variables), puis redéployez le site.",
-      },
+      { ok: false, error: missingVariableError("CRON_SECRET").message },
       { status: 500 },
     );
   }

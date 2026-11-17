@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { acknowledgementEmail, notificationEmail } from "@/lib/contact/emails";
 import { clientIp, hashIp } from "@/lib/contact/ip-hash";
+import { PURGE_AFTER_MS, RATE_WINDOW_MS, isRateLimited } from "@/lib/contact/rate-limit";
 import { isHoneypotFilled, parseContact, type ContactErrors } from "@/lib/contact/schema";
 import { getSiteSettings } from "@/lib/data/settings";
 import { getMailer } from "@/lib/email";
@@ -12,9 +13,6 @@ import { createServiceClient, ipHashKey } from "@/lib/supabase/service";
 // /contact pour l'envoi classique sans JavaScript.
 
 const MAX_BODY_BYTES = 32_000;
-const RATE_LIMIT = 3;
-const RATE_WINDOW_MS = 60 * 60 * 1000;
-const PURGE_AFTER_MS = 24 * 60 * 60 * 1000;
 
 type Outcome =
   | { status: 200; anchor: "demande-envoyee" }
@@ -28,38 +26,39 @@ const LIMIT_MESSAGE =
 const SERVER_MESSAGE =
   "Votre demande n’a pas pu être enregistrée. Merci de réessayer, ou de nous contacter directement par téléphone ou par email.";
 
-async function readBody(request: Request): Promise<Record<string, unknown> | null> {
+// Corps de la requête, limité à MAX_BODY_BYTES même sans en-tête
+// content-length. JSON (envoi en JavaScript) ou formulaire classique.
+async function readBody(
+  request: Request,
+): Promise<Record<string, unknown> | "trop-long" | "format"> {
+  const declared = Number(request.headers.get("content-length") ?? 0);
+  if (declared > MAX_BODY_BYTES) return "trop-long";
+  const raw = await request.text();
+  if (new TextEncoder().encode(raw).length > MAX_BODY_BYTES) return "trop-long";
+
   const type = request.headers.get("content-type") ?? "";
   if (type.includes("application/json")) {
-    const json: unknown = await request.json();
-    return json && typeof json === "object" && !Array.isArray(json)
-      ? (json as Record<string, unknown>)
-      : {};
+    try {
+      const json: unknown = JSON.parse(raw);
+      return json && typeof json === "object" && !Array.isArray(json)
+        ? (json as Record<string, unknown>)
+        : {};
+    } catch {
+      return {};
+    }
   }
-  if (type.includes("application/x-www-form-urlencoded") || type.includes("multipart/form-data")) {
-    const form = await request.formData();
-    const data: Record<string, unknown> = {};
-    form.forEach((value, key) => {
-      if (typeof value === "string") data[key] = value;
-    });
-    return data;
+  if (type.includes("application/x-www-form-urlencoded")) {
+    return Object.fromEntries(new URLSearchParams(raw));
   }
-  return null;
+  return "format";
 }
 
 async function handle(request: Request): Promise<Outcome> {
-  const length = Number(request.headers.get("content-length") ?? 0);
-  if (length > MAX_BODY_BYTES) {
+  const body = await readBody(request);
+  if (body === "trop-long") {
     return { status: 413, anchor: "demande-incomplete", message: "Votre message est trop long." };
   }
-
-  let body: Record<string, unknown> | null;
-  try {
-    body = await readBody(request);
-  } catch {
-    body = {};
-  }
-  if (!body) {
+  if (body === "format") {
     return { status: 415, anchor: "demande-incomplete", message: "Format d’envoi non pris en charge." };
   }
 
@@ -79,7 +78,7 @@ async function handle(request: Request): Promise<Outcome> {
     return { status: 500, anchor: "demande-erreur", message: SERVER_MESSAGE };
   }
 
-  // c. Limitation : au plus 3 envois par empreinte d'IP sur une heure glissante.
+  // c. Limitation : au plus 5 envois par empreinte d'IP sur une heure glissante (D66).
   const ipHash = hashIp(clientIp(request.headers), ipHashKey());
   const since = new Date(Date.now() - RATE_WINDOW_MS).toISOString();
   const { count, error: countError } = await supabase
@@ -91,7 +90,7 @@ async function handle(request: Request): Promise<Outcome> {
     console.error(`[MANA PROD] Contact : lecture des envois récents impossible (${countError.message}).`);
     return { status: 500, anchor: "demande-erreur", message: SERVER_MESSAGE };
   }
-  if ((count ?? 0) >= RATE_LIMIT) {
+  if (isRateLimited(count ?? 0)) {
     return { status: 429, anchor: "demande-limite", message: LIMIT_MESSAGE };
   }
 
@@ -203,5 +202,8 @@ export async function POST(request: Request) {
       : "message" in outcome
         ? { message: outcome.message }
         : {};
-  return Response.json({ ok: outcome.status === 200, ...payload }, { status: outcome.status });
+  return Response.json(
+    { ok: outcome.status === 200, ...payload },
+    { status: outcome.status, headers: { "Cache-Control": "no-store" } },
+  );
 }

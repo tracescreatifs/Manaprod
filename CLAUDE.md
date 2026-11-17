@@ -4,7 +4,7 @@ Ce fichier est lu au début de chaque prompt. Il résume les règles tirées de 
 
 ## 1. Le projet
 
-Site vitrine de MANA PROD, agence de production audiovisuelle à Dakar dirigée par Amath NDIAYE. Six pages publiques et un dashboard d'administration protégé.
+Site vitrine de MANA PROD, agence de production audiovisuelle à Dakar dirigée par Amath NDIAYE. Sept pages publiques (dont les mentions légales) et un dashboard d'administration protégé.
 
 | Route | Rôle |
 |---|---|
@@ -14,8 +14,11 @@ Site vitrine de MANA PROD, agence de production audiovisuelle à Dakar dirigée 
 | `/services` | Services, méthode, pourquoi Mana Prod |
 | `/studio` | Présentation, chiffres, équipe, équipement |
 | `/contact` | Contact et formulaire |
+| `/mentions-legales` | Mentions légales et confidentialité |
 | `/admin` | Dashboard (protégé) |
 | `/admin/login` | Connexion |
+| `/admin/mot-de-passe-oublie` | Demande de réinitialisation du mot de passe |
+| `/admin/nouveau-mot-de-passe` | Choix d'un nouveau mot de passe |
 | `/api/contact` | Réception du formulaire |
 | `/api/keepalive` | Maintien de la base active (cron tous les 6 jours) |
 
@@ -100,7 +103,7 @@ Toute autre technologie ou dépendance doit être justifiée dans `decisions.md`
 - Un chemin d'image qui commence par `/` désigne un fichier du dossier `public` (photos de l'équipe de départ, dans `public/team/`), sinon un fichier du bucket `media`.
 - Catégories autorisées (contrainte SQL) : Film institutionnel, Film corporate, Spot publicitaire, Film publicitaire, Documentaire, Reportage industriel, Couverture événement, Motion design, Photographie, Campagne multi-supports.
 - Toute modification enregistrée dans le dashboard est visible sur le site en moins de 10 secondes : revalidation du cache Next.js par étiquette à chaque enregistrement.
-- Lectures publiques : fonctions `"use cache"` de `src/lib/data/`, avec `cacheTag` (constantes de `src/lib/data/tags.ts`) et `cacheLife` explicite, via `publicDataClient()` (`src/lib/data/source.ts`, client sans session `src/lib/supabase/public.ts`), qui applique la règle des variables absentes (D43, D47). Toute URL d'image tirée d'un chemin en base passe par `mediaUrl()` (`src/lib/media.ts`). Le client à cookies (`src/lib/supabase/server.ts`) n'est jamais utilisé dans une fonction `"use cache"`.
+- Lectures publiques : fonctions `"use cache"` de `src/lib/data/`, avec `cacheTag` (constantes de `src/lib/data/tags.ts`) et `cacheLife` explicite, via `publicDataClient()` (`src/lib/data/source.ts`, client sans session `src/lib/supabase/public.ts`), qui applique la règle des variables absentes (D43, D47). Une fonction `"use cache"` ne lève jamais d'erreur : elle passe par `cachedRead()` (résultat succès ou échec, `cacheLife` conditionnel) et la fonction publique appelle `unwrap()` hors du cache (D69). Toute URL d'image tirée d'un chemin en base passe par `mediaUrl()` (`src/lib/media.ts`). Le client à cookies (`src/lib/supabase/server.ts`) n'est jamais utilisé dans une fonction `"use cache"`.
 
 ### Code et contenu
 - TypeScript strict, composants serveur par défaut, Server Actions pour le dashboard, validation avec zod.

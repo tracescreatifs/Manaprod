@@ -1,6 +1,6 @@
 # Cahier des charges : site web MANA PROD
 
-Version 1.5 | 16 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
+Version 1.6 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
 
 ---
 
@@ -26,7 +26,7 @@ Ziza travaille uniquement en ligne : Claude Code web est connecté au dépôt Gi
 
 Règle d'or : en cas de contradiction entre ce document et les prototypes, le document prime pour le fonctionnel et la sécurité, le prototype prime pour le visuel et les textes. La contradiction est notée dans `decisions.md`.
 
-Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés depuis la version 1.4. La version 1.5 intègre la renumérotation de la feuille de route décidée au Prompt 02 (décision D36) : les numéros de prompt cités dans ce document suivent la nouvelle numérotation.
+Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés depuis la version 1.4. La version 1.5 intègre la renumérotation de la feuille de route décidée au Prompt 02 (décision D36) : les numéros de prompt cités dans ce document suivent la nouvelle numérotation. La version 1.6 intègre les corrections de l'audit 1 (Prompt 08).
 
 ---
 
@@ -95,7 +95,7 @@ Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase | Prompt 03 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (lecture) | Prompt 03 |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clé service, serveur uniquement, jamais dans une variable `NEXT_PUBLIC_`. Seul usage : insertion des messages de contact | Prompt 07 |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clé service, serveur uniquement, jamais dans une variable `NEXT_PUBLIC_`. Seul usage : formulaire de contact (enregistrement des messages et limitation des envois, D62, D66) | Prompt 07 |
 | `NEXT_PUBLIC_SITE_URL` | URL du site (prévisualisation puis manaprod.com) | Prompt 01 |
 | `CRON_SECRET` | Protège la route `/api/keepalive` | Prompt 03 |
 | `RESEND_API_KEY` | Envoi des emails | Prompt 07 |
@@ -247,7 +247,7 @@ Ordre des blocs :
 Logo, courte description, liens, coordonnées, signature, mention © 2026 Mana Prod.
 
 ### 6.9 Pages techniques
-404 personnalisée, `robots.txt`, `sitemap.xml`, favicon.
+404 personnalisée, page d'erreur dans la même charte (D68), lien d'évitement « Aller au contenu » sur chaque page, `robots.txt`, `sitemap.xml`, favicon.
 
 **Mentions légales** (`/mentions-legales`, Prompt 06), avec une section confidentialité, rédigées avec les informations connues : éditeur Mana Prod, hébergeur Vercel, base de données Supabase, données collectées par le formulaire de contact, finalité, durée de conservation, droits des personnes selon la loi sénégalaise n° 2008-12 sur la protection des données à caractère personnel. Les identifiants légaux (NINEA, RCCM, adresse du siège) sont à fournir par le client ; tant qu'ils manquent, leurs blocs sont masqués.
 

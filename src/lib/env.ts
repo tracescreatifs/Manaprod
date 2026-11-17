@@ -4,7 +4,8 @@
 // Les variables NEXT_PUBLIC_ sont lues par leur nom complet pour que Next.js
 // puisse les intégrer au code du navigateur.
 
-function missing(name: string): Error {
+/** Erreur claire pour une variable d'environnement absente (message unique). */
+export function missingVariableError(name: string): Error {
   return new Error(
     `Variable d'environnement manquante : ${name}. Ajoutez-la dans Vercel (Settings, Environment Variables), puis redéployez le site.`,
   );
@@ -31,8 +32,8 @@ export function isVercel(): boolean {
 export function getSupabaseEnv(): { url: string; anonKey: string } {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url) throw missing("NEXT_PUBLIC_SUPABASE_URL");
-  if (!anonKey) throw missing("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  if (!url) throw missingVariableError("NEXT_PUBLIC_SUPABASE_URL");
+  if (!anonKey) throw missingVariableError("NEXT_PUBLIC_SUPABASE_ANON_KEY");
   return { url, anonKey };
 }
 
