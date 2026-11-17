@@ -140,7 +140,7 @@ export function PhotoGallery({
           onClick={close}
           aria-label="Fermer la visionneuse"
           autoFocus
-          className="absolute top-4 right-4 z-10 grid size-12 place-items-center border border-line bg-bg-2 transition-colors hover:border-teal hover:text-teal"
+          className="absolute top-4 right-4 z-10 grid size-12 place-items-center rounded-full border border-line bg-bg-2 transition-colors hover:border-teal hover:text-teal"
         >
           <X size={20} strokeWidth={1.8} />
         </button>
@@ -164,7 +164,7 @@ export function PhotoGallery({
               type="button"
               onClick={() => go(-1)}
               aria-label="Photo précédente"
-              className="absolute top-1/2 left-4 z-10 grid size-12 -translate-y-1/2 place-items-center border border-line bg-bg-2 transition-colors hover:border-teal hover:text-teal"
+              className="absolute top-1/2 left-4 z-10 grid size-12 -translate-y-1/2 place-items-center rounded-full border border-line bg-bg-2 transition-colors hover:border-teal hover:text-teal"
             >
               <ArrowLeft size={20} strokeWidth={1.8} />
             </button>
@@ -172,7 +172,7 @@ export function PhotoGallery({
               type="button"
               onClick={() => go(1)}
               aria-label="Photo suivante"
-              className="absolute top-1/2 right-4 z-10 grid size-12 -translate-y-1/2 place-items-center border border-line bg-bg-2 transition-colors hover:border-teal hover:text-teal"
+              className="absolute top-1/2 right-4 z-10 grid size-12 -translate-y-1/2 place-items-center rounded-full border border-line bg-bg-2 transition-colors hover:border-teal hover:text-teal"
             >
               <ArrowRight size={20} strokeWidth={1.8} />
             </button>

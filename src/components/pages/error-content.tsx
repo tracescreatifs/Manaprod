@@ -20,7 +20,7 @@ export function ErrorContent({ retry }: { retry: () => void }) {
         <button
           type="button"
           onClick={() => retry()}
-          className="inline-flex min-h-[52px] items-center border border-line px-[22px] text-base font-semibold transition-colors hover:border-teal hover:text-teal"
+          className="inline-flex min-h-14 items-center rounded-full border border-line px-6 text-base font-semibold transition-colors hover:border-teal hover:text-teal"
         >
           Réessayer
         </button>

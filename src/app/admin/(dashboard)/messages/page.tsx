@@ -40,8 +40,8 @@ async function MessagesContent({ searchParams }: { searchParams: SearchParams })
             key={f.value}
             href={href(f.value)}
             aria-current={f.value === filter ? "page" : undefined}
-            className={`inline-flex min-h-11 items-center border px-4 text-sm font-semibold no-underline transition-colors ${
-              f.value === filter ? "border-teal bg-bg-3 text-teal" : "border-line text-muted hover:border-teal hover:text-text"
+            className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold no-underline transition-colors ${
+              f.value === filter ? "border-text bg-text text-ink" : "border-line text-muted hover:border-muted hover:text-text"
             }`}
           >
             {f.label}

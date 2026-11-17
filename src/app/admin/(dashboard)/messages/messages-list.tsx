@@ -53,7 +53,7 @@ export function MessagesList({ messages }: { messages: ContactMessage[] }) {
                     {m.name}
                   </h2>
                   <span
-                    className={`inline-block border px-2 py-1 text-xs leading-none font-semibold ${
+                    className={`inline-block rounded-full border px-2.5 py-1 text-xs leading-none font-semibold ${
                       m.handled ? "border-line text-muted" : "border-teal text-teal"
                     }`}
                   >

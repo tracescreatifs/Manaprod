@@ -39,7 +39,7 @@ function HeaderContent({ pathname: currentPath }: { pathname: string | null }) {
 
   // Pages à ouverture plein écran (accueil, Le studio) : en-tête transparent
   // en haut de page, opaque après 60 px de défilement.
-  const isHome = pathname === "/" || pathname === "/studio";
+  const isHome = pathname === "/" || pathname === "/studio" || pathname === "/contact";
   const solid = !isHome || scrolled;
 
   const close = useCallback((restoreFocus: boolean) => {
@@ -171,7 +171,7 @@ function HeaderContent({ pathname: currentPath }: { pathname: string | null }) {
           aria-controls="menu-mobile"
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           onClick={() => setOpen((value) => !value)}
-          className="relative z-10 grid size-11 place-items-center border border-line text-text min-[821px]:hidden"
+          className="relative z-10 grid size-11 place-items-center rounded-full border border-line text-text min-[821px]:hidden"
         >
           {open ? <X size={22} strokeWidth={1.8} /> : <Menu size={22} strokeWidth={1.8} />}
         </button>

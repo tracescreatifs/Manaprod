@@ -6,12 +6,24 @@ import { PROJECT_CATEGORIES } from "@/types/database";
 
 export const PROJECT_TYPES = [...PROJECT_CATEGORIES, "Autre"] as const;
 
+// Questions complémentaires du formulaire par étapes (Prompt 15, D101) :
+// listes fermées, posées seulement pour le type concerné.
+export const EVENT_TYPE = "Couverture événement" as const;
+export const PHOTO_TYPE = "Photographie" as const;
+export const EVENT_DURATIONS = ["Une demi-journée", "Une journée", "Plusieurs jours"] as const;
+export const PHOTO_KINDS = ["Reportage", "Portraits corporate", "Photographie produit", "Plusieurs"] as const;
+/** Réponses proposées à « Pour quand ? » (le champ reste un texte libre de 60 caractères). */
+export const WHEN_CHOICES = ["Ce mois-ci", "Dans 1 à 3 mois", "Plus tard", "Je ne sais pas encore"] as const;
+
 export const CONTACT_FIELDS = [
   "name",
   "organization",
   "email",
   "projectType",
   "desiredDate",
+  "eventDuration",
+  "eventDate",
+  "photoKind",
   "message",
 ] as const;
 export type ContactField = (typeof CONTACT_FIELDS)[number];
@@ -71,6 +83,18 @@ export const contactSchema = z.object({
     optional,
     z.string().max(60, { error: "La date souhaitée ne doit pas dépasser 60 caractères." }).optional(),
   ),
+  eventDuration: z.preprocess(
+    optional,
+    z.enum(EVENT_DURATIONS, { error: "Choisissez une durée dans la liste." }).optional(),
+  ),
+  eventDate: z.preprocess(
+    optional,
+    z.string().max(60, { error: "La date de l’événement ne doit pas dépasser 60 caractères." }).optional(),
+  ),
+  photoKind: z.preprocess(
+    optional,
+    z.enum(PHOTO_KINDS, { error: "Choisissez un type de photos dans la liste." }).optional(),
+  ),
   message: z.preprocess(
     block,
     z
@@ -102,4 +126,25 @@ export function parseContact(
 export function isHoneypotFilled(input: Record<string, unknown>): boolean {
   const value = input[HONEYPOT_FIELD];
   return typeof value === "string" && value.trim() !== "";
+}
+
+/**
+ * Demande telle qu'elle est enregistrée et notifiée (D101). Les réponses
+ * complémentaires ne valent que pour leur type de projet ; elles sont placées
+ * en tête du message (« Durée : Une journée »), sans compter dans la longueur
+ * minimale du texte saisi, déjà validée. La date de l'événement remplace la
+ * réponse « Pour quand ? » pour une couverture d'événement.
+ */
+export function composeRequest(data: ContactInput): {
+  desiredDate: string | undefined;
+  details: string[];
+  message: string;
+} {
+  const details: string[] = [];
+  if (data.projectType === EVENT_TYPE && data.eventDuration) details.push(`Durée : ${data.eventDuration}`);
+  if (data.projectType === PHOTO_TYPE && data.photoKind) details.push(`Type de photos : ${data.photoKind}`);
+  const desiredDate =
+    data.projectType === EVENT_TYPE && data.eventDate ? data.eventDate : data.desiredDate;
+  const message = details.length > 0 ? `${details.join("\n")}\n\n${data.message}` : data.message;
+  return { desiredDate, details, message };
 }

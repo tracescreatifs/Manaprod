@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import { acknowledgementEmail, notificationEmail } from "@/lib/contact/emails";
 import { clientIp, hashIp } from "@/lib/contact/ip-hash";
 import { PURGE_AFTER_MS, RATE_WINDOW_MS, isRateLimited } from "@/lib/contact/rate-limit";
-import { isHoneypotFilled, parseContact, type ContactErrors } from "@/lib/contact/schema";
+import { composeRequest, isHoneypotFilled, parseContact, type ContactErrors } from "@/lib/contact/schema";
 import { getSiteSettings } from "@/lib/data/settings";
 import { getMailer } from "@/lib/email";
 import { createServiceClient, ipHashKey } from "@/lib/supabase/service";
@@ -110,14 +110,15 @@ async function handle(request: Request): Promise<Outcome> {
     console.error(`[MANA PROD] Contact : purge des envois anciens impossible (${purgeError.message}).`);
   }
 
-  // d. Enregistrement du message.
+  // d. Enregistrement du message (réponses complémentaires en tête, D101).
+  const stored = composeRequest(data);
   const { error: insertError } = await supabase.from("contact_messages").insert({
     name: data.name,
     organization: data.organization ?? null,
     email: data.email,
     project_type: data.projectType ?? null,
-    desired_date: data.desiredDate ?? null,
-    message: data.message,
+    desired_date: stored.desiredDate ?? null,
+    message: stored.message,
   });
   if (insertError) {
     console.error(`[MANA PROD] Contact : enregistrement du message impossible (${insertError.message}).`);

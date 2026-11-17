@@ -1,6 +1,6 @@
 # Cahier des charges : site web MANA PROD
 
-Version 1.9 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
+Version 1.10 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
 
 ---
 
@@ -26,7 +26,7 @@ Ziza travaille uniquement en ligne : Claude Code web est connecté au dépôt Gi
 
 Règle d'or : en cas de contradiction entre ce document et les prototypes, le document prime pour le fonctionnel et la sécurité, le prototype prime pour le visuel et les textes. La contradiction est notée dans `decisions.md`.
 
-Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés depuis la version 1.4. La version 1.5 intègre la renumérotation de la feuille de route décidée au Prompt 02 (décision D36) : les numéros de prompt cités dans ce document suivent la nouvelle numérotation. La version 1.6 intègre les corrections de l'audit 1 (Prompt 08). La version 1.9 intègre la page Le studio immersive, l'onglet Coulisses et la nouvelle numérotation des prompts 14 et 15 (décision D99) ; la section « Équipement » est retirée.
+Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés depuis la version 1.4. La version 1.5 intègre la renumérotation de la feuille de route décidée au Prompt 02 (décision D36) : les numéros de prompt cités dans ce document suivent la nouvelle numérotation. La version 1.6 intègre les corrections de l'audit 1 (Prompt 08). La version 1.9 intègre la page Le studio immersive, l'onglet Coulisses et la nouvelle numérotation des prompts 14 et 15 (décision D99) ; la section « Équipement » est retirée. La version 1.10 intègre la règle d'identité « carré pour ce qu'on filme, rond pour ce qu'on touche », la page Contact orientée conversion et la nouvelle numérotation des prompts 15 et 16 (décision D101).
 
 ---
 
@@ -141,8 +141,9 @@ Point à confirmer par Ziza : la police ne doit pas faire « IA ». Les conventi
 
 ### 4.4 Principes de design
 - Éditorial : grands titres, filets fins de 1 px, grandes images, très peu de couleurs.
-- Angles droits : boutons, champs et cartes sans arrondi (le bouton play du hero est carré).
-- Boutons-liens : cadre fin + carré blanc contenant une flèche, qui passe au turquoise au survol.
+- **Carré pour ce qu'on filme, rond pour ce qu'on touche** (remplace la règle « angles droits partout », D101). Restent à angles droits : vidéos, photos, miniatures, cartes de projet, panneaux, champs de formulaire, fenêtres modales (le cadre de la caméra). Deviennent ronds (l'objectif) : boutons d'action en pilule (principal : fond turquoise, texte `#04161A`, flèche dans un cercle `#04161A` ; secondaire : pilule à contour fin), boutons d'icône en cercle parfait (lecture, flèches et fermeture des visionneuses et fenêtres, menu mobile, retour), filtres, étiquettes et compteurs en pilule (filtre actif : fond clair, texte foncé). Le dashboard suit la même règle.
+- Boutons-liens : pilule secondaire à contour fin, flèche dans un cercle clair, qui passe au turquoise au survol.
+- Curseur anneau sur le site public, seulement avec une souris et sans mouvement réduit : anneau turquoise qui suit la souris avec un léger retard et s'agrandit sur ce qui se clique ; le curseur natif reste visible.
 - Aucun soulignement décoratif sous les liens.
 
 ### 4.5 Mouvement (Framer Motion)
@@ -177,7 +178,7 @@ Point à confirmer par Ziza : la police ne doit pas faire « IA ». Les conventi
 
 Menu : Réalisations, Services, Le studio, Contact. Aucun lien vers l'admin sur le site public : accès par URL uniquement.
 
-Jusqu'à la mise en ligne (Prompt 15), tout le site est en `noindex, nofollow`, l'URL Vercel étant publique.
+Jusqu'à la mise en ligne (Prompt 16), tout le site est en `noindex, nofollow`, l'URL Vercel étant publique.
 
 ---
 
@@ -242,12 +243,14 @@ Page immersive d'après la maquette `docs/reference/mana-prod-studio-maquette.ht
 Mouvement : un seul écouteur de défilement passif, mises à jour en `requestAnimationFrame`, `transform` et `opacity` uniquement, aucune mesure de mise en page à chaque image. Avec `prefers-reduced-motion` ou sans JavaScript, la page est à plat et toutes les valeurs finales sont visibles. Aucun défilement horizontal de la page sur mobile. Un seul `h1`, titres de section en `h2`.
 
 ### 6.7 Contact
-- Titre « Parlons de votre projet », phrase d'accroche avec la promesse de réponse.
-- Colonne gauche : lignes téléphone (bouton WhatsApp à côté, lien `https://wa.me/221780114308`), email (bouton Copier), localisation. Bloc « Et ensuite » en 3 étapes.
-- Colonne droite : formulaire dans un panneau : Nom, Organisation, Email, Type de projet (liste des catégories + Autre), Date souhaitée (facultatif), Message.
+Page orientée conversion d'après la maquette `docs/reference/mana-prod-contact-maquette.html` (D101) : obtenir des demandes qualifiées. Sections dans l'ordre :
+1. **Ouverture plein écran** : diaporama des photos des coulisses (même source que l'onglet Coulisses), fondu toutes les 5 secondes avec léger zoom lent, légende (texte alternatif) et indicateurs, bouton pause rond, pause quand l'onglet est masqué ; sans photo, photo d'ouverture du studio fixe ; mouvement réduit : première photo fixe. Titre « Parlons de votre projet. » révélé mot à mot, « Il est HH:MM à Dakar » en direct (calculé dans le navigateur) et promesse de réponse ; boutons « Décrire mon projet » et « WhatsApp » (lien construit à partir du numéro en base).
+2. **Formulaire « Décrivez votre projet. »** en étapes conditionnelles : type de projet (catégories et Autre) ; si Photographie : type de photos puis « Pour quand ? » ; si Couverture événement : durée puis date de l'événement ; sinon « Pour quand ? » ; enfin « Votre projet » (exemple adapté au type), Nom, Organisation, Email. Un choix avance seul, bouton Retour, réponses récapitulées en pilules, anneau de l'éclipse qui se remplit selon le nombre réel d'étapes, « Étape N sur M » annoncé aux lecteurs d'écran, confirmation dans la page. Sans JavaScript : toutes les questions en un seul formulaire classique.
+3. **Données envoyées** (sans migration) : type de projet, date souhaitée (réponse « Pour quand ? » ou date de l'événement), réponses complémentaires (durée, type de photos) en listes fermées placées en tête du message (« Durée : Une journée »), hors de la longueur minimale du texte saisi.
+4. **« Vous préférez parler directement ? »** : Appeler, WhatsApp, Email (avec Copier), en grands boutons ronds.
+5. **« Et ensuite »** : « Trois étapes, pas plus. », frise de 3 étapes reliées (la première reprend la promesse de réponse).
 - Validation : nom, email valide et message obligatoires, message d'erreur clair.
 - **Envoi (évolution par rapport au prototype)** : enregistrement en base + email de notification à l'adresse de contact + accusé de réception au visiteur. L'accusé de réception ne reprend jamais le contenu du message du visiteur (pour qu'il ne puisse pas servir de relais de spam). Anti-spam : champ piège (honeypot), limitation de débit par IP, validation serveur. La limitation s'appuie sur une table des envois récents (migration `0002_`, Prompt 07) qui ne stocke qu'une empreinte (hachage) de l'IP, jamais l'IP en clair, avec purge des lignes anciennes et sans service externe.
-- Message de confirmation dans la page après envoi.
 
 ### 6.8 Pied de page
 Logo, courte description, liens, coordonnées, signature, mention © 2026 Mana Prod.
@@ -532,7 +535,8 @@ Un prompt à la fois : le suivant n'est rédigé qu'après lecture et validation
 | 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | |
 | 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | |
 | 14 | Studio immersif et Coulisses | Page Le studio immersive (section 6.6), photo d'ouverture dans Réglages, onglet Coulisses, migration `0004_studio.sql` et données `0002_studio.sql`, retrait de l'équipement | Exécution de `0004_studio.sql` puis `0002_studio.sql` |
-| 15 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 de ce cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les enregistrements MX | Accès au DNS de manaprod.com |
+| 15 | Contact et règle d'identité | Page Contact orientée conversion (section 6.7), formulaire par étapes, règle « carré pour ce qu'on filme, rond pour ce qu'on touche » sur tout le site et le dashboard (section 4.4), curseur anneau | Exécution de `0004_studio.sql` et `0002_studio.sql` confirmée |
+| 16 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 de ce cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les enregistrements MX | Accès au DNS de manaprod.com |
 ---
 
 ## 14. Méthode de travail avec Claude Code

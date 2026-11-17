@@ -36,7 +36,11 @@ export function CopyEmail({ email }: { email: string }) {
       ok = false;
     }
     if (!ok) ok = copyWithFallback(email);
-    setStatus(ok ? "Adresse copiée" : `Copie impossible : sélectionnez l’adresse ${email}`);
+    setStatus(
+      ok
+        ? "Adresse copiée"
+        : `Copie impossible : sélectionnez l’adresse ${email}`,
+    );
   };
 
   return (
@@ -49,7 +53,10 @@ export function CopyEmail({ email }: { email: string }) {
       >
         Copier
       </button>
-      <p role="status" className={status ? "col-span-full text-sm text-teal" : "sr-only"}>
+      <p
+        role="status"
+        className={status ? "col-span-full text-sm text-teal" : "sr-only"}
+      >
         {status}
       </p>
     </>

@@ -57,7 +57,7 @@ export function VideoFacade({
             />
             <span
               aria-hidden="true"
-              className="absolute bottom-[clamp(16px,2vw,28px)] left-[clamp(16px,2vw,28px)] grid size-16 place-items-center bg-text text-ink transition-colors duration-200 group-hover:bg-teal group-focus-visible:bg-teal"
+              className="absolute bottom-[clamp(16px,2vw,28px)] left-[clamp(16px,2vw,28px)] grid size-16 place-items-center rounded-full bg-text text-ink transition-colors duration-200 group-hover:bg-teal group-focus-visible:bg-teal"
             >
               <Play size={22} strokeWidth={1.8} fill="currentColor" />
             </span>

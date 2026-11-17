@@ -1,5 +1,5 @@
 import { escapeHtml, escapeMultiline } from "@/lib/contact/escape";
-import type { ContactInput } from "@/lib/contact/schema";
+import { composeRequest, type ContactInput } from "@/lib/contact/schema";
 import { SIGNATURE } from "@/lib/site";
 
 // Contenu des deux emails du formulaire de contact (cahier 6.7, D28).
@@ -12,7 +12,10 @@ const WRAP_START =
 const WRAP_END = "</div>";
 
 /** Notification envoyée à Mana Prod, avec toutes les informations saisies. */
-export function notificationEmail(data: ContactInput): EmailContent {
+export function notificationEmail(input: ContactInput): EmailContent {
+  // Même texte que le message enregistré : réponses complémentaires en tête (D101).
+  const composed = composeRequest(input);
+  const data = { ...input, desiredDate: composed.desiredDate, message: composed.message };
   const type = data.projectType ?? "type non précisé";
   const rows: [string, string][] = [
     ["Nom", data.name],

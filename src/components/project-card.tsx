@@ -126,7 +126,7 @@ export function ProjectCard({
 
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-3.5 left-3.5 z-10 inline-flex translate-y-1.5 items-center gap-2 bg-text px-3 py-[9px] text-[13px] leading-none font-semibold text-ink opacity-0 transition-[opacity,transform] duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 [@media(hover:none)]:hidden"
+          className="pointer-events-none absolute bottom-3.5 left-3.5 z-10 inline-flex translate-y-1.5 items-center gap-2 rounded-full bg-text px-3.5 py-[9px] text-[13px] leading-none font-semibold text-ink opacity-0 transition-[opacity,transform] duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 [@media(hover:none)]:hidden"
         >
           Voir le projet <ArrowRight size={14} strokeWidth={1.8} />
         </span>
@@ -154,7 +154,7 @@ function TypographicCover({ client }: { client: string }) {
       aria-hidden="true"
       className="absolute inset-0 bg-[linear-gradient(135deg,#10191D_0%,#1a2b32_100%)]"
     >
-      <span className="absolute top-1/2 left-1/2 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center border border-[#35505a] text-[#4b6872]">
+      <span className="absolute top-1/2 left-1/2 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-[#35505a] text-[#4b6872]">
         <Play size={20} strokeWidth={1.8} />
       </span>
       <span className="absolute bottom-[clamp(12px,1.4vw,20px)] left-[clamp(14px,1.6vw,24px)] text-[clamp(20px,2.6vw,40px)] leading-none font-extrabold tracking-[-0.03em] text-[#35505a]">

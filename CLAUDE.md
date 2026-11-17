@@ -13,7 +13,7 @@ Site vitrine de MANA PROD, agence de production audiovisuelle à Dakar dirigée 
 | `/realisations/[slug]` | Fiche projet |
 | `/services` | Services, méthode, pourquoi Mana Prod |
 | `/studio` | Page immersive : ouverture, récit, chiffres, langues, équipe, coulisses, appel final (D99) |
-| `/contact` | Contact et formulaire |
+| `/contact` | Contact orienté conversion : ouverture sur les coulisses, formulaire par étapes, contact direct, « Et ensuite » (D101) |
 | `/mentions-legales` | Mentions légales et confidentialité |
 | `/admin` | Dashboard (protégé), ouvre `/admin/showreel` |
 | `/admin/showreel`, `/admin/projets`, `/admin/clients`, `/admin/equipe`, `/admin/coulisses`, `/admin/reglages`, `/admin/messages` | Onglets du dashboard (un onglet, une adresse, D73), dans l'ordre du cahier |
@@ -124,7 +124,7 @@ Toute autre technologie ou dépendance doit être justifiée dans `decisions.md`
 - Tokens : `--bg #0A1013`, `--bg-2 #10191D`, `--bg-3 #18262C`, `--line #223239`, `--text #EDF2F3`, `--muted #8FA3A8`, `--teal #2EC4CF` (accent unique), `--teal-hi #5AD6DF`, `--ink #04161A` (texte sur turquoise), `--danger #FF7A6B`.
 - Un seul accent turquoise. Pas de dégradés décoratifs, sauf la lumière animée du hero de repli. Aucun rendu « AI slop » : pas de dégradés violets, pas de cartes arrondies à ombres, pas de typographie générique, pas de textes creux.
 - Schibsted Grotesk (400 à 900), interlettrage `-0.035em` sur les grands titres, corps 18 px.
-- Angles droits partout (boutons, champs, cartes). Filets de 1 px. Boutons-liens : cadre fin et carré blanc avec flèche, qui passe au turquoise au survol. Aucun soulignement décoratif.
+- Carré pour ce qu'on filme, rond pour ce qu'on touche (D101) : vidéos, photos, miniatures, cartes, panneaux, champs et fenêtres à angles droits ; boutons en pilule (principal `.btn` turquoise avec flèche dans un cercle `#04161A`, secondaire `.btn--ghost` ou `ButtonLink`), boutons d'icône en cercle (`.round`, `iconBtn`), filtres et étiquettes en pilule (`.pill`, actif : fond clair, texte foncé), même règle dans le dashboard (`src/components/admin/ui.ts`). Curseur anneau (`CursorRing`) sur le site public, seulement avec une souris et sans mouvement réduit. Filets de 1 px. Aucun soulignement décoratif.
 - Logo Éclipse : composant `Logo` (horizontal) dans l'en-tête, le pied de page et le dashboard, textes en `currentColor`, anneau `#2EC4CF`, disque `#060A0C`. Ne jamais colorer MANA ou PROD en turquoise, ne jamais déformer le logo, ne jamais utiliser la version avec halo hors écran.
 
 ### Vérifications et blocages
@@ -176,5 +176,5 @@ La branche à utiliser est toujours écrite explicitement dans chaque prompt. Pa
 - `/admin` et toutes ses Server Actions vérifient la session et l'appartenance à `admin_users` côté serveur, à chaque appel.
 - `/api/contact` : validation zod, champ piège, limitation de débit par IP, longueurs maximales, aucun HTML non échappé dans les emails.
 - `/api/keepalive` : protégée par `CRON_SECRET` (en-tête `Authorization: Bearer`).
-- Dashboard exclu de l'indexation (`robots.txt` et `noindex`). Aucun lien public vers `/admin`. Jusqu'à la mise en ligne (Prompt 15), tout le site est en `noindex, nofollow` : `INDEXING_ENABLED` reste à `false` (D92). En-têtes HSTS et CSP dans `next.config.ts` (D95) : toute nouvelle source externe (script, image, iframe, connexion) doit y être ajoutée et justifiée.
+- Dashboard exclu de l'indexation (`robots.txt` et `noindex`). Aucun lien public vers `/admin`. Jusqu'à la mise en ligne (Prompt 16), tout le site est en `noindex, nofollow` : `INDEXING_ENABLED` reste à `false` (D92). En-têtes HSTS et CSP dans `next.config.ts` (D95) : toute nouvelle source externe (script, image, iframe, connexion) doit y être ajoutée et justifiée.
 - Le SQL de déclaration d'un administrateur contient un identifiant de compte : il est fourni dans le rapport, jamais commité.

@@ -55,7 +55,7 @@ export function ProjectGrid({
       <div
         role="group"
         aria-label="Filtrer par catégorie"
-        className="mt-[clamp(32px,4vw,56px)] flex flex-wrap gap-x-7 gap-y-1.5"
+        className="mt-[clamp(32px,4vw,56px)] flex flex-wrap gap-2.5"
       >
         {filters.map((filter) => {
           const pressed = filter.value === active;
@@ -65,10 +65,10 @@ export function ProjectGrid({
               type="button"
               aria-pressed={pressed}
               onClick={() => writeParam(filter.value ? categorySlug(filter.value) : null)}
-              className={`inline-flex min-h-11 items-center border-b text-[15px] leading-[1.3] font-medium transition-colors duration-200 ${
+              className={`inline-flex min-h-[46px] items-center rounded-full border px-5 text-[15px] leading-[1.3] transition-colors duration-200 ${
                 pressed
-                  ? "border-teal text-text"
-                  : "border-transparent text-muted hover:text-text"
+                  ? "border-text bg-text font-semibold text-ink"
+                  : "border-line font-medium text-muted hover:border-muted hover:text-text"
               }`}
             >
               {filter.label}

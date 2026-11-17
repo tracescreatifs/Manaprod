@@ -38,7 +38,7 @@ export function ShowreelPlayer({ videoId, title }: { videoId: string; title: str
       >
         <span
           aria-hidden="true"
-          className="grid size-[60px] shrink-0 place-items-center border border-text transition-colors duration-200 group-hover:bg-text group-hover:text-ink group-focus-visible:bg-text group-focus-visible:text-ink"
+          className="grid size-[60px] shrink-0 place-items-center rounded-full border border-text transition-colors duration-200 group-hover:bg-text group-hover:text-ink group-focus-visible:bg-text group-focus-visible:text-ink"
         >
           <Play size={20} strokeWidth={1.8} fill="currentColor" />
         </span>
@@ -67,7 +67,7 @@ export function ShowreelPlayer({ videoId, title }: { videoId: string; title: str
           onClick={close}
           aria-label="Fermer la vidéo"
           autoFocus
-          className="absolute top-4 right-4 z-10 grid size-12 place-items-center border border-line bg-bg-2 transition-colors hover:border-teal hover:text-teal"
+          className="absolute top-4 right-4 z-10 grid size-12 place-items-center rounded-full border border-line bg-bg-2 transition-colors hover:border-teal hover:text-teal"
         >
           <X size={20} strokeWidth={1.8} />
         </button>

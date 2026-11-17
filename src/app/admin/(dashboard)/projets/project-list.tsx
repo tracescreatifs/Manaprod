@@ -71,14 +71,14 @@ export function ProjectList({ initial }: { initial: AdminProjectRow[] }) {
                 <small className="block text-sm break-words text-muted">{p.title}</small>
                 <span className="mt-1.5 flex flex-wrap gap-1.5">
                   <span
-                    className={`inline-block border px-2 py-1 text-xs leading-none font-semibold ${
+                    className={`inline-block rounded-full border px-2.5 py-1 text-xs leading-none font-semibold ${
                       p.published ? "border-teal text-teal" : "border-line text-muted"
                     }`}
                   >
                     {p.published ? "Publié" : "Brouillon"}
                   </span>
                   {p.featured ? (
-                    <span className="inline-block border border-line px-2 py-1 text-xs leading-none font-semibold text-text">
+                    <span className="inline-block rounded-full border border-line px-2.5 py-1 text-xs leading-none font-semibold text-text">
                       À la une
                     </span>
                   ) : null}

@@ -3,7 +3,7 @@ import { acknowledgementEmail, notificationEmail } from "./emails";
 import { escapeHtml, escapeMultiline } from "./escape";
 import { clientIp, deriveIpHashKey, hashIp } from "./ip-hash";
 import { PURGE_AFTER_MS, RATE_LIMIT, RATE_WINDOW_MS, isRateLimited } from "./rate-limit";
-import { isHoneypotFilled, parseContact } from "./schema";
+import { composeRequest, isHoneypotFilled, parseContact } from "./schema";
 
 const valid = {
   name: "  Awa   Diop ",
@@ -71,6 +71,56 @@ describe("parseContact", () => {
   it("ignore les champs inconnus", () => {
     const r = parseContact({ ...valid, admin: "oui" });
     expect(r.ok && "admin" in r.data).toBe(false);
+  });
+});
+
+describe("questions complémentaires (D101)", () => {
+  const base = { name: "Awa", email: "awa@exemple.sn", message: "Couverture de notre forum annuel à Dakar." };
+
+  it("accepte les listes fermées et refuse une valeur hors liste", () => {
+    expect(parseContact({ ...base, projectType: "Couverture événement", eventDuration: "Une journée" }).ok).toBe(true);
+    expect(parseContact({ ...base, projectType: "Photographie", photoKind: "Portraits corporate" }).ok).toBe(true);
+    const r = parseContact({ ...base, eventDuration: "Deux heures", photoKind: "Mariage", eventDate: "x".repeat(61) });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(Object.keys(r.errors).sort()).toEqual(["eventDate", "eventDuration", "photoKind"]);
+  });
+
+  it("place la durée en tête du message et prend la date de l’événement", () => {
+    const r = parseContact({
+      ...base,
+      projectType: "Couverture événement",
+      eventDuration: "Une journée",
+      eventDate: " 12 et 13 décembre ",
+      desiredDate: "Ce mois-ci",
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(composeRequest(r.data)).toEqual({
+      desiredDate: "12 et 13 décembre",
+      details: ["Durée : Une journée"],
+      message: "Durée : Une journée\n\nCouverture de notre forum annuel à Dakar.",
+    });
+  });
+
+  it("ignore une réponse qui ne correspond pas au type choisi", () => {
+    const r = parseContact({ ...base, projectType: "Documentaire", eventDuration: "Une journée", photoKind: "Reportage", eventDate: "Mai", desiredDate: "Plus tard" });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(composeRequest(r.data)).toEqual({ desiredDate: "Plus tard", details: [], message: base.message });
+  });
+
+  it("les réponses ne comptent pas dans la longueur minimale du texte saisi", () => {
+    const r = parseContact({ ...base, projectType: "Photographie", photoKind: "Plusieurs", message: "Trop court" });
+    expect(r.ok).toBe(false);
+  });
+
+  it("notification : type de photos en tête du message", () => {
+    const r = parseContact({ ...base, projectType: "Photographie", photoKind: "Photographie produit", desiredDate: "Dans 1 à 3 mois" });
+    if (!r.ok) throw new Error("invalide");
+    const mail = notificationEmail(r.data);
+    expect(mail.text).toContain("Message :\nType de photos : Photographie produit\n\nCouverture");
+    expect(mail.text).toContain("Date souhaitée : Dans 1 à 3 mois");
   });
 });
 

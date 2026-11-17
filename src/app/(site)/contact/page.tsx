@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
-import { MessageCircle } from "lucide-react";
-import { ContactForm } from "@/components/contact/contact-form";
+import { ArrowDown, Mail, MessageCircle, Phone } from "lucide-react";
+import { ContactRequest } from "@/components/contact/contact-request";
 import { CopyEmail } from "@/components/contact/copy-email";
+import { DakarClock } from "@/components/contact/dakar-clock";
+import {
+  HeroSlideshow,
+  type HeroSlide,
+} from "@/components/contact/hero-slideshow";
+import { TimelineMotion } from "@/components/contact/timeline-motion";
+import { CONTACT_DIRECT, CONTACT_HERO, CONTACT_NEXT } from "@/content/contact";
+import { getBackstagePhotos } from "@/lib/data/backstage";
 import { getSiteSettings, siteContact } from "@/lib/data/settings";
+import { mediaUrl } from "@/lib/media";
+import { pageMetadata } from "@/lib/seo";
+import { studioHeroSource } from "@/lib/studio";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact | Mana Prod",
@@ -12,119 +22,191 @@ export const metadata: Metadata = pageMetadata({
   path: "/contact",
 });
 
+// Diaporama de l'ouverture : les premières photos des coulisses seulement,
+// pour ne pas charger toute la galerie derrière le titre (D101).
+const MAX_SLIDES = 8;
+
 const filled = (value: string | null | undefined) => value?.trim() || null;
 
-// Messages de l'envoi sans JavaScript : /api/contact redirige vers /contact
-// avec une ancre, la note correspondante s'affiche par :target (D63).
-const NO_JS_NOTES = [
-  { id: "demande-envoyee", text: "Merci, votre demande est bien envoyée. Un email de confirmation vient de vous être adressé." },
-  { id: "demande-incomplete", text: "Votre demande n’a pas été envoyée : renseignez votre nom, une adresse email valide et au moins 20 caractères sur votre projet." },
-  { id: "demande-limite", text: "Vous avez déjà envoyé plusieurs demandes dans l’heure. Merci de réessayer plus tard, ou de nous appeler directement." },
-  { id: "demande-erreur", text: "Votre demande n’a pas pu être enregistrée. Merci de réessayer, ou de nous contacter directement par téléphone ou par email." },
-];
-
-const row = "grid grid-cols-1 items-center gap-x-5 gap-y-1.5 border-t border-line py-[22px] min-[561px]:grid-cols-[minmax(0,1fr)_auto]";
-const value = "min-w-0 text-[clamp(20px,2.1vw,30px)] leading-[1.2] font-semibold tracking-[-0.015em] [overflow-wrap:anywhere]";
-
-// Page Contact (cahier 6.7, prototype) : coordonnées, « Et ensuite » et
-// formulaire. Valeurs lues dans les réglages, blocs masqués si vides.
+// Page Contact orientée conversion (cahier 6.7, maquette
+// docs/reference/mana-prod-contact-maquette.html, D101) : ouverture sur les
+// coulisses, formulaire par étapes, contact direct, « Et ensuite ».
+// Coordonnées et promesse de réponse lues dans les réglages, blocs masqués
+// si vides. Page statique : l'heure de Dakar est calculée dans le navigateur.
 export default async function ContactPage() {
-  const settings = await getSiteSettings();
+  const [settings, backstage] = await Promise.all([
+    getSiteSettings(),
+    getBackstagePhotos(),
+  ]);
   const contact = siteContact(settings);
   const replyPromise = filled(settings?.reply_promise);
-  const whatsapp = contact.phoneHref ? contact.phoneHref.replace(/\D/g, "") : null;
+  const whatsapp = contact.phoneHref
+    ? `https://wa.me/${contact.phoneHref.replace(/\D/g, "")}`
+    : null;
+
+  const slides: HeroSlide[] =
+    backstage.length > 0
+      ? backstage.slice(0, MAX_SLIDES).map((photo) => ({
+          src: mediaUrl(photo.storage_path),
+          caption: filled(photo.alt),
+        }))
+      : [
+          {
+            src: mediaUrl(studioHeroSource(settings?.studio_hero_path)),
+            caption: null,
+          },
+        ];
+
+  const nextSteps = [
+    replyPromise ? `${replyPromise}.` : null,
+    ...CONTACT_NEXT.steps,
+  ].filter((s): s is string => Boolean(s));
 
   return (
-    <main className="wrap pt-[clamp(128px,14vw,210px)] pb-[clamp(72px,10vw,150px)]">
-      <h1 className="text-[clamp(40px,6.8vw,112px)] leading-[0.98] font-extrabold tracking-[-0.035em] text-balance">
-        Parlons de votre projet
-      </h1>
-      <p className="mt-[clamp(24px,3vw,40px)] max-w-[34em] text-[clamp(22px,2.3vw,34px)] leading-[1.28] font-medium tracking-[-0.01em] text-pretty text-[#C5D3D6]">
-        Un film, une campagne, une couverture d’événement : dites-nous ce que vous avez en tête.
-        {replyPromise ? ` ${replyPromise}.` : ""}
-      </p>
-
-      {NO_JS_NOTES.map((note) => (
-        <p
-          key={note.id}
-          id={note.id}
-          role="status"
-          className="mt-8 hidden scroll-mt-32 border border-line bg-bg-2 p-5 target:block"
-        >
-          {note.text}
-        </p>
-      ))}
-
-      <div className="mt-[clamp(40px,5vw,72px)] grid items-start gap-[clamp(40px,7vw,128px)] min-[821px]:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-        <div>
-          <div className="border-b border-line">
-            {contact.phone ? (
-              <div className={row}>
-                <span className="col-span-full text-sm text-muted">Téléphone et WhatsApp</span>
-                {contact.phoneHref ? (
-                  <a href={contact.phoneHref} className={`${value} transition-colors hover:text-teal`}>
-                    {contact.phone}
-                  </a>
-                ) : (
-                  <span className={value}>{contact.phone}</span>
-                )}
-                {whatsapp ? (
-                  <a
-                    href={`https://wa.me/${whatsapp}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Écrire sur WhatsApp au ${contact.phone} (nouvel onglet)`}
-                    className="inline-flex min-h-11 items-center gap-2 justify-self-start border border-line px-3.5 text-sm leading-none font-semibold whitespace-nowrap transition-colors hover:border-teal hover:text-teal"
-                  >
-                    WhatsApp
-                    <MessageCircle aria-hidden="true" size={16} strokeWidth={1.8} />
-                  </a>
-                ) : null}
-              </div>
-            ) : null}
-            {contact.email ? (
-              <div className={row}>
-                <span className="col-span-full text-sm text-muted">Email</span>
-                <a href={`mailto:${contact.email}`} className={`${value} transition-colors hover:text-teal`}>
-                  {contact.email}
-                </a>
-                <div className="justify-self-start">
-                  <CopyEmail email={contact.email} />
-                </div>
-              </div>
-            ) : null}
-            {contact.city ? (
-              <div className={row}>
-                <span className="col-span-full text-sm text-muted">Studio</span>
-                <span className={value}>{contact.city}</span>
-              </div>
-            ) : null}
-          </div>
-
-          <div className="mt-9 grid gap-3.5">
-            <h2 className="text-[15px] font-semibold text-muted">Et ensuite</h2>
-            <ol className="grid gap-2.5 text-base text-[#C5D3D6]">
-              {[
-                // Délai lu dans les réglages, étape masquée s'il est vide.
-                replyPromise ? `${replyPromise}.` : null,
-                "Un échange court pour cadrer le brief, le budget et le calendrier.",
-                "Une proposition claire, puis le tournage.",
-              ]
-                .filter((step): step is string => Boolean(step))
-                .map((step, i) => (
-                  <li key={step} className="grid grid-cols-[28px_minmax(0,1fr)]">
-                    <span aria-hidden="true" className="font-bold text-teal">
-                      {i + 1}
-                    </span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-            </ol>
-          </div>
+    <main>
+      {/* 1. Ouverture */}
+      <section className="contact-hero" aria-labelledby="contact-titre">
+        <HeroSlideshow slides={slides} />
+        <p className="contact-kicker">{CONTACT_HERO.kicker}</p>
+        <h1 id="contact-titre" className="contact-hero__title">
+          {CONTACT_HERO.title.map((word, i) => (
+            <span key={word}>
+              <span className="hero-word">
+                <span
+                  style={{ "--i": i } as React.CSSProperties}
+                  className={
+                    i === CONTACT_HERO.title.length - 1
+                      ? "text-teal"
+                      : undefined
+                  }
+                >
+                  {word}
+                </span>
+              </span>
+              {i < CONTACT_HERO.title.length - 1 ? " " : null}
+            </span>
+          ))}
+        </h1>
+        <div className="contact-meta">
+          <DakarClock />
+          {replyPromise ? <span>{replyPromise}</span> : null}
         </div>
+        <div className="contact-ctas">
+          <a className="btn btn--down" href="#demande">
+            {CONTACT_HERO.primary}
+            <span className="btn__ic" aria-hidden="true">
+              <ArrowDown size={20} strokeWidth={1.8} />
+            </span>
+          </a>
+          {whatsapp ? (
+            <a
+              className="btn btn--ghost"
+              href={whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {CONTACT_HERO.whatsapp}
+              <span className="sr-only"> (nouvel onglet)</span>
+            </a>
+          ) : null}
+        </div>
+      </section>
 
-        <ContactForm replyPromise={replyPromise} phone={contact.phone} email={contact.email} />
-      </div>
+      {/* 2. Formulaire par étapes */}
+      <section
+        id="demande"
+        className="contact-conv"
+        aria-labelledby="demande-titre"
+      >
+        <ContactRequest replyPromise={replyPromise} />
+      </section>
+
+      {/* 3. Contact direct */}
+      {contact.phone || contact.email ? (
+        <section
+          className="contact-direct"
+          aria-labelledby="contact-direct-titre"
+        >
+          <h2 id="contact-direct-titre" className="contact-kicker">
+            {CONTACT_DIRECT.title}
+          </h2>
+          {contact.phone && contact.phoneHref ? (
+            <div className="contact-act">
+              <a href={contact.phoneHref}>
+                <span className="contact-orb" aria-hidden="true">
+                  <Phone strokeWidth={1.5} />
+                </span>
+                <span>
+                  <span className="contact-act__t">{CONTACT_DIRECT.call}</span>
+                  <span className="contact-act__s">{contact.phone}</span>
+                </span>
+              </a>
+            </div>
+          ) : null}
+          {whatsapp ? (
+            <div className="contact-act">
+              <a href={whatsapp} target="_blank" rel="noopener noreferrer">
+                <span className="contact-orb" aria-hidden="true">
+                  <MessageCircle strokeWidth={1.5} />
+                </span>
+                <span>
+                  <span className="contact-act__t">
+                    {CONTACT_DIRECT.whatsapp}
+                  </span>
+                  <span className="contact-act__s">
+                    {CONTACT_DIRECT.whatsappLine}
+                    <span className="sr-only"> (nouvel onglet)</span>
+                  </span>
+                </span>
+              </a>
+            </div>
+          ) : null}
+          {contact.email ? (
+            <div className="contact-act">
+              <a href={`mailto:${contact.email}`}>
+                <span className="contact-orb" aria-hidden="true">
+                  <Mail strokeWidth={1.5} />
+                </span>
+                <span>
+                  <span className="contact-act__t">{CONTACT_DIRECT.email}</span>
+                  <span className="contact-act__s">{contact.email}</span>
+                </span>
+              </a>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <CopyEmail email={contact.email} />
+              </div>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {/* 4. Et ensuite */}
+      <section className="contact-next" aria-labelledby="contact-ensuite">
+        <p className="contact-kicker">{CONTACT_NEXT.kicker}</p>
+        <h2 id="contact-ensuite">
+          {nextSteps.length === 3
+            ? CONTACT_NEXT.title
+            : CONTACT_NEXT.titleTwoSteps}
+        </h2>
+        <div
+          id="contact-frise"
+          className="contact-tl"
+          style={{ "--steps": nextSteps.length } as React.CSSProperties}
+        >
+          <span className="contact-tl__bar" aria-hidden="true" />
+          <ol className="contact-tl__list">
+            {nextSteps.map((text, i) => (
+              <li key={text}>
+                <span className="contact-tl__node" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <p>{text}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <TimelineMotion targetId="contact-frise" />
+      </section>
     </main>
   );
 }

@@ -1,13 +1,13 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-17, fin du Prompt 14.
+Dernière mise à jour : 2026-11-17, fin du Prompt 15.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 14 (page Le studio immersive, photo d'ouverture dans Réglages, onglet Coulisses, retrait de l'équipement). En attente de l'exécution de `0004_studio.sql` puis `seed/0002_studio.sql`, de la validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 15 (mise en ligne : passage d'`INDEXING_ENABLED` à `true`, vérifications de la section 12 de la méthode), après le Go.
+- **Dernier prompt terminé** : Prompt 15 (page Contact orientée conversion avec formulaire par étapes, règle d'identité « carré pour ce qu'on filme, rond pour ce qu'on touche » sur tout le site et le dashboard, curseur anneau). En attente de la validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 16 (mise en ligne : passage d'`INDEXING_ENABLED` à `true`, vérifications de la section 12 de la méthode), après le Go.
 - **Branche de travail** : `main` (développement, avant mise en ligne).
-- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), page Le studio immersive (D99), dashboard complet (Showreel, Projets, Clients, Équipe, Coulisses, Réglages, Messages) publié immédiatement sur le site, effacement automatique des messages de plus de 24 mois.
+- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), page Le studio immersive (D99), page Contact par étapes et règle d'identité ronde (D101), dashboard complet (Showreel, Projets, Clients, Équipe, Coulisses, Réglages, Messages) publié immédiatement sur le site, effacement automatique des messages de plus de 24 mois.
 
 ## 2. Feuille de route des prompts
 
@@ -29,8 +29,9 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 | 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | | Fait, validé |
 | 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | | Fait, validé |
 | 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | | Fait, validé |
-| 14 | Studio immersif et Coulisses | Page Le studio immersive d'après la maquette (cahier 6.6, v1.9), photo d'ouverture dans Réglages, onglet Coulisses, retrait de l'équipement (D99) | Exécution de `0004_studio.sql` puis `seed/0002_studio.sql` | Fait, en attente de validation |
-| 15 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 du cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les MX | Accès au DNS de manaprod.com | À faire |
+| 14 | Studio immersif et Coulisses | Page Le studio immersive d'après la maquette (cahier 6.6, v1.9), photo d'ouverture dans Réglages, onglet Coulisses, retrait de l'équipement (D99) | Exécution de `0004_studio.sql` puis `seed/0002_studio.sql` | Fait, validé |
+| 15 | Contact et règle d'identité | Page Contact orientée conversion d'après la maquette (cahier 6.7, v1.10), formulaire par étapes conditionnelles, règle « carré pour ce qu'on filme, rond pour ce qu'on touche » sur tout le site et le dashboard (cahier 4.4), curseur anneau (D101) | | Fait, en attente de validation |
+| 16 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 du cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les MX | Accès au DNS de manaprod.com | À faire |
 
 ### Ajustements validés (arbitrage du rapport du Prompt 00)
 
@@ -42,7 +43,7 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 4. Page `/mentions-legales` avec section confidentialité au Prompt 06 (D11).
 5. `SUPABASE_SERVICE_ROLE_KEY` et client service seulement au Prompt 07 (D13).
 6. Mot de passe oublié au Prompt 09, avec SMTP de Resend dans Supabase Auth (D25).
-7. Site entier en `noindex` jusqu'à la mise en ligne, désormais Prompt 15 (D31, D99).
+7. Site entier en `noindex` jusqu'à la mise en ligne, désormais Prompt 16 (D31, D99, D101).
 8. Ancien Prompt 02 scindé en Prompt 02 « Interface » et Prompt 03 « Données », prompts suivants décalés d'un numéro (D36).
 9. Supabase en région Paris (`eu-west-3`), fonctions Vercel en région Paris (`cdg1`) (D37).
 
@@ -153,10 +154,17 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - Équipement retiré du contenu, du code et du cahier (v1.9) ; feuille de route renumérotée (14 Studio, 15 Mise en ligne).
   - Vérifié : axe 0 violation sur `/studio` (à plusieurs positions de défilement) et `/admin/coulisses` à 360 et 1440 px ; Lighthouse mobile `/studio` : performance 98 à 99, accessibilité 100, LCP 0,9 s, CLS 0 ; aucun défilement horizontal de 360 à 1920 px ; pas de régression (projets, clients, équipe, messages, CSP, C1).
 
+- **Prompt 15 (contact et règle d'identité)** :
+  - Registre : `0004_studio.sql` et `seed/0002_studio.sql` exécutées par Ziza.
+  - Règle d'identité sur tout le site et le dashboard (D101) : boutons en pilule (`.btn`, `.btn--ghost`, `ButtonLink`, classes du dashboard), boutons d'icône en cercle (lecture, visionneuse, fenêtres, menu mobile, retour), filtres et étiquettes en pilule ; vidéos, photos, cartes, panneaux, champs et fenêtres restent carrés. Curseur anneau (`CursorRing`) sur le site public, seulement avec une souris et sans mouvement réduit.
+  - Page `/contact` refaite d'après la maquette : ouverture sur le diaporama des coulisses (pause, onglet masqué, mouvement réduit), heure de Dakar en direct, formulaire par étapes conditionnelles (Photographie, Couverture événement, autres), anneau de progression, récapitulatif, Retour, confirmation ; formulaire complet sans JavaScript ; contact direct en grands boutons ronds ; frise « Et ensuite ». Page statique.
+  - `/api/contact` : champs complémentaires facultatifs en listes fermées (durée, type de photos, date de l'événement), placés en tête du message enregistré et de la notification ; validation, champ piège, limitation à 5 envois par heure, échappement et accusé de réception sans contenu du visiteur inchangés. Tests ajoutés.
+  - Vérifié : axe 0 violation sur toutes les pages publiques (dont chaque étape du formulaire) et tous les onglets du dashboard à 360 et 1440 px ; Lighthouse mobile `/contact` performance 92 à 97, accessibilité 100, CLS 0 ; aucun défilement horizontal de 360 à 1920 px.
+
 ## 4. Reste à faire
 
-- Prompt 15 (voir la feuille de route).
-- Vérifications avant le Prompt 15 (rapport du Prompt 13) : en-têtes servis sur manaprod.com, aperçus de partage, PageSpeed Insights en production.
+- Prompt 16 (voir la feuille de route).
+- Vérifications avant le Prompt 16 (rapport du Prompt 13) : en-têtes servis sur manaprod.com, aperçus de partage, PageSpeed Insights en production.
 - Recommandations de l’audit 1 non appliquées (rapport du Prompt 08) : CSP, code 404 à la première visite (P10).
 
 ## 5. Problèmes ouverts
@@ -194,7 +202,7 @@ Section 15 du cahier des charges (version 1.5).
 | 8 | Confirmation de la liste d'équipement | Prompt 06 | Sans objet : section retirée au Prompt 14 (D99) |
 | 9 | Identifiants légaux pour les mentions légales : NINEA, RCCM, adresse du siège (à saisir dans `src/content/mentions-legales.ts`) | Prompt 06 (blocs masqués tant qu'ils manquent) | En attente |
 | 10 | Validation par le client de toute la page Mentions légales, dont la durée de conservation des messages (24 mois après le dernier échange) l'adresse de l'hébergeur Vercel étant publiée depuis le Prompt 07 (D64) | Prompt 06 | En attente |
-| 11 | Accès au DNS de manaprod.com (WordPress.com) | Prompt 07 (Resend) et Prompt 15 (domaine) | Obtenu : utilisé pour Resend, à réutiliser au Prompt 15 |
+| 11 | Accès au DNS de manaprod.com (WordPress.com) | Prompt 07 (Resend) et Prompt 16 (domaine) | Obtenu : utilisé pour Resend, à réutiliser au Prompt 16 |
 | 12 | Email : adresse d'expédition et adresse de réception des demandes (Resend retenu) | Prompt 07 | En attente |
 | 13 | Adresse email de l'administrateur principal | Prompt 09 | Obtenu : premier administrateur Ziza (adresse personnelle, déclarée par SQL hors dépôt) ; Amath ajouté plus tard par le même SQL |
 | 14 | Logos des 8 clients (PNG transparent recommandé, pas de SVG) | Saisie dans le dashboard (onglet Clients, depuis le Prompt 11) | En attente |
@@ -213,8 +221,8 @@ Claude Code ne marque jamais une migration comme exécutée : seul Ziza le confi
 | 0001 (seed) | `supabase/seed/0001_seed.sql` | Données de départ : réglages, 8 projets, 8 clients, 3 membres de l'équipe. À exécuter après la migration `0001_init.sql` | Oui (2026-11-17, contrôle 1, 8, 8, 3) |
 | 0002 | `supabase/migrations/0002_contact_rate_limit.sql` | Table `contact_submissions` (empreintes d'IP des envois récents du formulaire), RLS sans policy, accès réservé à la clé service. À exécuter après `0001_init.sql` | Oui (2026-11-17) |
 | 0003 | `supabase/migrations/0003_project_photo_size.sql` | Colonnes `width` et `height` de `project_photos` (nullables, strictement positives si renseignées). À exécuter après `0002` | Oui (2026-11-17) |
-| 0004 | `supabase/migrations/0004_studio.sql` | Colonne `site_settings.studio_hero_path` (photo d'ouverture du studio), table `backstage_photos` (photos des coulisses : lecture publique, écriture `is_admin()`, GRANT, index sur `position`). À exécuter après `0003` | Non |
-| 0002 (seed) | `supabase/seed/0002_studio.sql` | Photo d'ouverture de départ (`/team/amath-ndiaye.jpg`), seulement si la colonne est vide. À exécuter après `0004_studio.sql` | Non |
+| 0004 | `supabase/migrations/0004_studio.sql` | Colonne `site_settings.studio_hero_path` (photo d'ouverture du studio), table `backstage_photos` (photos des coulisses : lecture publique, écriture `is_admin()`, GRANT, index sur `position`). À exécuter après `0003` | Oui (2026-11-17) |
+| 0002 (seed) | `supabase/seed/0002_studio.sql` | Photo d'ouverture de départ (`/team/amath-ndiaye.jpg`), seulement si la colonne est vide. À exécuter après `0004_studio.sql` | Oui (2026-11-17) |
 
 ## 8. Variables d'environnement
 

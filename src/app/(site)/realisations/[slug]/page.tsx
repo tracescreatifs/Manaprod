@@ -89,9 +89,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     <main className="wrap pt-[clamp(128px,14vw,210px)] pb-[clamp(72px,10vw,150px)]">
       <Link
         href="/realisations"
-        className="mb-[clamp(28px,4vw,48px)] inline-flex min-h-11 items-center gap-2.5 text-[15px] font-medium text-muted transition-colors hover:text-teal"
+        className="group mb-[clamp(28px,4vw,48px)] inline-flex min-h-11 items-center gap-3 text-[15px] font-medium text-muted transition-colors hover:text-teal"
       >
-        <ArrowLeft aria-hidden="true" size={18} strokeWidth={1.8} />
+        <span
+          aria-hidden="true"
+          className="grid size-11 shrink-0 place-items-center rounded-full border border-line transition-colors group-hover:border-teal group-focus-visible:border-teal"
+        >
+          <ArrowLeft size={18} strokeWidth={1.8} />
+        </span>
         Réalisations
       </Link>
 

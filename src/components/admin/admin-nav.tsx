@@ -39,14 +39,14 @@ function NavList({ pathname, unhandled }: { pathname: string | null; unhandled: 
             key={href}
             href={href}
             aria-current={pathname === href ? "page" : current ? "true" : undefined}
-            className={`flex min-h-11 items-center gap-3 px-3.5 py-[13px] text-[15px] leading-none font-medium no-underline transition-colors min-[1000px]:w-full ${
+            className={`flex min-h-11 items-center gap-3 rounded-full px-3.5 py-[13px] text-[15px] leading-none font-medium no-underline transition-colors min-[1000px]:w-full ${
               current ? "bg-bg-3 text-teal" : "text-muted hover:bg-bg-3 hover:text-text"
             }`}
           >
             <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
             {label}
             {href === "/admin/messages" && unhandled > 0 ? (
-              <span className="ml-auto inline-grid min-w-6 place-items-center bg-teal px-1.5 py-1 text-xs font-bold text-ink">
+              <span className="ml-auto inline-grid min-w-6 place-items-center rounded-full bg-teal px-1.5 py-1 text-xs font-bold text-ink">
                 {unhandled}
                 <span className="sr-only"> à traiter</span>
               </span>
