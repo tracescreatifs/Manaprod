@@ -49,7 +49,7 @@ export function CopyEmail({ email }: { email: string }) {
         type="button"
         onClick={copy}
         aria-label={`Copier l’adresse ${email}`}
-        className="inline-flex min-h-11 items-center gap-2 border border-line px-3.5 text-sm leading-none font-semibold whitespace-nowrap transition-colors hover:border-teal hover:text-teal"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line px-4 text-sm leading-none font-semibold whitespace-nowrap transition-colors hover:border-teal hover:text-teal"
       >
         Copier
       </button>
