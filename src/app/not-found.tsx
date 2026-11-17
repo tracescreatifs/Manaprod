@@ -5,8 +5,10 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader, SiteHeaderFallback } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "Page introuvable | MANA PROD",
+  title: "Page introuvable | Mana Prod",
   description: "Cette page n’existe pas ou n’est pas encore disponible.",
+  // Jamais indexée, même une fois l'indexation du site activée.
+  robots: { index: false, follow: true },
 };
 
 // Page 404 personnalisée, pour toute adresse inconnue et pour une fiche

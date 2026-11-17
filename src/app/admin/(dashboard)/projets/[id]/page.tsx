@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { PageHead, PanelLoading } from "@/components/admin/page-head";
 import { btnLine } from "@/components/admin/ui";
 import { UrlNotice } from "@/components/admin/url-notice";

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { ContactCta } from "@/components/contact-cta";
 import { ProjectGrid } from "@/components/realisations/project-grid";
 import { getProjects } from "@/lib/data/projects";
@@ -14,11 +15,12 @@ function imageUrl(project: CoverSource): string | null {
 }
 import { PROJECT_CATEGORIES } from "@/types/database";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Réalisations | Mana Prod",
   description:
     "Films institutionnels, spots, documentaires et couvertures d’événements réalisés par MANA PROD, agence de production audiovisuelle à Dakar.",
-};
+  path: "/realisations",
+});
 
 // Page Réalisations (cahier 6.3, prototype) : titre, compteur, filtres par
 // catégorie (seulement celles utilisées) et grille éditoriale.

@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { ContactCta } from "@/components/contact-cta";
 import { Reveal } from "@/components/motion/reveal";
 import { SectionRow } from "@/components/section-row";
 import { METHOD_STEPS, SERVICES, SERVICES_INTRO, WHY_MANA_PROD } from "@/content/marque";
 import { getSiteSettings } from "@/lib/data/settings";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Services | Mana Prod",
   description:
     "Production vidéo, motion design, photographie, communication digitale, captation et événementiel, drone et direction artistique, depuis Dakar.",
-};
+  path: "/services",
+});
 
 // Page Services (cahier 6.5, prototype) : services, méthode, arguments.
 export default async function ServicesPage() {

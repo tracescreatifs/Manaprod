@@ -12,6 +12,7 @@ import {
 } from "@/app/admin/project-actions";
 import { errorProps, inputClass } from "@/components/admin/field";
 import { ImageError, prepareImage, uploadImage } from "@/components/admin/image-upload";
+import { ConfirmButton } from "@/components/admin/confirm-button";
 import { Panel } from "@/components/admin/page-head";
 import { ProjectThumb } from "@/components/admin/project-thumb";
 import { useFocusLater } from "@/components/admin/use-focus-later";
@@ -114,7 +115,6 @@ export function ProjectMedia({
   }
 
   async function clearThumbnail() {
-    if (!window.confirm("Retirer la miniature ? Le site utilisera celle de la première vidéo, sinon la première photo.")) return;
     setThumbBusy("Retrait en cours");
     const result = await removeProjectThumbnail(projectId);
     setThumbBusy(null);
@@ -242,10 +242,20 @@ export function ProjectMedia({
                 />
               </label>
               {currentThumbnail ? (
-                <button type="button" onClick={clearThumbnail} disabled={Boolean(thumbBusy)} className={`${btnDanger} ${btnSmall}`}>
-                  <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
-                  Retirer la miniature
-                </button>
+                <ConfirmButton
+                  question="Retirer la miniature ? Le site utilisera celle de la première vidéo, sinon la première photo."
+                  confirmLabel="Confirmer le retrait"
+                  pendingLabel="Retrait en cours"
+                  pending={Boolean(thumbBusy)}
+                  onConfirm={clearThumbnail}
+                  triggerClassName={`${btnDanger} ${btnSmall}`}
+                  trigger={
+                    <>
+                      <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
+                      Retirer la miniature
+                    </>
+                  }
+                />
               ) : null}
             </div>
             <p role="status" className="mt-3 text-sm text-muted empty:hidden">

@@ -662,3 +662,52 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : Les mentions légales annoncent : « Vos données sont conservées 24 mois à compter de leur réception, puis effacées automatiquement. » C'est la règle appliquée par `/api/keepalive` (D87).
 - **Raison** : Le texte précédent (« 24 mois après notre dernier échange ») ne correspondait pas au code.
 - **Alternative écartée** : Effacement 24 mois après le dernier échange (date non enregistrée en base).
+
+## D92 : Indexation pilotée par une seule constante (remplace D31)
+
+- **Date** : 2026-11-17 (Prompt 13)
+- **Décision** : `INDEXING_ENABLED` (`src/lib/site.ts`) pilote la balise robots de toutes les pages publiques (layout racine) et `robots.txt` (`src/app/robots.ts`). À `false` : `noindex, nofollow` partout et `robots.txt` interdit tout. À `true` : pages indexables, `robots.txt` autorise tout sauf `/admin` et `/api`, avec le lien vers `sitemap.xml`. Le dashboard reste en `noindex` dans tous les cas (`src/app/admin/layout.tsx`), la page 404 aussi. `sitemap.xml` (`src/app/sitemap.ts`) liste les 6 pages et les fiches publiées (date `updated_at`), en URL absolues à partir de `NEXT_PUBLIC_SITE_URL`, lu en cache avec l'étiquette `projects` (mis à jour à chaque publication). Marche à suivre au Prompt 14 : passer la constante à `true`, déployer, vérifier `/robots.txt` et la balise robots de l'accueil, puis déclarer `https://manaprod.com/sitemap.xml` dans Google Search Console.
+- **Raison** : Un seul interrupteur, impossible d'oublier une page.
+- **Alternative écartée** : Variable d'environnement (nouvelle variable exclue par le prompt).
+
+## D93 : Métadonnées des pages et image de partage
+
+- **Date** : 2026-11-17 (Prompt 13)
+- **Décision** : Chaque page publique construit ses métadonnées avec `pageMetadata()` (`src/lib/seo.ts`) : titre, description, URL canonique, Open Graph (titre, description, URL, type, `fr_FR`, `MANA PROD`, image) et carte Twitter `summary_large_image`. Image par défaut `public/partage-mana-prod.png` (1200 x 630, logo empilé officiel `couleur-fond-sombre` à largeur fixée, centré sur #0A1013, rendu à partir du SVG, sans police à charger) ; une fiche utilise l'image de sa carte (D84). Titre d'une fiche aligné sur le prototype : « Client : Titre | Mana Prod ». Pages d'erreur : titre « Erreur | Mana Prod » et `noindex`. Manifeste web (`src/app/manifest.ts`) avec les icônes officielles.
+- **Raison** : Cahier 11 ; Open Graph remplace l'objet du parent au lieu de le compléter, d'où une construction complète par page.
+- **Alternative écartée** : Image générée à la volée (`next/og`), dépendance au rendu de police.
+
+## D94 : Données structurées
+
+- **Date** : 2026-11-17 (Prompt 13, arbitrage du rapport du Prompt 12)
+- **Décision** : JSON-LD `Organization` sur l'accueil (nom, URL, logo, image, téléphone et email lus dans les réglages, adresse Dakar, Sénégal). Pas de `VideoObject` : la date de publication des vidéos n'est pas connue et n'est pas inventée.
+- **Raison** : `VideoObject` exige `uploadDate`.
+- **Alternative écartée** : `VideoObject` avec une date approximative.
+
+## D95 : En-têtes de sécurité HTTP (complète D67, audit 2 C4, P12)
+
+- **Date** : 2026-11-17 (Prompt 13)
+- **Décision** : `Strict-Transport-Security: max-age=31536000` (un an, sans `includeSubDomains` ni `preload`). Politique de sécurité du contenu appliquée (`CSP_MODE = "enforce"` dans `next.config.ts`), après un test en Report-Only sur tous les parcours (site, vidéos, showreel, contact, connexion, projets, téléversements, recadrage, clients, équipe, messages, mot de passe) : aucun blocage. Sources : `default-src 'self'` ; `script-src 'self' 'unsafe-inline'` (scripts en ligne de Next.js pour des pages statiques, un nonce rendrait les pages dynamiques ; `'unsafe-eval'` seulement en développement) ; `style-src 'self' 'unsafe-inline'` (styles en ligne de Next.js et des animations) ; `img-src 'self' data: blob: https://i.ytimg.com https://*.supabase.co` (miniatures YouTube, bucket media, aperçus locaux du recadrage) ; `font-src 'self'` (police auto-hébergée) ; `connect-src 'self' https://*.supabase.co wss://*.supabase.co` (session et téléversements) ; `frame-src https://www.youtube-nocookie.com` (lecteur sans cookie uniquement) ; `object-src 'none'` ; `base-uri 'self'` ; `form-action 'self'` ; `frame-ancestors 'none'`. L'origine exacte du projet Supabase lue au build s'ajoute si elle n'est pas en `.supabase.co`. zod est configuré sans compilation à la volée (`src/lib/zod.ts`, `jitless`) : sinon il teste `new Function`, ce que la politique signale.
+- **Raison** : Recommandation de l'audit 2 ; les pages publiques restent statiques.
+- **Alternative écartée** : CSP avec nonce (pages dynamiques) ; `'unsafe-eval'` en production.
+
+## D96 : Fiche projet en rendu bloquant pour une adresse inconnue (remplace la partie fiche de D89)
+
+- **Date** : 2026-11-17 (Prompt 13)
+- **Décision** : La fiche projet exporte `instant = false` au lieu d'entourer son contenu d'une frontière Suspense. L'en-tête du site reste dans sa frontière Suspense (D89). Le correctif C1 tient (fiches en 200 après un enregistrement des réglages, vérifié), les fiches connues restent statiques (○) et leur contenu est dans le HTML initial.
+- **Raison** : Avec la frontière Suspense, l'image principale d'une fiche était envoyée dans un segment différé ; Lighthouse estimait alors un LCP supérieur à 3 s. Sans contenu différé, le LCP mesuré avec un ralentissement réel est de 1,7 s.
+- **Alternative écartée** : Garder la frontière Suspense (LCP estimé dégradé).
+
+## D97 : Codes HTTP des fiches inexistantes et des erreurs (P10, P13 acceptés)
+
+- **Date** : 2026-11-17 (Prompt 13)
+- **Décision** : Limite acceptée et documentée. Avec Cache Components, la coquille prérendue est envoyée dès le début de la réponse, avec le code 200 ; une vérification faite pendant le rendu (fiche inexistante, erreur) ne peut plus changer ce code (documentation de Next.js, « Status codes »). Next.js ajoute `noindex` à la 404 rendue ainsi, et la page d'erreur porte son propre `noindex` (D93). Effet réel : aucun pour le visiteur ; une adresse inventée est une « soft 404 » non indexée. La seule solution documentée (vérifier le slug dans le proxy) ajouterait une requête à la base à chaque visite de fiche et étendrait le proxy aux pages publiques (contraire à D70).
+- **Raison** : Aucune solution propre sans rendre les fiches dynamiques ou exiger un redéploiement.
+- **Alternative écartée** : Proxy sur `/realisations/:slug` ; `dynamicParams = false` (nouvelle fiche en 404 jusqu'au redéploiement).
+
+## D98 : Finitions
+
+- **Date** : 2026-11-17 (Prompt 13)
+- **Décision** : Retrait du showreel et de la miniature confirmés en deux temps dans la page (`ConfirmButton`), comme le reste du dashboard (C11) ; focus replacé sur le champ du lien ou le bouton de téléversement. Dates affichées avec « 1er » pour le premier jour du mois (`formatDateFr`, `formatMessageDate`). Sur une fiche sans vidéo, la première photo est chargée tout de suite, avec une priorité haute (image principale).
+- **Raison** : Prompt 13, D ; cohérence et performance.
+- **Alternative écartée** : Aucune.

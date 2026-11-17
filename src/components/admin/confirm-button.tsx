@@ -14,14 +14,17 @@ export function ConfirmButton({
   trigger,
   triggerClassName,
   triggerLabel,
+  pendingLabel = "Suppression en cours",
 }: {
+  pendingLabel?: string;
   question: string;
   confirmLabel: string;
   onConfirm: () => void;
   pending: boolean;
   trigger: ReactNode;
   triggerClassName: string;
-  triggerLabel: string;
+  /** Nom accessible du bouton déclencheur, s'il diffère de son texte. */
+  triggerLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ns = useId();
@@ -39,7 +42,7 @@ export function ConfirmButton({
         {question}
       </p>
       <button type="button" className={`${btnDanger} ${btnSmall}`} onClick={onConfirm} disabled={pending} autoFocus>
-        {pending ? "Suppression en cours" : confirmLabel}
+        {pending ? pendingLabel : confirmLabel}
       </button>
       <button
         type="button"

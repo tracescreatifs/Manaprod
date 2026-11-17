@@ -191,3 +191,27 @@ export async function getNextProject(
   const next = projects[(index + 1) % projects.length];
   return { slug: next.slug, client: next.client };
 }
+
+export type SitemapProject = { slug: string; updatedAt: string };
+
+async function loadSitemapProjects(): Promise<Loaded<SitemapProject[]>> {
+  "use cache";
+  cacheTag(CACHE_TAGS.projects);
+  return cachedRead("des projets", async () => {
+    const supabase = publicDataClient();
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from("projects")
+      .select("slug, updated_at")
+      .eq("published", true)
+      .order("position", { ascending: true })
+      .order("created_at", { ascending: true });
+    if (error) throw supabaseError(error.message);
+    return data.map((row) => ({ slug: row.slug, updatedAt: row.updated_at }));
+  });
+}
+
+/** Projets publiés pour le sitemap, avec leur date de dernière modification. */
+export async function getSitemapProjects(): Promise<SitemapProject[]> {
+  return unwrap(await loadSitemapProjects());
+}

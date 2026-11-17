@@ -6,6 +6,9 @@ import { ButtonLink } from "@/components/button-link";
 export function ErrorContent({ retry }: { retry: () => void }) {
   return (
     <main className="wrap pt-[clamp(128px,14vw,210px)] pb-[clamp(72px,10vw,150px)]">
+      {/* Titre de l'onglet et exclusion de l'indexation (balises remontées dans <head> par React). */}
+      <title>Erreur | Mana Prod</title>
+      <meta name="robots" content="noindex, nofollow" />
       <p className="text-sm text-muted">Erreur</p>
       <h1 className="mt-4 text-[clamp(40px,6.8vw,112px)] leading-[0.98] font-extrabold tracking-[-0.035em] text-balance">
         Une erreur est survenue

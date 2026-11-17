@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import type { ReactNode } from "react";
 import { SectionRow } from "@/components/section-row";
 import { LEGAL_IDS, LEGAL_UPDATED_ON } from "@/content/mentions-legales";
 import { getSiteSettings, siteContact } from "@/lib/data/settings";
 import { formatDateFr } from "@/lib/format";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Mentions légales | Mana Prod",
   description:
     "Mentions légales et politique de confidentialité du site de MANA PROD, agence de production audiovisuelle à Dakar.",
-};
+  path: "/mentions-legales",
+});
 
 const prose = "grid max-w-[44em] gap-4 text-[#C5D3D6] [&_a]:text-text [&_a:hover]:text-teal [&_strong]:font-semibold [&_strong]:text-text";
 const linkClass = "transition-colors";

@@ -92,7 +92,7 @@ Toute autre technologie ou dépendance doit être justifiée dans `decisions.md`
 - **Images et logo** : `next/image` avec dimensions ou ratio fournis, jamais d'étirement. Le logo n'est jamais déformé, recoloré ni recadré : on fixe sa largeur ou sa hauteur, jamais les deux.
 - **Identité** : icônes au trait uniquement, jamais d'emoji. Jamais de tiret long ni de tiret moyen.
 - **Accessibilité (WCAG AA)** : navigation clavier complète, focus visible (contour turquoise), textes alternatifs, libellés de formulaires, `aria-live` pour les erreurs, modales avec piégeage du focus et fermeture par Échap, contrastes AA, `prefers-reduced-motion`.
-- **SEO** : titre et description par page, Open Graph et Twitter cards, `sitemap.xml` dynamique, `robots.txt` (dashboard exclu et en `noindex`), données structurées Organization et VideoObject.
+- **SEO** : titre et description par page, Open Graph et Twitter cards, `sitemap.xml` dynamique, `robots.txt` (dashboard exclu et en `noindex`), données structurées Organization (pas de VideoObject, D94). Indexation pilotée par `INDEXING_ENABLED` (`src/lib/site.ts`, D92), métadonnées par `pageMetadata()` (`src/lib/seo.ts`, D93).
 - **Performance** : formats modernes, chargement différé, iframes YouTube en façade, pas de dépendance lourde sans raison. Objectif Lighthouse mobile 90 ou plus, LCP inférieur à 2,5 s, CLS inférieur à 0,1.
 
 ## 7. Règles propres à Mana Prod (cahier, section 14)
@@ -116,7 +116,7 @@ Toute autre technologie ou dépendance doit être justifiée dans `decisions.md`
 - Textes en français, accents corrects, apostrophe typographique (’) dans les textes affichés.
 - Zéro placeholder de contenu, zéro `TODO`, zéro contenu client inventé : uniquement les textes de la section 9 du cahier, du prototype et de la base de données. Les blocs vides sont masqués.
 - Pour tout travail d'interface, ouvrir le prototype correspondant dans `docs/reference/` et s'y conformer.
-- Pages publiques : tout accès à l'adresse (`usePathname`, `params`) se fait dans une frontière `<Suspense>`, sinon la régénération d'une route dynamique échoue après une invalidation (D89).
+- Pages publiques : `usePathname` dans une frontière `<Suspense>` (en-tête, D89) ; la fiche projet exporte `instant = false` (D96). Sans cela, la régénération d'une route dynamique échoue après une invalidation. zod s'importe depuis `@/lib/zod` (sans compilation à la volée, D95).
 - Structure qui n'empêche pas une future version anglaise ou wolof (V2), sans l'implémenter.
 
 ### Charte
@@ -175,5 +175,5 @@ La branche à utiliser est toujours écrite explicitement dans chaque prompt. Pa
 - `/admin` et toutes ses Server Actions vérifient la session et l'appartenance à `admin_users` côté serveur, à chaque appel.
 - `/api/contact` : validation zod, champ piège, limitation de débit par IP, longueurs maximales, aucun HTML non échappé dans les emails.
 - `/api/keepalive` : protégée par `CRON_SECRET` (en-tête `Authorization: Bearer`).
-- Dashboard exclu de l'indexation (`robots.txt` et `noindex`). Aucun lien public vers `/admin`. Jusqu'à la mise en ligne (Prompt 14), tout le site est en `noindex, nofollow` (D31).
+- Dashboard exclu de l'indexation (`robots.txt` et `noindex`). Aucun lien public vers `/admin`. Jusqu'à la mise en ligne (Prompt 14), tout le site est en `noindex, nofollow` : `INDEXING_ENABLED` reste à `false` (D92). En-têtes HSTS et CSP dans `next.config.ts` (D95) : toute nouvelle source externe (script, image, iframe, connexion) doit y être ajoutée et justifiée.
 - Le SQL de déclaration d'un administrateur contient un identifiant de compte : il est fourni dans le rapport, jamais commité.

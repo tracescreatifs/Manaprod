@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import { ContactCta } from "@/components/contact-cta";
 import { SectionRow } from "@/components/section-row";
@@ -9,11 +10,12 @@ import { getTeam } from "@/lib/data/team";
 import { initials } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Le studio | Mana Prod",
   description:
     "MANA PROD, agence de production audiovisuelle basée à Dakar, portée par Amath NDIAYE : équipe, chiffres clés et équipement.",
-};
+  path: "/studio",
+});
 
 const lede = "text-[clamp(22px,2.3vw,34px)] leading-[1.28] font-medium tracking-[-0.01em] text-pretty";
 

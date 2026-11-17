@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { SLUG_MAX, SLUG_PATTERN } from "@/lib/admin/slug";
 import { PROJECT_CATEGORIES } from "@/types/database";
 import { extractYouTubeId } from "@/lib/youtube";

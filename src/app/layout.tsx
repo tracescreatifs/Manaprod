@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import { Schibsted_Grotesk } from "next/font/google";
 import { getSiteUrl } from "@/lib/env";
+import { INDEXING_ENABLED, SITE_NAME } from "@/lib/site";
 import "./globals.css";
 
 const schibsted = Schibsted_Grotesk({
@@ -19,11 +20,10 @@ export const metadata: Metadata = {
   title: "MANA PROD",
   description:
     "MANA PROD, agence de production audiovisuelle basée à Dakar : films institutionnels, spots, documentaires, motion design, drone.",
-  // Site entier hors indexation jusqu'à la mise en ligne (décision D31).
-  robots: {
-    index: false,
-    follow: false,
-  },
+  // Indexation pilotée par une seule constante (D92, remplace D31) : false
+  // jusqu'à la mise en ligne. Le dashboard reste en noindex (admin/layout).
+  robots: INDEXING_ENABLED ? { index: true, follow: true } : { index: false, follow: false },
+  applicationName: SITE_NAME,
 };
 
 export const viewport: Viewport = {

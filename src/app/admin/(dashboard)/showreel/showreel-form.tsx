@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState, startTransition, type FormEvent, useId } from "react";
+import { useActionState, useEffect, useState, startTransition, type FormEvent, useId } from "react";
 import { Info } from "lucide-react";
 import { removeShowreel, saveShowreel } from "@/app/admin/actions";
+import { ConfirmButton } from "@/components/admin/confirm-button";
 import { Field, errorProps, inputClass } from "@/components/admin/field";
 import { Panel } from "@/components/admin/page-head";
 import { Toast } from "@/components/admin/toast";
@@ -22,6 +23,10 @@ export function ShowreelForm({ initial }: { initial: Saved & { hasShowreel: bool
   const ns = useId();
   const [saveState, saveAction, saving] = useActionState(saveShowreel, idleState);
   const [removeState, removeAction, removing] = useActionState(removeShowreel, idleState);
+  // Showreel retiré : le bouton disparaît, le focus passe au champ du lien.
+  useEffect(() => {
+    if (removeState.status === "success") document.getElementById(`${ns}-sr-url`)?.focus();
+  }, [removeState, ns]);
 
   const [url, setUrl] = useState(initial.url);
   const [title, setTitle] = useState(initial.title);
@@ -55,7 +60,6 @@ export function ShowreelForm({ initial }: { initial: Saved & { hasShowreel: bool
   }
 
   function onRemove() {
-    if (!window.confirm("Retirer le showreel ? L’accueil affichera le fond de repli.")) return;
     reset();
     startTransition(() => removeAction());
   }
@@ -114,9 +118,15 @@ export function ShowreelForm({ initial }: { initial: Saved & { hasShowreel: bool
               {saving ? "Enregistrement en cours" : "Enregistrer"}
             </button>
             {saved.hasShowreel ? (
-              <button type="button" onClick={onRemove} disabled={pending} className={btnDanger}>
-                {removing ? "Retrait en cours" : "Retirer le showreel"}
-              </button>
+              <ConfirmButton
+                question="Retirer le showreel ? L’accueil affichera le fond de repli."
+                confirmLabel="Confirmer le retrait"
+                pendingLabel="Retrait en cours"
+                pending={pending}
+                onConfirm={onRemove}
+                triggerClassName={btnDanger}
+                trigger="Retirer le showreel"
+              />
             ) : null}
           </div>
         </Panel>

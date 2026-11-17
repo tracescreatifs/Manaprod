@@ -24,7 +24,16 @@ const SWIPE_THRESHOLD = 50;
 // (2 puis 1 selon la largeur) et visionneuse en <dialog> natif : image en
 // grand, compteur, précédente et suivante (boutons, flèches du clavier,
 // balayage tactile), Échap, focus rendu à la vignette, défilement bloqué.
-export function PhotoGallery({ photos, label }: { photos: GalleryPhoto[]; label: string }) {
+export function PhotoGallery({
+  photos,
+  label,
+  eagerFirst = false,
+}: {
+  photos: GalleryPhoto[];
+  label: string;
+  /** Première photo chargée tout de suite (fiche sans vidéo : c'est l'image principale, LCP). */
+  eagerFirst?: boolean;
+}) {
   const [index, setIndex] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -76,6 +85,7 @@ export function PhotoGallery({ photos, label }: { photos: GalleryPhoto[]; label:
                 width={photo.width ?? FALLBACK_WIDTH}
                 height={photo.height ?? FALLBACK_HEIGHT}
                 sizes="(min-width: 1001px) 33vw, (min-width: 561px) 50vw, 100vw"
+                {...(eagerFirst && i === 0 ? { loading: "eager" as const, fetchPriority: "high" as const } : {})}
                 className="h-auto w-full transition-transform duration-[600ms] group-hover:scale-[1.03]"
               />
             </button>

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { PROJECT_CATEGORIES } from "@/types/database";
 
 // Validation du formulaire de contact (cahier 6.7), partagée entre le

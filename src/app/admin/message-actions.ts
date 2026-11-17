@@ -1,7 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { failure, success, type ActionState } from "@/lib/admin/action-state";
 import { requireAdmin } from "@/lib/admin/auth";
 

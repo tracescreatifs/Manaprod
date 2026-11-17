@@ -83,7 +83,7 @@ describe("initials", () => {
 describe("formatDateFr", () => {
   it("affiche une date en français sans décalage de fuseau", () => {
     expect(formatDateFr("2026-11-17")).toBe("17 novembre 2026");
-    expect(formatDateFr("2027-01-01")).toBe("1 janvier 2027");
+    expect(formatDateFr("2027-01-01")).toBe("1er janvier 2027");
   });
 });
 
@@ -93,5 +93,10 @@ describe("formatMessageDate", () => {
   it("affiche la date et l'heure de Dakar en français", () => {
     expect(formatMessageDate("2026-11-17T23:45:00Z")).toBe("17 novembre 2026 à 23:45");
     expect(formatMessageDate("2026-01-01T00:05:00+01:00")).toBe("31 décembre 2025 à 23:05");
+  });
+  it("écrit « 1er » pour le premier jour du mois, et seulement lui", () => {
+    expect(formatMessageDate("2026-12-01T09:30:00Z")).toBe("1er décembre 2026 à 09:30");
+    expect(formatMessageDate("2026-12-11T09:30:00Z")).toBe("11 décembre 2026 à 09:30");
+    expect(formatMessageDate("2026-12-21T09:30:00Z")).toBe("21 décembre 2026 à 09:30");
   });
 });

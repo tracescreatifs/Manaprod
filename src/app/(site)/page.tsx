@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { ButtonLink } from "@/components/button-link";
 import { ContactCta } from "@/components/contact-cta";
 import { ClientMarquee } from "@/components/home/client-marquee";
+import { OrganizationJsonLd } from "@/components/organization-json-ld";
 import { Hero } from "@/components/home/hero";
 import { Reveal } from "@/components/motion/reveal";
 import { ProjectCard } from "@/components/project-card";
@@ -17,11 +19,12 @@ function imageUrl(project: CoverSource): string | null {
   return path ? mediaUrl(path) : null;
 }
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Mana Prod | Production audiovisuelle à Dakar",
   description:
     "MANA PROD, agence de production audiovisuelle basée à Dakar : films institutionnels, spots, documentaires, motion design, drone.",
-};
+  path: "/",
+});
 
 const filled = (value: string | null | undefined) => value?.trim() || null;
 
@@ -36,6 +39,7 @@ export default async function Home() {
 
   return (
     <main>
+      <OrganizationJsonLd settings={settings} />
       <Hero
         sub={filled(settings?.hero_sub)}
         title={filled(settings?.hero_title)}

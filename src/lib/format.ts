@@ -51,13 +51,20 @@ export function initials(name: string): string {
   );
 }
 
-/** Date sans heure (AAAA-MM-JJ) affichée en français, sans décalage de fuseau. */
+/** Parties d'une date formatée, avec « 1er » pour le premier jour du mois. */
+function joinWithFirst(parts: Intl.DateTimeFormatPart[]): string {
+  return parts.map((part) => (part.type === "day" && part.value === "1" ? "1er" : part.value)).join("");
+}
+
+/** Date sans heure (AAAA-MM-JJ) affichée en français, sans décalage de fuseau, « 1er » compris. */
 export function formatDateFr(date: string): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(`${date}T12:00:00`));
+  return joinWithFirst(
+    new Intl.DateTimeFormat("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).formatToParts(new Date(`${date}T12:00:00`)),
+  );
 }
 
 const MESSAGE_DATE = new Intl.DateTimeFormat("fr-FR", {
@@ -66,7 +73,10 @@ const MESSAGE_DATE = new Intl.DateTimeFormat("fr-FR", {
   timeStyle: "short",
 });
 
-/** Date et heure de réception d'un message, à l'heure de Dakar (fr-FR). */
+/**
+ * Date et heure de réception d'un message, à l'heure de Dakar (fr-FR), avec
+ * « 1er » pour le premier jour du mois (« 1er décembre 2026 à 09:30 »).
+ */
 export function formatMessageDate(iso: string): string {
-  return MESSAGE_DATE.format(new Date(iso));
+  return joinWithFirst(MESSAGE_DATE.formatToParts(new Date(iso)));
 }

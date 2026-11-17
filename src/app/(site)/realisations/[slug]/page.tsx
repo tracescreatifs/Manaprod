@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -16,6 +16,12 @@ import { youTubeThumbnailUrl } from "@/lib/youtube";
 // publié (build sans base) ; la page correspondante est une 404.
 const NO_PROJECT = "aucun-projet";
 
+// Rendu bloquant autorisé pour une fiche inconnue au build (D96, remplace la
+// frontière Suspense de D89) : la coquille de la route se régénère sans
+// erreur après une modification des réglages, et les fiches connues restent
+// entièrement prérendues avec leur contenu dans le HTML initial (meilleur LCP).
+export const instant = false;
+
 // Type explicite (et non PageProps généré au build) : `npm run typecheck`
 // doit réussir avant tout build.
 type ProjectPageProps = { params: Promise<{ slug: string }> };
@@ -31,9 +37,10 @@ export async function generateMetadata({
 }: ProjectPageProps): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProject(slug);
-  if (!project) return { title: "Page introuvable | MANA PROD" };
+  if (!project) return { title: "Page introuvable | Mana Prod" };
 
-  const title = `${project.title}, ${project.client} | Mana Prod`;
+  // Titre du prototype : « Client : Titre | Mana Prod ».
+  const title = `${project.client} : ${project.title} | Mana Prod`;
   const description = project.description?.trim()
     ? truncate(project.description, 160)
     : `Mana Prod pour ${project.client} : ${project.category}, « ${project.title} ».`;
@@ -45,22 +52,14 @@ export async function generateMetadata({
         ? mediaUrl(project.photos[0].storage_path)
         : null;
 
-  return {
+  // Image de partage : celle de la carte du projet, sinon l'image par défaut.
+  return pageMetadata({
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      type: "article",
-      ...(image ? { images: [{ url: image }] } : {}),
-    },
-    twitter: {
-      card: image ? "summary_large_image" : "summary",
-      title,
-      description,
-      ...(image ? { images: [image] } : {}),
-    },
-  };
+    path: `/realisations/${slug}`,
+    image: image ? { url: image, alt: `${project.client} : ${project.title}` } : null,
+    type: "article",
+  });
 }
 
 const subHeading = "text-[clamp(20px,1.8vw,26px)] leading-[1.05] font-bold tracking-[-0.01em]";
@@ -69,18 +68,7 @@ const row =
 
 // Fiche projet (cahier 6.4, prototype) : retour, titre, méta, vidéo
 // principale, description, livrables, autres vidéos, photos, projet suivant.
-// Le contenu lit le paramètre de l'adresse dans une frontière Suspense : les
-// fiches connues au build restent entièrement prérendues, et la coquille de
-// la route se régénère sans erreur après une modification des réglages (D89).
-export default function ProjectPage({ params }: ProjectPageProps) {
-  return (
-    <Suspense fallback={<main className="wrap min-h-svh pt-[clamp(128px,14vw,210px)]" />}>
-      <ProjectContent params={params} />
-    </Suspense>
-  );
-}
-
-async function ProjectContent({ params }: ProjectPageProps) {
+export default async function ProjectPage({ params }: ProjectPageProps) {
   const { slug } = await params;
   const [project, next] = await Promise.all([getProject(slug), getNextProject(slug)]);
   if (!project) notFound();
@@ -192,7 +180,7 @@ async function ProjectContent({ params }: ProjectPageProps) {
           <h2 className="text-[clamp(22px,2.2vw,30px)] leading-[1.05] font-bold tracking-[-0.02em]">
             Photos
           </h2>
-          <PhotoGallery photos={photos} label={`Photos du projet ${project.title}`} />
+          <PhotoGallery photos={photos} label={`Photos du projet ${project.title}`} eagerFirst={!mainVideo} />
         </section>
       ) : null}
 

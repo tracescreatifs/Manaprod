@@ -1,6 +1,6 @@
 # Cahier des charges : site web MANA PROD
 
-Version 1.7 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
+Version 1.8 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
 
 ---
 
@@ -470,7 +470,7 @@ Les descriptions et livrables sont à rédiger par le client. Ne rien inventer :
 
 **Performance** : LCP inférieur à 2,5 s sur mobile 4G, CLS inférieur à 0,1, scores Lighthouse supérieurs à 90 (performance, accessibilité, bonnes pratiques, SEO). Images servies via `next/image` (AVIF/WebP, tailles responsives), chargement différé hors écran, iframes YouTube en façade, police auto-hébergée avec `next/font`.
 
-**SEO** : titre et description par page, Open Graph et Twitter cards, image de partage par projet (miniature), `sitemap.xml` dynamique (projets publiés), `robots.txt` (le dashboard est exclu et en `noindex` ; jusqu'à la mise en ligne, tout le site est en `noindex`), données structurées Organization et VideoObject sur les fiches projet.
+**SEO** : titre et description par page, Open Graph et Twitter cards, image de partage par projet (miniature), `sitemap.xml` dynamique (projets publiés), `robots.txt` (le dashboard est exclu et en `noindex` ; jusqu'à la mise en ligne, tout le site est en `noindex`), données structurées Organization sur l'accueil (pas de VideoObject : la date de publication des vidéos n'est pas connue, D94). Indexation pilotée par une seule constante (D92) ; en-têtes HSTS et CSP (D95).
 
 **Accessibilité (WCAG AA)** : contrastes vérifiés, navigation clavier complète, focus visible (contour turquoise), modales avec piégeage du focus et fermeture par Échap, textes alternatifs, libellés de formulaires, `aria-live` pour les erreurs, respect de `prefers-reduced-motion`, cibles tactiles d'au moins 44 px.
 

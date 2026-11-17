@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { MessageCircle } from "lucide-react";
 import { ContactForm } from "@/components/contact/contact-form";
 import { CopyEmail } from "@/components/contact/copy-email";
 import { getSiteSettings, siteContact } from "@/lib/data/settings";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact | Mana Prod",
   description:
     "Parlons de votre projet : film, campagne ou couverture d’événement. Contactez MANA PROD à Dakar par téléphone, WhatsApp, email ou formulaire.",
-};
+  path: "/contact",
+});
 
 const filled = (value: string | null | undefined) => value?.trim() || null;
 
