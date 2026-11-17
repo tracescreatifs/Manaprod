@@ -69,7 +69,7 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 - **Prompt 04** :
   - Correction de D43 : build Vercel sans variables Supabase en échec (D47), logique centralisée dans `src/lib/data/source.ts`.
   - `getHomeProjects()` (une requête, première vidéo par projet) et `getClients()`, étiquettes `projects` et `clients`.
-  - Images distantes limitées à `i.ytimg.com/vi/**` et `*.supabase.co/storage/v1/object/public/media/**` ; `mediaUrl()` (D06) et ses tests ; option `autoplay` de `youTubeEmbedUrl()` et ses tests (61 tests au total).
+  - Images distantes limitées à `i.ytimg.com/vi/**` et `*.supabase.co/storage/v1/object/public/media/**` ; `mediaUrl()` (D06) et ses tests ; option `autoplay` de `youTubeEmbedUrl()` et ses tests (55 tests au total).
   - Accueil complet : hero (titre et ligne en CSS, repli lumière et symbole à 6 %, vidéo de fond sur écran large seulement, fenêtre modale du showreel), Le studio, Sélection (`ProjectCard` avec miniature téléversée, YouTube ou carte typographique, aperçu au survol), bandeau des clients en CSS, appel final, apparition au défilement.
   - Composants `Symbole`, `YouTubeThumbnail`, `ProjectCard`, `Hero`, `HeroBackground`, `ShowreelPlayer`, `ClientMarquee` ; `WordReveal` et `LogoEmpile` supprimés (plus utilisés).
   - Lighthouse mobile de l'accueil (sans showreel, données simulées) : performance 97 à 99, accessibilité 100, bonnes pratiques 100, SEO 60 (seul échec : `noindex` voulu), LCP 0,8 s sur le titre, CLS 0.
