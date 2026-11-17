@@ -18,9 +18,11 @@ export async function removeMediaFiles(supabase: Supabase, paths: (string | null
   if (error) console.error(`[MANA PROD] Dashboard : suppression de fichiers impossible (${error.message}).`);
 }
 
-/** Fichiers d'un dossier dont le nom commence par `prefix` (ex. « <id>- »). */
+/** Fichiers d'un dossier dont le nom commence par `prefix` (ex. « <id>- », ou tous avec « »). */
 export async function listMediaFiles(supabase: Supabase, folder: string, prefix: string): Promise<string[]> {
-  const { data, error } = await supabase.storage.from(BUCKET).list(folder, { limit: 1000, search: prefix });
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .list(folder, { limit: 1000, ...(prefix ? { search: prefix } : {}) });
   if (error || !data) return [];
   return data.filter((f) => f.name.startsWith(prefix)).map((f) => `${folder}/${f.name}`);
 }

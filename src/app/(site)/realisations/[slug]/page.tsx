@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -68,7 +69,18 @@ const row =
 
 // Fiche projet (cahier 6.4, prototype) : retour, titre, méta, vidéo
 // principale, description, livrables, autres vidéos, photos, projet suivant.
-export default async function ProjectPage({ params }: ProjectPageProps) {
+// Le contenu lit le paramètre de l'adresse dans une frontière Suspense : les
+// fiches connues au build restent entièrement prérendues, et la coquille de
+// la route se régénère sans erreur après une modification des réglages (D89).
+export default function ProjectPage({ params }: ProjectPageProps) {
+  return (
+    <Suspense fallback={<main className="wrap min-h-svh pt-[clamp(128px,14vw,210px)]" />}>
+      <ProjectContent params={params} />
+    </Suspense>
+  );
+}
+
+async function ProjectContent({ params }: ProjectPageProps) {
   const { slug } = await params;
   const [project, next] = await Promise.all([getProject(slug), getNextProject(slug)]);
   if (!project) notFound();

@@ -176,7 +176,6 @@ export const settingsSchema = z.object({
   ),
 });
 
-export type SettingsInput = z.infer<typeof settingsSchema>;
 
 // ---------------------------------------------------------------------
 // Projets (cahier 7.2)
@@ -308,7 +307,6 @@ export const projectSchema = z
     return { ...data, videos };
   });
 
-export type ProjectInput = z.input<typeof projectSchema>;
 export type ProjectData = z.output<typeof projectSchema>;
 
 /** Nouvel ordre des projets : tous les identifiants, sans doublon. */

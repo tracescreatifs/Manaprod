@@ -1,7 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { NotFoundContent } from "@/components/pages/not-found-content";
 import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { SiteHeader, SiteHeaderFallback } from "@/components/site-header";
 
 export const metadata: Metadata = {
   title: "Page introuvable | MANA PROD",
@@ -14,7 +15,9 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <>
-      <SiteHeader />
+      <Suspense fallback={<SiteHeaderFallback />}>
+        <SiteHeader />
+      </Suspense>
       <div id="contenu" tabIndex={-1} className="outline-none">
         <NotFoundContent />
       </div>

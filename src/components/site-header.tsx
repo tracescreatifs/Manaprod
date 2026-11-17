@@ -18,8 +18,20 @@ function isActive(pathname: string, href: string) {
 // En-tête fixe (cahier 6.1, prototype .hdr) : transparent sur l'accueil puis
 // opaque avec flou après 60 px de défilement, opaque sur les autres pages.
 // Sur mobile (820 px et moins), menu plein écran.
+// L'adresse est lue dans une frontière Suspense (layout du site) : sur une
+// route dynamique (fiche projet), la coquille régénérée à l'exécution ne la
+// connaît pas encore (audit 2, D89).
 export function SiteHeader() {
-  const pathname = usePathname();
+  return <HeaderContent pathname={usePathname()} />;
+}
+
+/** Même en-tête sans lien actif, le temps de lire l'adresse. */
+export function SiteHeaderFallback() {
+  return <HeaderContent pathname={null} />;
+}
+
+function HeaderContent({ pathname: currentPath }: { pathname: string | null }) {
+  const pathname = currentPath ?? "";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);

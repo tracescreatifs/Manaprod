@@ -108,8 +108,8 @@ export default async function MentionsLegalesPage() {
             uniquement. Elles ne sont ni vendues ni cédées.
           </p>
           <p>
-            <strong>Durée de conservation.</strong> Vos données sont conservées 24 mois après notre
-            dernier échange, puis supprimées.
+            <strong>Durée de conservation.</strong> Vos données sont conservées 24 mois à compter de
+            leur réception, puis effacées automatiquement.
           </p>
           <p>
             <strong>Vos droits.</strong> Conformément à la loi sénégalaise n° 2008-12 du 25 janvier

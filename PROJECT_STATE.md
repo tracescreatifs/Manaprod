@@ -1,11 +1,11 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-17, fin du Prompt 11.
+Dernière mise à jour : 2026-11-17, fin du Prompt 12.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 11 (dashboard, onglets Clients, Équipe et Messages, effacement automatique des messages). En attente de validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 12 (audit 2), après le Go.
+- **Dernier prompt terminé** : Prompt 12 (audit 2 du dashboard, de l'authentification, de la base et du stockage). En attente de validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 13 (qualité : SEO, accessibilité, performance, CSP, P10 et P13), après le Go.
 - **Branche de travail** : `main` (développement, avant mise en ligne).
 - **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), dashboard complet (Showreel, Projets, Clients, Équipe, Réglages, Messages) publié immédiatement sur le site, effacement automatique des messages de plus de 24 mois.
 
@@ -26,8 +26,8 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 | 08 | Audit 1 | Contrôle complet des prompts 01 à 07 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | | Fait, validé |
 | 09 | Authentification | Connexion, mot de passe oublié (`/admin/mot-de-passe-oublie`, `/admin/nouveau-mot-de-passe`), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (jamais commité) | Fait, validé |
 | 10 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication, client et titre obligatoires, « Voir la page » désactivé si non publié | Exécution de `0003_project_photo_size.sql` | Fait, validé |
-| 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | | Fait, en attente de validation |
-| 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | | À faire |
+| 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | | Fait, validé |
+| 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | | Fait, en attente de validation |
 | 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | | À faire |
 | 14 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 du cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les MX | Accès au DNS de manaprod.com | À faire |
 
@@ -131,10 +131,18 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - `/api/keepalive` efface les messages de plus de 24 mois avec la clé service et renvoie seulement leur nombre (D87, P11 résolu).
   - Navigation dans l'ordre du cahier : Showreel, Projets, Clients, Équipe, Réglages, Messages. 136 tests au total.
   - Décisions D84 à D88.
+- **Prompt 12 (audit 2)** :
+  - Constat critique corrigé : après un enregistrement des Réglages ou du Showreel, toutes les fiches projet répondaient 500 (régénération de la coquille de `/realisations/[slug]` avec `usePathname()` et `params` hors Suspense) ; en-tête et contenu de la fiche placés dans des frontières Suspense (D89).
+  - Cookies de session Supabase en `Secure` en production (D90) ; lien de réinitialisation fondé sur `NEXT_PUBLIC_SITE_URL` en priorité.
+  - Mentions légales : conservation 24 mois à compter de la réception, puis effacement automatique (D91). P14 expliqué et fermé.
+  - Suppression des fichiers du bucket factorisée (`removeMediaFiles`, `listMediaFiles`), types inutilisés retirés, `.env.example` et cahier v1.7 alignés sur le code.
+  - Vérifié : 28 Server Actions protégées par `requireAdmin()`, RLS et policies du bucket testées avec les rôles Postgres (non-administrateur et anonyme refusés), refus des Server Actions d'une autre origine, `no-store` et `noindex` du dashboard, 0 violation axe (WCAG 2.1 AA) sur les 10 pages du dashboard à 360, 768 et 1440 px, Lighthouse mobile 95 à 100 en performance et 100 en accessibilité sur les 7 pages publiques.
+  - Décisions D89 à D91 ; constats détaillés dans le rapport du Prompt 12.
 
 ## 4. Reste à faire
 
-- Prompts 12 à 14 (voir la feuille de route).
+- Prompts 13 et 14 (voir la feuille de route).
+- Recommandations de l’audit 2 non appliquées (rapport du Prompt 12) : réauthentification pour changer le mot de passe (réglage Supabase), en-tête HSTS avec la CSP, confirmation unique en deux temps partout dans le dashboard.
 - Recommandations de l’audit 1 non appliquées (rapport du Prompt 08) : CSP, code 404 à la première visite (P10).
 
 ## 5. Problèmes ouverts
@@ -154,7 +162,7 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 | P11 | Les mentions légales annoncent une conservation des messages de 24 mois, mais aucun effacement automatique n'existait | Conformité | Résolu au Prompt 11 : `/api/keepalive` efface les messages de plus de 24 mois tous les 6 jours (D87) |
 | P12 | Pas de politique de sécurité du contenu (CSP) | Aucun à court terme | Recommandation : la définir au Prompt 13 (YouTube, Supabase, styles de Next.js) |
 | P13 | La page d'erreur, comme la 404 d'une première visite (P10), répond avec le code 200 sur un rendu à la demande (rendu en flux) | Aucun pour le visiteur | À revoir au Prompt 13 avec P10 |
-| P14 | Après une déconnexion, le routeur peut demander deux préchargements de `/admin/login` qui répondent 404 (console du navigateur, observé une fois en local). La page de connexion s'affiche normalement | Aucun | À observer sur Vercel ; à revoir à l'audit 2 (Prompt 12) |
+| P14 | Après une déconnexion, le routeur pouvait demander deux préchargements de `/admin/login` qui répondaient 404 | Aucun | Expliqué au Prompt 12 : préchargement d'un segment d'une page du dashboard gardée en mémoire, redirigé par le proxy vers la connexion, qui n'a pas ce segment. Reproduit sur le code du Prompt 09, plus reproduit depuis le Prompt 10 (pages du dashboard rendues à la requête, `connection()`). Sans effet pour l'utilisateur ; fermé |
 
 ## 6. Contenus à fournir par le client
 

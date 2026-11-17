@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "@/lib/env";
+import { sessionCookieOptions } from "@/lib/supabase/cookie-options";
 
 // Proxy (convention Next.js 16), limité à /admin : rafraîchit la session
 // Supabase dans les cookies et protège le dashboard (D70). Il ne s'exécute
@@ -18,6 +19,7 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(url, anonKey, {
+    cookieOptions: sessionCookieOptions,
     cookies: {
       getAll() {
         return request.cookies.getAll();

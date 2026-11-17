@@ -12,6 +12,7 @@ import {
   validate,
   type ProjectData,
 } from "@/lib/admin/schemas";
+import { listMediaFiles, removeMediaFiles } from "@/lib/admin/storage";
 import { CACHE_TAGS, projectTag } from "@/lib/data/tags";
 import type { Tables } from "@/types/database";
 
@@ -23,7 +24,6 @@ import type { Tables } from "@/types/database";
 const FIX_FIELDS = "Certains champs sont à corriger.";
 const SAVE_FAILED = "L’enregistrement a échoué. Réessayez dans un instant.";
 const NOT_FOUND = "Ce projet n’existe plus. Rechargez la liste des projets.";
-const BUCKET = "media";
 
 type Supabase = Awaited<ReturnType<typeof requireAdmin>>["supabase"];
 
@@ -42,14 +42,6 @@ function publish(...slugs: (string | null | undefined)[]) {
   for (const slug of new Set(slugs.filter((s): s is string => Boolean(s)))) {
     updateTag(projectTag(slug));
   }
-}
-
-/** Supprime des fichiers du bucket ; un échec est consigné, jamais bloquant. */
-async function removeFiles(supabase: Supabase, paths: string[]) {
-  const unique = [...new Set(paths.filter(Boolean))].filter((p) => !p.startsWith("/"));
-  if (unique.length === 0) return;
-  const { error } = await supabase.storage.from(BUCKET).remove(unique);
-  if (error) logError("suppression de fichiers impossible", error.message);
 }
 
 /** Erreur de slug déjà pris, ou null si l'adresse est libre. */
@@ -255,16 +247,16 @@ export async function deleteProject(id: unknown): Promise<ProjectActionResult> {
 
   // Fichiers : ceux connus en base, plus tout fichier resté dans le dossier
   // du projet ou parmi ses miniatures.
-  const paths = [project.thumbnail_path ?? "", ...project.project_photos.map((p) => p.storage_path)];
   const [folder, thumbs] = await Promise.all([
-    supabase.storage.from(BUCKET).list(`projects/${pid.data}`, { limit: 1000 }),
-    supabase.storage.from(BUCKET).list("thumbs", { limit: 1000, search: pid.data }),
+    listMediaFiles(supabase, `projects/${pid.data}`, ""),
+    listMediaFiles(supabase, "thumbs", `${pid.data}-`),
   ]);
-  for (const file of folder.data ?? []) paths.push(`projects/${pid.data}/${file.name}`);
-  for (const file of thumbs.data ?? []) {
-    if (file.name.startsWith(`${pid.data}-`)) paths.push(`thumbs/${file.name}`);
-  }
-  await removeFiles(supabase, paths);
+  await removeMediaFiles(supabase, [
+    project.thumbnail_path,
+    ...project.project_photos.map((p) => p.storage_path),
+    ...folder,
+    ...thumbs,
+  ]);
 
   publish(project.slug);
   return success("Projet supprimé, avec ses vidéos, ses photos et ses fichiers.");
@@ -318,7 +310,7 @@ export async function addProjectPhotos(
 
   const project = await projectSlug(supabase, pid.data);
   if (!project) {
-    await removeFiles(supabase, valid.map((p) => p.path));
+    await removeMediaFiles(supabase, valid.map((p) => p.path));
     return failure(NOT_FOUND);
   }
 
@@ -345,7 +337,7 @@ export async function addProjectPhotos(
     .order("position", { ascending: true });
   if (error) {
     logError("enregistrement des photos impossible", error.message);
-    await removeFiles(supabase, valid.map((p) => p.path));
+    await removeMediaFiles(supabase, valid.map((p) => p.path));
     return failure("Les photos n’ont pas pu être enregistrées. Réessayez.");
   }
 
@@ -368,7 +360,7 @@ export async function deleteProjectPhoto(photoId: unknown): Promise<ActionState>
     if (error) logError("suppression de la photo impossible", error.message);
     return failure("La photo n’a pas pu être supprimée. Réessayez.");
   }
-  await removeFiles(supabase, [deleted[0].storage_path]);
+  await removeMediaFiles(supabase, [deleted[0].storage_path]);
   const project = await projectSlug(supabase, deleted[0].project_id);
   publish(project?.slug);
   return success("Photo supprimée.");
@@ -382,7 +374,7 @@ export async function setProjectThumbnail(id: unknown, path: unknown): Promise<A
 
   const project = await projectSlug(supabase, pid.data);
   if (!project) {
-    await removeFiles(supabase, [path]);
+    await removeMediaFiles(supabase, [path]);
     return failure(NOT_FOUND);
   }
   const { data, error } = await supabase
@@ -392,10 +384,10 @@ export async function setProjectThumbnail(id: unknown, path: unknown): Promise<A
     .select("id");
   if (error || data.length === 0) {
     if (error) logError("enregistrement de la miniature impossible", error.message);
-    await removeFiles(supabase, [path]);
+    await removeMediaFiles(supabase, [path]);
     return failure("La miniature n’a pas pu être enregistrée. Réessayez.");
   }
-  if (project.thumbnail_path && project.thumbnail_path !== path) await removeFiles(supabase, [project.thumbnail_path]);
+  if (project.thumbnail_path && project.thumbnail_path !== path) await removeMediaFiles(supabase, [project.thumbnail_path]);
   publish(project.slug);
   return { ...success("Miniature enregistrée."), path };
 }
@@ -416,7 +408,7 @@ export async function removeProjectThumbnail(id: unknown): Promise<ActionState> 
     if (error) logError("retrait de la miniature impossible", error.message);
     return failure("La miniature n’a pas pu être retirée. Réessayez.");
   }
-  if (project.thumbnail_path) await removeFiles(supabase, [project.thumbnail_path]);
+  if (project.thumbnail_path) await removeMediaFiles(supabase, [project.thumbnail_path]);
   publish(project.slug);
   return success("Miniature retirée. Le site utilise celle de la première vidéo, sinon la première photo.");
 }
@@ -441,5 +433,5 @@ export async function discardUploads(id: unknown, paths: unknown): Promise<void>
   ]);
   if (!photos) return;
   const used = new Set([...photos.map((p) => p.storage_path), project?.thumbnail_path ?? ""]);
-  await removeFiles(supabase, own.filter((p) => !used.has(p)));
+  await removeMediaFiles(supabase, own.filter((p) => !used.has(p)));
 }

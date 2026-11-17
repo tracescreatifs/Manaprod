@@ -2,6 +2,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { getSupabaseEnv } from "@/lib/env";
+import { sessionCookieOptions } from "@/lib/supabase/cookie-options";
 
 // Client Supabase pour les composants serveur, les Server Actions et les
 // route handlers. Utilise la clé publique anon : la RLS s'applique.
@@ -12,6 +13,7 @@ export async function createClient() {
   const { url, anonKey } = getSupabaseEnv();
 
   return createServerClient(url, anonKey, {
+    cookieOptions: sessionCookieOptions,
     cookies: {
       getAll() {
         return cookieStore.getAll();

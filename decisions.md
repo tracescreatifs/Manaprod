@@ -641,3 +641,24 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : Liste du plus récent au plus ancien, 30 par page, filtres Tous, À traiter, Traités dans l'adresse (`?filtre=a-traiter`, `?page=2`). Date et heure à l'heure de Dakar (fr-FR). Message affiché en texte brut (React échappe le HTML, sauts de ligne conservés). Actions : marquer traité ou à traiter, répondre (mailto, objet « Votre demande à MANA PROD »), supprimer en deux temps. Après chaque action, `refresh()` met à jour la liste et le nombre de messages à traiter affiché dans la navigation (lu par le layout du dashboard, dans une frontière Suspense).
 - **Raison** : Cahier 7.6 et Prompt 11.
 - **Alternative écartée** : Compteur rafraîchi par interrogation périodique.
+
+## D89 : Frontières Suspense de l'en-tête et de la fiche projet
+
+- **Date** : 2026-11-17 (Prompt 12, audit 2)
+- **Décision** : L'en-tête du site lit l'adresse (`usePathname`) dans une frontière Suspense, avec un repli identique sans lien actif (`SiteHeaderFallback`), dans le layout `(site)` et dans la page 404. Le contenu de la fiche projet lit `params` dans une frontière Suspense. Les fiches connues au build restent statiques (○), avec leur contenu complet dans le HTML.
+- **Raison** : Constaté à l'audit : après un enregistrement des Réglages ou du Showreel (étiquette `settings`, lue par le pied de page), Next.js régénère à l'exécution la coquille de `/realisations/[slug]` sans paramètre connu ; `usePathname()` et `params` hors Suspense bloquaient ce prérendu et toutes les fiches répondaient 500 jusqu'au déploiement suivant. Défaut présent depuis le Prompt 09.
+- **Alternative écartée** : `export const instant = false` sur la fiche (rendu bloquant, page plus lente) ; ne plus mettre en cache le pied de page.
+
+## D90 : Attributs des cookies de session
+
+- **Date** : 2026-11-17 (Prompt 12, audit 2)
+- **Décision** : Les trois clients Supabase (proxy, serveur, navigateur) posent leurs cookies de session avec `Secure` en production (`src/lib/supabase/cookie-options.ts`), en gardant les valeurs par défaut de `@supabase/ssr` (chemin /, SameSite=Lax). `HttpOnly` reste désactivé, car le client navigateur lit la session pour téléverser les images directement (D79) ; le risque associé (script injecté) est couvert par l'absence de HTML interprété et par la CSP prévue au Prompt 13. Le lien de réinitialisation du mot de passe utilise `NEXT_PUBLIC_SITE_URL` en priorité, jamais un en-tête de la requête quand la variable existe.
+- **Raison** : Sans `Secure`, un cookie de session pouvait partir sur une première requête en HTTP.
+- **Alternative écartée** : Cookies `HttpOnly` (téléversement direct impossible, D79).
+
+## D91 : Durée de conservation des messages (complète D87)
+
+- **Date** : 2026-11-17 (Prompt 12, arbitrage du rapport du Prompt 11)
+- **Décision** : Les mentions légales annoncent : « Vos données sont conservées 24 mois à compter de leur réception, puis effacées automatiquement. » C'est la règle appliquée par `/api/keepalive` (D87).
+- **Raison** : Le texte précédent (« 24 mois après notre dernier échange ») ne correspondait pas au code.
+- **Alternative écartée** : Effacement 24 mois après le dernier échange (date non enregistrée en base).

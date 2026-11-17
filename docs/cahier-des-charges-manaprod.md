@@ -1,6 +1,6 @@
 # Cahier des charges : site web MANA PROD
 
-Version 1.6 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
+Version 1.7 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
 
 ---
 
@@ -85,7 +85,7 @@ Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`
 | Vidéos | YouTube (liens collés dans le dashboard) |
 | Dépôt | GitHub, push direct sur `main`, sans pull request |
 
-**Tâche récurrente anti-pause Supabase** : un cron tous les 6 jours qui fait une requête simple sur la base (route `/api/keepalive` appelée par Vercel Cron), en place dès le Prompt 03.
+**Tâche récurrente anti-pause Supabase** : un cron tous les 6 jours qui fait une requête simple sur la base (route `/api/keepalive` appelée par Vercel Cron), en place dès le Prompt 03. Depuis le Prompt 11, cette requête efface les messages de contact reçus il y a plus de 24 mois (D87).
 
 **Environnement** : développement exclusivement en ligne, rien à exécuter sur la machine de Ziza. Les variables d'environnement sont saisies par Ziza dans les interfaces web de Vercel et Supabase, Claude Code fournit un fichier `.env.example` commenté.
 
@@ -172,7 +172,7 @@ Point à confirmer par Ziza : la police ne doit pas faire « IA ». Les conventi
 | `/admin/mot-de-passe-oublie` | Demande de réinitialisation du mot de passe (envoi d'un email) |
 | `/admin/nouveau-mot-de-passe` | Choix d'un nouveau mot de passe (lien reçu par email) |
 | `/api/contact` | Réception du formulaire |
-| `/api/keepalive` | Maintien de la base active (cron tous les 6 jours) |
+| `/api/keepalive` | Maintien de la base active et effacement des messages de plus de 24 mois (cron tous les 6 jours) |
 
 Menu : Réalisations, Services, Le studio, Contact. Aucun lien vers l'admin sur le site public : accès par URL uniquement.
 
@@ -271,19 +271,19 @@ Interface : barre du haut (logo, adresse de l'administrateur connecté, bouton d
 - Éditeur :
   - Informations : client et titre (obligatoires tous les deux), catégorie, année, description, case « Afficher dans la sélection de l'accueil », case « Publié ».
   - Livrables : une ligne par livrable (champ multiligne), vide autorisé.
-  - Miniature : téléversement, ou automatique (première vidéo YouTube, sinon première photo).
+  - Miniature : téléversement, ou automatique (première vidéo YouTube, sinon première photo, sinon carte typographique, D84).
   - Vidéos YouTube : lignes avec lien, titre facultatif, aperçu, réordonner, supprimer. Validation immédiate du lien.
-  - Photos : téléversement multiple, réduction automatique (1800 px, JPEG 82 %), réordonner, supprimer, « utiliser comme miniature ».
+  - Photos : téléversement multiple, réduction automatique dans le navigateur (2400 px, WebP qualité 0,82, JPEG si le WebP n'est pas disponible, D79), largeur et hauteur enregistrées (migration 0003), texte alternatif, réordonner, supprimer. Pas de « utiliser comme miniature » (une photo supprimée casserait la miniature, D84).
   - Enregistrer, Annuler. Retour d'erreur clair.
 - Le slug est généré à partir du titre et du client, modifiable, unique.
 
 ### 7.3 Clients
-- Liste ordonnable : nom, logo (téléversement, PNG transparent recommandé, réduit à 520 px), case « Afficher en blanc » pour les logos sombres, retirer le logo, supprimer.
+- Liste ordonnable : nom, logo (téléversement, PNG transparent recommandé, réduit à 520 px, WebP avec transparence ou PNG, SVG refusé), case « Afficher en blanc » pour les logos sombres, retirer le logo, supprimer. Chaque action est enregistrée aussitôt (D85).
 - Un client sans logo s'affiche en texte.
 - La liste des clients est indépendante des projets.
 
 ### 7.4 Équipe
-- Liste ordonnable : photo (portrait, recadrée en 4:5, réduite à 1000 px), nom, titre, présentation courte facultative.
+- Liste ordonnable : photo (portrait, recadrée en 4:5 avec position verticale Haut, Centre ou Bas, réduite à 1000 px de large), nom, titre, présentation courte facultative (300 caractères), D86.
 
 ### 7.5 Réglages
 - Phrase du hero et ligne au-dessus.
@@ -294,6 +294,8 @@ Interface : barre du haut (logo, adresse de l'administrateur connecté, bouton d
 ### 7.6 Messages reçus (nouveau par rapport au prototype)
 - Liste des demandes du formulaire de contact : date, nom, organisation, email, type, message, statut « traité ».
 - Marquer comme traité, supprimer, répondre par email (lien mailto).
+- Filtres Tous, À traiter, Traités ; 30 messages par page ; nombre de messages à traiter à côté de l'onglet (D88).
+- Effacement automatique 24 mois après la réception, par la route `/api/keepalive` (D87).
 
 ### 7.7 Comportement général
 - Toute modification publiée est visible sur le site immédiatement (revalidation du cache Next.js par étiquette à chaque enregistrement).
@@ -393,7 +395,7 @@ create table admin_users (user_id uuid primary key references auth.users(id) on 
 - Lecture publique : `site_settings`, `projects` (si `published`), `project_videos`, `project_photos`, `clients`, `team_members`.
 - Écriture : uniquement si l'utilisateur est dans `admin_users` (fonction `is_admin()`).
 - `contact_messages` : aucune lecture ni écriture publique. L'insertion passe par la route `/api/contact` (clé service, côté serveur). Lecture et mise à jour réservées aux admins.
-- La clé service n'est jamais exposée au navigateur.
+- La clé service n'est jamais exposée au navigateur. Elle sert uniquement à `/api/contact` et à `/api/keepalive` (effacement des messages de plus de 24 mois, D87).
 
 **Droits d'accès (GRANT explicites)** : la migration accorde explicitement les droits, sans dépendre des réglages par défaut du projet : usage du schéma `public` pour `anon` et `authenticated` ; lecture des 6 tables de contenu pour `anon` ; lecture et écriture de ces 6 tables et de `contact_messages` pour `authenticated` ; lecture de `admin_users` pour `authenticated` ; tous les droits pour `service_role` ; exécution de `is_admin()` pour `anon` et `authenticated`. Ces droits ouvrent l'accès à l'API, la RLS reste la seule règle métier.
 

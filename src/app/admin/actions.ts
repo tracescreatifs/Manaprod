@@ -14,6 +14,7 @@ import {
   validate,
 } from "@/lib/admin/schemas";
 import { CACHE_TAGS } from "@/lib/data/tags";
+import { getSiteUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -56,12 +57,17 @@ export async function logout(): Promise<void> {
   redirect(`${LOGIN_PATH}?deconnecte=1`);
 }
 
-/** Origine du site pour le lien de l'email (déploiement en cours). */
+/**
+ * Origine du site pour le lien de l'email : NEXT_PUBLIC_SITE_URL en priorité
+ * (jamais un en-tête de la requête), sinon le déploiement en cours.
+ */
 async function siteOrigin(): Promise<string> {
+  const site = getSiteUrl();
+  if (site) return site.origin;
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";
-  return host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_SITE_URL ?? "");
+  return host ? `${proto}://${host}` : "";
 }
 
 export async function requestPasswordReset(_: ActionState, form: FormData): Promise<ActionState> {
