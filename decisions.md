@@ -452,3 +452,31 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : Les mentions légales indiquent « Vercel Inc. » et le site vercel.com, sans adresse postale.
 - **Raison** : L'adresse publiée par Vercel n'a pas pu être vérifiée depuis la session de développement (site injoignable) : aucune information non vérifiée n'est publiée.
 - **Alternative écartée** : Recopier une adresse de mémoire, sans vérification.
+
+## D62 : Limitation des envois du formulaire de contact
+
+- **Date** : 2026-11-17 (Prompt 07)
+- **Décision** : Chaque envoi valide enregistre dans `contact_submissions` (migration 0002) une empreinte HMAC-SHA256 de l'adresse IP (première valeur de `x-forwarded-for`, sinon `x-real-ip`). La clé de l'empreinte est dérivée de `SUPABASE_SERVICE_ROLE_KEY` par un HMAC avec un libellé fixe, sans nouvelle variable. Au plus 3 envois par empreinte sur une heure glissante ; au-delà, réponse 429 avec un message clair et rien n'est enregistré. Les lignes de plus de 24 heures sont purgées à chaque envoi accepté. Table accessible à la seule clé service (RLS sans policy, droits retirés aux rôles publics).
+- **Raison** : Applique D10 : une limite gardée en mémoire ne tient pas sur Vercel ; l'adresse IP n'est jamais stockée en clair et l'empreinte ne peut pas être recalculée sans le secret serveur.
+- **Alternative écartée** : Empreinte SHA-256 simple (recalculable par force brute sur l'espace des adresses IPv4) ; service externe de limitation (compte et secret supplémentaires).
+
+## D63 : Formulaire de contact sans JavaScript
+
+- **Date** : 2026-11-17 (Prompt 07)
+- **Décision** : Le formulaire envoie aussi en POST classique vers `/api/contact`, qui répond par une redirection 303 vers `/contact?envoye=1#demande-envoyee` ou vers `/contact#demande-incomplete`, `#demande-limite`, `#demande-erreur`. La page reste statique : le message correspondant est affiché par le sélecteur CSS `:target`. Avec JavaScript, l'envoi se fait en `fetch` (réponses JSON) et la réponse s'affiche dans la page, sans rechargement.
+- **Raison** : Le formulaire reste utilisable sans JavaScript, sans rendre la page Contact dynamique.
+- **Alternative écartée** : Lecture des paramètres d'URL côté serveur (page rendue à chaque requête) ; formulaire inutilisable sans JavaScript.
+
+## D64 : Adresse de l'hébergeur (complète D61)
+
+- **Date** : 2026-11-17 (Prompt 07)
+- **Décision** : Les mentions légales indiquent désormais l'adresse de Vercel Inc. : 440 N Barranca Avenue #4133, Covina, CA 91723, États-Unis.
+- **Raison** : Adresse vérifiée par Claude dans la politique de confidentialité de Vercel et transmise dans le Prompt 07.
+- **Alternative écartée** : Garder la seule raison sociale.
+
+## D65 : Bibliothèques du formulaire et des emails
+
+- **Date** : 2026-11-17 (Prompt 07)
+- **Décision** : `zod` 4.6.7 (validation partagée entre le navigateur et le serveur) et `resend` 6.38.1 (SDK officiel d'envoi des emails). Versions exactes dans `package.json`.
+- **Raison** : Choix de la stack (CLAUDE.md) ; versions stables les plus récentes au 17 novembre 2026.
+- **Alternative écartée** : Validation écrite à la main ; appels HTTP directs à l'API de Resend.

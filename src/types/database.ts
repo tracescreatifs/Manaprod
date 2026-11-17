@@ -1,5 +1,6 @@
 // Types de la base Supabase, écrits à la main d'après
-// supabase/migrations/0001_init.sql (pas de génération automatique).
+// supabase/migrations/0001_init.sql et 0002_contact_rate_limit.sql
+// (pas de génération automatique).
 // À mettre à jour dans le même prompt que toute nouvelle migration.
 //
 // Conventions (format attendu par supabase-js) :
@@ -109,6 +110,12 @@ type ContactMessagesRow = {
   created_at: string;
 };
 
+type ContactSubmissionsRow = {
+  id: string;
+  ip_hash: string;
+  created_at: string;
+};
+
 type AdminUsersRow = {
   user_id: string;
   created_at: string;
@@ -126,6 +133,7 @@ type ProjectPhotosInsert = InsertOf<ProjectPhotosRow, "project_id" | "storage_pa
 type ClientsInsert = InsertOf<ClientsRow, "name">;
 type TeamMembersInsert = InsertOf<TeamMembersRow, "name">;
 type ContactMessagesInsert = InsertOf<ContactMessagesRow, "name" | "email" | "message">;
+type ContactSubmissionsInsert = InsertOf<ContactSubmissionsRow, "ip_hash">;
 type AdminUsersInsert = InsertOf<AdminUsersRow, "user_id">;
 
 type ProjectRelationship<Name extends string> = {
@@ -179,6 +187,13 @@ export type Database = {
         Row: ContactMessagesRow;
         Insert: ContactMessagesInsert;
         Update: Partial<ContactMessagesRow>;
+        Relationships: [];
+      };
+      // Accès réservé à la clé service (migration 0002).
+      contact_submissions: {
+        Row: ContactSubmissionsRow;
+        Insert: ContactSubmissionsInsert;
+        Update: Partial<ContactSubmissionsRow>;
         Relationships: [];
       };
       // user_id référence auth.users (schéma auth, hors de ce type).
