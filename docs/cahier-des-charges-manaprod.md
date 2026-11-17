@@ -1,6 +1,6 @@
 # Cahier des charges : site web MANA PROD
 
-Version 1.10 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
+Version 1.11 | 17 novembre 2026 | Alignée sur la méthode de développement Ziza × Claude × Claude Code | Logo Éclipse
 
 ---
 
@@ -26,7 +26,7 @@ Ziza travaille uniquement en ligne : Claude Code web est connecté au dépôt Gi
 
 Règle d'or : en cas de contradiction entre ce document et les prototypes, le document prime pour le fonctionnel et la sécurité, le prototype prime pour le visuel et les textes. La contradiction est notée dans `decisions.md`.
 
-Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés depuis la version 1.4. La version 1.5 intègre la renumérotation de la feuille de route décidée au Prompt 02 (décision D36) : les numéros de prompt cités dans ce document suivent la nouvelle numérotation. La version 1.6 intègre les corrections de l'audit 1 (Prompt 08). La version 1.9 intègre la page Le studio immersive, l'onglet Coulisses et la nouvelle numérotation des prompts 14 et 15 (décision D99) ; la section « Équipement » est retirée. La version 1.10 intègre la règle d'identité « carré pour ce qu'on filme, rond pour ce qu'on touche », la page Contact orientée conversion et la nouvelle numérotation des prompts 15 et 16 (décision D101).
+Les arbitrages pris après le Prompt 00 (décisions D08 à D31 de `decisions.md`) sont intégrés depuis la version 1.4. La version 1.5 intègre la renumérotation de la feuille de route décidée au Prompt 02 (décision D36) : les numéros de prompt cités dans ce document suivent la nouvelle numérotation. La version 1.6 intègre les corrections de l'audit 1 (Prompt 08). La version 1.9 intègre la page Le studio immersive, l'onglet Coulisses et la nouvelle numérotation des prompts 14 et 15 (décision D99) ; la section « Équipement » est retirée. La version 1.10 intègre la règle d'identité « carré pour ce qu'on filme, rond pour ce qu'on touche », la page Contact orientée conversion et la nouvelle numérotation des prompts 15 et 16 (décision D101). La version 1.11 marque la mise en ligne : indexation ouverte, images de partage JPEG des fiches, feuille de route terminée (décisions D103 et D104).
 
 ---
 
@@ -178,7 +178,7 @@ Point à confirmer par Ziza : la police ne doit pas faire « IA ». Les conventi
 
 Menu : Réalisations, Services, Le studio, Contact. Aucun lien vers l'admin sur le site public : accès par URL uniquement.
 
-Jusqu'à la mise en ligne (Prompt 16), tout le site est en `noindex, nofollow`, l'URL Vercel étant publique.
+Depuis la mise en ligne (Prompt 16), les pages publiques sont indexables ; le dashboard, la 404 et les pages d'erreur restent en `noindex`.
 
 ---
 
@@ -492,7 +492,7 @@ Les descriptions et livrables sont à rédiger par le client. Ne rien inventer :
 
 **Performance** : LCP inférieur à 2,5 s sur mobile 4G, CLS inférieur à 0,1, scores Lighthouse supérieurs à 90 (performance, accessibilité, bonnes pratiques, SEO). Images servies via `next/image` (AVIF/WebP, tailles responsives), chargement différé hors écran, iframes YouTube en façade, police auto-hébergée avec `next/font`.
 
-**SEO** : titre et description par page, Open Graph et Twitter cards, image de partage par projet (miniature), `sitemap.xml` dynamique (projets publiés), `robots.txt` (le dashboard est exclu et en `noindex` ; jusqu'à la mise en ligne, tout le site est en `noindex`), données structurées Organization sur l'accueil (pas de VideoObject : la date de publication des vidéos n'est pas connue, D94). Indexation pilotée par une seule constante (D92) ; en-têtes HSTS et CSP (D95).
+**SEO** : titre et description par page, Open Graph et Twitter cards, image de partage par projet (JPEG 1200 x 630 tiré de l'image de la carte, D103), `sitemap.xml` dynamique (projets publiés), `robots.txt` (le dashboard est exclu et en `noindex` ; jusqu'à la mise en ligne, tout le site est en `noindex`), données structurées Organization sur l'accueil (pas de VideoObject : la date de publication des vidéos n'est pas connue, D94). Indexation pilotée par une seule constante (D92) ; en-têtes HSTS et CSP (D95).
 
 **Accessibilité (WCAG AA)** : contrastes vérifiés, navigation clavier complète, focus visible (contour turquoise), modales avec piégeage du focus et fermeture par Échap, textes alternatifs, libellés de formulaires, `aria-live` pour les erreurs, respect de `prefers-reduced-motion`, cibles tactiles d'au moins 44 px.
 
@@ -537,6 +537,8 @@ Un prompt à la fois : le suivant n'est rédigé qu'après lecture et validation
 | 14 | Studio immersif et Coulisses | Page Le studio immersive (section 6.6), photo d'ouverture dans Réglages, onglet Coulisses, migration `0004_studio.sql` et données `0002_studio.sql`, retrait de l'équipement | Exécution de `0004_studio.sql` puis `0002_studio.sql` |
 | 15 | Contact et règle d'identité | Page Contact orientée conversion (section 6.7), formulaire par étapes, règle « carré pour ce qu'on filme, rond pour ce qu'on touche » sur tout le site et le dashboard (section 4.4), curseur anneau | Exécution de `0004_studio.sql` et `0002_studio.sql` confirmée |
 | 16 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 de ce cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les enregistrements MX | Accès au DNS de manaprod.com |
+
+**Feuille de route terminée au Prompt 16.** Le site est en production ; les évolutions (version anglaise, contenus restants) se font ensuite prompt par prompt, une branche `feat/...` ou `fix/...` par lot, vérifiée sur la prévisualisation Vercel puis fusionnée dans `main`.
 ---
 
 ## 14. Méthode de travail avec Claude Code

@@ -9,7 +9,6 @@ import { VideoFacade } from "@/components/project/video-facade";
 import { getNextProject, getProject, getProjects } from "@/lib/data/projects";
 import { paragraphs, truncate } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
-import { youTubeThumbnailUrl } from "@/lib/youtube";
 
 // Paramètre de validation : avec Cache Components, generateStaticParams doit
 // renvoyer au moins une valeur. Utilisé seulement s'il n'y a aucun projet
@@ -44,20 +43,13 @@ export async function generateMetadata({
   const description = project.description?.trim()
     ? truncate(project.description, 160)
     : `Mana Prod pour ${project.client} : ${project.category}, « ${project.title} ».`;
-  const image = project.thumbnail_path
-    ? mediaUrl(project.thumbnail_path)
-    : project.videos[0]
-      ? youTubeThumbnailUrl(project.videos[0].youtube_id)
-      : project.photos[0]
-        ? mediaUrl(project.photos[0].storage_path)
-        : null;
-
-  // Image de partage : celle de la carte du projet, sinon l'image par défaut.
+  // Image de partage : JPEG servi par opengraph-image.tsx à partir de l'image
+  // de la carte du projet, sinon l'image par défaut (D103).
   return pageMetadata({
     title,
     description,
     path: `/realisations/${slug}`,
-    image: image ? { url: image, alt: `${project.client} : ${project.title}` } : null,
+    image: false,
     type: "article",
   });
 }

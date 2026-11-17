@@ -13,9 +13,10 @@ export const NAV_LINKS = [
 ] as const;
 
 // Indexation du site par les moteurs de recherche (D92) : pilote la balise
-// robots de toutes les pages publiques et robots.txt. Reste à false jusqu'à
-// la mise en ligne (Prompt 14) ; le dashboard est en noindex dans tous les cas.
-export const INDEXING_ENABLED = false;
+// robots de toutes les pages publiques et robots.txt. Ouverte à la mise en
+// ligne (Prompt 16) ; le dashboard, la 404 et les pages d'erreur restent en
+// noindex dans tous les cas.
+export const INDEXING_ENABLED = true;
 
 export const SITE_NAME = "MANA PROD";
 

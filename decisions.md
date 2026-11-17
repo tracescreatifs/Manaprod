@@ -741,3 +741,17 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : Diaporama limité aux 8 premières photos des coulisses (la galerie complète reste sur Le studio), première image prioritaire, les suivantes en chargement différé. Légende = texte alternatif saisi dans l'onglet Coulisses, absente s'il est vide. Sur mobile, indicateurs et bouton pause passent sous les boutons (la légende est masquée, comme la maquette). L'emplacement de l'heure de Dakar est réservé et masqué tant qu'elle n'est pas calculée (et donc sans JavaScript). Sans promesse de réponse en base, la frise compte deux étapes et son titre devient « Deux étapes, pas plus. ». En-tête transparent en haut de `/contact`, comme l'accueil et Le studio. Les cartes de contact direct ne contiennent pas le bouton Copier (un bouton dans un lien est invalide) : il est placé sous l'adresse.
 - **Raison** : Performance (LCP), validité HTML et cohérence avec D99.
 - **Alternative écartée** : Aucune.
+
+## D103 : Images de partage des fiches en JPEG
+
+- **Date** : 2026-11-17 (Prompt 16)
+- **Décision** : Chaque fiche sert son image de partage par la convention `opengraph-image.tsx` de Next.js 16 : un JPEG 1200 x 630, recadré au centre sans déformation (`fit: cover`), compressé sous 300 Ko (qualité 82, puis 72 puis 62 si besoin), construit à partir de l'image de la carte (D84 : miniature téléversée, sinon miniature YouTube haute définition puis de repli, sinon première photo). Sans image ou en cas d'échec de lecture : l'image de partage par défaut du Prompt 13, convertie en JPEG. Next.js ajoute og:image et twitter:image avec le type et les dimensions ; `pageMetadata({ image: false })` n'ajoute plus l'URL WebP d'avant. Le calcul est une fonction `"use cache"` avec les étiquettes `projects` et `project:<slug>` : un enregistrement dans le dashboard (`updateTag`) refait l'image à la demande suivante. Comme D69, une erreur n'est jamais levée dans le cache : elle est mise en cache quelques secondes et l'image par défaut est servie. La conversion utilise `sharp` (0.35.5), déjà installé par Next.js (dépendance facultative de `next`), désormais déclaré dans `package.json` pour être importé directement. Aucune nouvelle source externe pour la CSP : la conversion se fait côté serveur, les pages de partage chargent l'image depuis le même domaine.
+- **Raison** : WhatsApp prend mal en charge le WebP (miniatures du dashboard) ; `ImageResponse` ne produit que du PNG, trop lourd pour une photo (souvent plus de 300 Ko).
+- **Alternative écartée** : `ImageResponse` en PNG ; optimiseur d'images de Next.js (format choisi selon l'en-tête Accept du robot, WebP renvoyé tel quel s'il est la source).
+
+## D104 : Mise en ligne et passage en maintenance
+
+- **Date** : 2026-11-17 (Prompt 16)
+- **Décision** : `INDEXING_ENABLED` passe à `true` (D92) : pages publiques en `index, follow`, robots.txt qui autorise tout sauf `/admin` et `/api` avec le lien vers le sitemap ; le dashboard (`noindex`, `no-store`), la 404 et les pages d'erreur restent en `noindex`. La feuille de route est terminée. Dès le prompt suivant, chaque lot se fait sur une branche `feat/...` ou `fix/...`, vérifiée sur la prévisualisation Vercel, puis fusionnée dans `main` (méthode, section 2). Le guide `docs/guide-administrateur.md` explique chaque tâche du dashboard au client ; il est mis à jour avec toute évolution du dashboard.
+- **Raison** : Prompt 16 ; domaine relié, contenus essentiels saisis, recette validée.
+- **Alternative écartée** : Aucune.

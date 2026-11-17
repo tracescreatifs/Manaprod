@@ -1,12 +1,13 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-17, fin du Prompt 15.
+Dernière mise à jour : 2026-11-17, fin du Prompt 16.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 15 (page Contact orientée conversion avec formulaire par étapes, règle d'identité « carré pour ce qu'on filme, rond pour ce qu'on touche » sur tout le site et le dashboard, curseur anneau). En attente de la validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 16 (mise en ligne : passage d'`INDEXING_ENABLED` à `true`, vérifications de la section 12 de la méthode), après le Go.
-- **Branche de travail** : `main` (développement, avant mise en ligne).
+- **Statut** : **site en production sur https://manaprod.com, indexation ouverte** (Prompt 16, D104). Feuille de route terminée ; le projet passe en mode maintenance.
+- **Dernier prompt terminé** : Prompt 16 (mise en ligne : indexation ouverte, images de partage JPEG des fiches, recette finale, guide administrateur). En attente de la validation et du Go de Ziza.
+- **Prochaine étape** : maintenance et évolutions, prompt par prompt (liste en section 4).
+- **Branches à partir de maintenant** : chaque prompt travaille sur une branche `feat/...` ou `fix/...` (nom donné dans le prompt), vérifiée sur la prévisualisation Vercel de la branche, puis fusionnée dans `main`, qui reste la production (méthode, section 2). Jamais de travail direct sur `main`.
 - **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), page Le studio immersive (D99), page Contact par étapes et règle d'identité ronde (D101), dashboard complet (Showreel, Projets, Clients, Équipe, Coulisses, Réglages, Messages) publié immédiatement sur le site, effacement automatique des messages de plus de 24 mois.
 
 ## 2. Feuille de route des prompts
@@ -30,8 +31,10 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 | 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | | Fait, validé |
 | 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | | Fait, validé |
 | 14 | Studio immersif et Coulisses | Page Le studio immersive d'après la maquette (cahier 6.6, v1.9), photo d'ouverture dans Réglages, onglet Coulisses, retrait de l'équipement (D99) | Exécution de `0004_studio.sql` puis `seed/0002_studio.sql` | Fait, validé |
-| 15 | Contact et règle d'identité | Page Contact orientée conversion d'après la maquette (cahier 6.7, v1.10), formulaire par étapes conditionnelles, règle « carré pour ce qu'on filme, rond pour ce qu'on touche » sur tout le site et le dashboard (cahier 4.4), curseur anneau (D101) | | Fait, en attente de validation |
-| 16 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 du cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les MX | Accès au DNS de manaprod.com | À faire |
+| 15 | Contact et règle d'identité | Page Contact orientée conversion d'après la maquette (cahier 6.7, v1.10), formulaire par étapes conditionnelles, règle « carré pour ce qu'on filme, rond pour ce qu'on touche » sur tout le site et le dashboard (cahier 4.4), curseur anneau (D101) | | Fait, validé |
+| 16 | Mise en ligne | Indexation ouverte, images de partage JPEG des fiches, recette finale (section 12 du cahier et de la méthode), guide administrateur, passage en maintenance | Domaine manaprod.com relié à Vercel, `NEXT_PUBLIC_SITE_URL` et Supabase Auth sur https://manaprod.com | Fait, en attente de validation |
+
+**Feuille de route terminée.** Évolutions possibles, chacune dans son propre prompt et sa propre branche : version anglaise du site (V2, structure déjà prête), version wolof, contenus restants (section 6), Google Search Console et suivi du référencement, nouvelles pages si le client le demande.
 
 ### Ajustements validés (arbitrage du rapport du Prompt 00)
 
@@ -43,7 +46,7 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 4. Page `/mentions-legales` avec section confidentialité au Prompt 06 (D11).
 5. `SUPABASE_SERVICE_ROLE_KEY` et client service seulement au Prompt 07 (D13).
 6. Mot de passe oublié au Prompt 09, avec SMTP de Resend dans Supabase Auth (D25).
-7. Site entier en `noindex` jusqu'à la mise en ligne, désormais Prompt 16 (D31, D99, D101).
+7. Site entier en `noindex` jusqu'à la mise en ligne ; indexation ouverte au Prompt 16 (D31, D104).
 8. Ancien Prompt 02 scindé en Prompt 02 « Interface » et Prompt 03 « Données », prompts suivants décalés d'un numéro (D36).
 9. Supabase en région Paris (`eu-west-3`), fonctions Vercel en région Paris (`cdg1`) (D37).
 
@@ -161,11 +164,17 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - `/api/contact` : champs complémentaires facultatifs en listes fermées (durée, type de photos, date de l'événement), placés en tête du message enregistré et de la notification ; validation, champ piège, limitation à 5 envois par heure, échappement et accusé de réception sans contenu du visiteur inchangés. Tests ajoutés.
   - Vérifié : axe 0 violation sur toutes les pages publiques (dont chaque étape du formulaire) et tous les onglets du dashboard à 360 et 1440 px ; Lighthouse mobile `/contact` performance 92 à 97, accessibilité 100, CLS 0 ; aucun défilement horizontal de 360 à 1920 px.
 
+- **Prompt 16 (mise en ligne)** :
+  - Indexation ouverte : `INDEXING_ENABLED` à true ; pages publiques en index, follow ; dashboard, 404 et pages d'erreur en noindex ; robots.txt autorise tout sauf /admin et /api, avec le sitemap ; sitemap en https://manaprod.com.
+  - Images de partage des fiches en JPEG 1200 x 630 (moins de 300 Ko), construites à partir de l'image de la carte (D84), recadrées sans déformation, avec repli sur l'image par défaut ; mises à jour par l'étiquette du projet (D103). Dépendance `sharp` déclarée (déjà installée par Next.js).
+  - Recette finale consignée dans le rapport du Prompt 16 (section 12 du cahier et de la méthode, parcours, sécurité, Lighthouse, axe).
+  - Maintenance : stratégie de branches après mise en ligne, guide administrateur `docs/guide-administrateur.md`.
+
 ## 4. Reste à faire
 
-- Prompt 16 (voir la feuille de route).
-- Vérifications avant le Prompt 16 (rapport du Prompt 13) : en-têtes servis sur manaprod.com, aperçus de partage, PageSpeed Insights en production.
-- Recommandations de l’audit 1 non appliquées (rapport du Prompt 08) : CSP, code 404 à la première visite (P10).
+- Vérifications de Ziza listées dans le rapport du Prompt 16 (Google Search Console, aperçus WhatsApp et LinkedIn, emails réels, YouTube, PageSpeed en production).
+- Contenus encore à fournir par le client (section 6).
+- Évolutions possibles (section 2), sur demande, une branche par lot.
 
 ## 5. Problèmes ouverts
 
@@ -190,22 +199,29 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 
 Section 15 du cahier des charges (version 1.5).
 
+**À fournir en priorité (à jour au Prompt 16)** :
+1. Identifiants légaux : NINEA, RCCM et adresse du siège (n° 9), à saisir dans `src/content/mentions-legales.ts` par un prompt.
+2. Validation de la page Mentions légales, dont la durée de conservation des messages de 24 mois (n° 10).
+3. Confirmation que le service est aussi proposé en anglais (n° 16) ; sinon, retirer « English. » de la page Le studio par un prompt.
+4. Projets restants : vidéos, miniatures, photos, descriptions et livrables des projets hors accueil, et années à confirmer (n° 4 et 5).
+5. Photos de coulisses (n° 17), nom complet de Babou et présentations de l'équipe (n° 7), confirmation des chiffres clés (n° 6), validations du logo, de la typographie et de la photo d'ouverture du studio (n° 1, 2 et 18).
+
 | N° | Contenu | Utilisé à partir du | État |
 |---|---|---|---|
 | 1 | Validation du logo Éclipse par Amath (version empilée proposée comme principale) | Prompt 01 | En attente |
 | 2 | Validation de la typographie Schibsted Grotesk | Prompt 01 | En attente |
-| 3 | Lien YouTube du showreel de l'agence | Prompt 04 (saisi dans le dashboard après le Prompt 09) | En attente |
-| 4 | Contenus des 8 projets : liens YouTube, miniatures, photos, descriptions et livrables | Prompt 05 (saisis dans le dashboard après le Prompt 10) | En attente |
+| 3 | Lien YouTube du showreel de l'agence | Prompt 04 (saisi dans le dashboard après le Prompt 09) | Obtenu : saisi dans le dashboard |
+| 4 | Contenus des 8 projets : liens YouTube, miniatures, photos, descriptions et livrables | Prompt 05 (saisis dans le dashboard après le Prompt 10) | En partie : vidéos et miniatures des projets à la une saisies ; restent les projets hors accueil, les descriptions, livrables et photos |
 | 5 | Années des 8 projets (2026 enregistré par défaut) | Prompt 05 | En attente |
 | 6 | Confirmation des chiffres clés : 20+ réalisations, 8+ clients majeurs, délai de réponse 24h (la plaquette indique 48h) | Prompt 06 | En attente |
 | 7 | Équipe : nom complet de Babou, présentations courtes éventuelles, autres membres | Prompt 06 | En attente |
 | 8 | Confirmation de la liste d'équipement | Prompt 06 | Sans objet : section retirée au Prompt 14 (D99) |
 | 9 | Identifiants légaux pour les mentions légales : NINEA, RCCM, adresse du siège (à saisir dans `src/content/mentions-legales.ts`) | Prompt 06 (blocs masqués tant qu'ils manquent) | En attente |
 | 10 | Validation par le client de toute la page Mentions légales, dont la durée de conservation des messages (24 mois après le dernier échange) l'adresse de l'hébergeur Vercel étant publiée depuis le Prompt 07 (D64) | Prompt 06 | En attente |
-| 11 | Accès au DNS de manaprod.com (WordPress.com) | Prompt 07 (Resend) et Prompt 16 (domaine) | Obtenu : utilisé pour Resend, à réutiliser au Prompt 16 |
+| 11 | Accès au DNS de manaprod.com (WordPress.com) | Prompt 07 (Resend) et Prompt 16 (domaine) | Obtenu : Resend vérifié, domaine relié à Vercel ; vérification Google Search Console à faire (enregistrement TXT) |
 | 12 | Email : adresse d'expédition et adresse de réception des demandes (Resend retenu) | Prompt 07 | En attente |
 | 13 | Adresse email de l'administrateur principal | Prompt 09 | Obtenu : premier administrateur Ziza (adresse personnelle, déclarée par SQL hors dépôt) ; Amath ajouté plus tard par le même SQL |
-| 14 | Logos des 8 clients (PNG transparent recommandé, pas de SVG) | Saisie dans le dashboard (onglet Clients, depuis le Prompt 11) | En attente |
+| 14 | Logos des 8 clients (PNG transparent recommandé, pas de SVG) | Saisie dans le dashboard (onglet Clients, depuis le Prompt 11) | Obtenu : saisis dans le dashboard |
 | 15 | Version anglaise souhaitée en V2 ? | Hors V1 | En attente |
 | 16 | Confirmation que le service est aussi proposé en anglais (« English. » dans « Nos langues » de la page Le studio) | Prompt 14 | En attente |
 | 17 | Photos de coulisses (tournages, plateau), à ajouter dans l'onglet Coulisses ; la section reste masquée sans photo | Prompt 14 | En attente |
