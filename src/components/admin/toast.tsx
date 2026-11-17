@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ActionState } from "@/lib/admin/action-state";
 
 const DURATION = 4500;
@@ -11,6 +11,9 @@ const DURATION = 4500;
 export function Toast({ state }: { state: Pick<ActionState, "status" | "message" | "at"> }) {
   const [shownAt, setShownAt] = useState<number | undefined>(undefined);
   const [hiddenAt, setHiddenAt] = useState<number | undefined>(undefined);
+  // Moment du premier affichage de chaque notification : une page gardée en
+  // mémoire par le routeur ne la réaffiche pas en entier à son retour.
+  const firstShown = useRef<{ at: number; time: number } | null>(null);
 
   if (state.at !== shownAt) {
     setShownAt(state.at);
@@ -18,7 +21,10 @@ export function Toast({ state }: { state: Pick<ActionState, "status" | "message"
 
   useEffect(() => {
     if (!state.at) return;
-    const id = window.setTimeout(() => setHiddenAt(state.at), DURATION);
+    const at = state.at;
+    if (firstShown.current?.at !== at) firstShown.current = { at, time: Date.now() };
+    const remaining = Math.max(0, DURATION - (Date.now() - firstShown.current.time));
+    const id = window.setTimeout(() => setHiddenAt(at), remaining);
     return () => window.clearTimeout(id);
   }, [state.at]);
 

@@ -77,6 +77,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const photos = project.photos.map((photo, i) => ({
     id: photo.id,
     src: mediaUrl(photo.storage_path),
+    width: photo.width,
+    height: photo.height,
     alt: photo.alt?.trim() || `Photo du projet ${project.title}${project.photos.length > 1 ? ` (${i + 1})` : ""}`,
   }));
   const empty = !mainVideo && photos.length === 0;

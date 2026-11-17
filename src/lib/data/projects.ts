@@ -116,7 +116,7 @@ export async function getProjects(): Promise<ProjectListItem[]> {
 }
 
 export type ProjectVideo = Pick<Tables<"project_videos">, "id" | "youtube_id" | "title">;
-export type ProjectPhoto = Pick<Tables<"project_photos">, "id" | "storage_path" | "alt">;
+export type ProjectPhoto = Pick<Tables<"project_photos">, "id" | "storage_path" | "alt" | "width" | "height">;
 
 export type ProjectDetail = Pick<
   Tables<"projects">,
@@ -136,7 +136,7 @@ async function loadProject(slug: string): Promise<Loaded<ProjectDetail | null>> 
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "slug, client, title, category, year, description, deliverables, thumbnail_path, project_videos(id, youtube_id, title, position), project_photos(id, storage_path, alt, position)",
+        "slug, client, title, category, year, description, deliverables, thumbnail_path, project_videos(id, youtube_id, title, position), project_photos(*)",
       )
       .eq("slug", slug)
       .eq("published", true)
@@ -150,7 +150,15 @@ async function loadProject(slug: string): Promise<Loaded<ProjectDetail | null>> 
     return {
       ...project,
       videos: project_videos.map(({ id, youtube_id, title }) => ({ id, youtube_id, title })),
-      photos: project_photos.map(({ id, storage_path, alt }) => ({ id, storage_path, alt })),
+      // Photos lues avec « * » : la fiche fonctionne avant comme après la
+      // migration 0003 (dimensions absentes : null, décision D57).
+      photos: project_photos.map(({ id, storage_path, alt, width, height }) => ({
+        id,
+        storage_path,
+        alt,
+        width: width ?? null,
+        height: height ?? null,
+      })),
     };
   });
 }

@@ -1,13 +1,13 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-17, fin du Prompt 09.
+Dernière mise à jour : 2026-11-17, fin du Prompt 10.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 09 (authentification, coquille du dashboard, onglets Showreel et Réglages). En attente de validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 10 (admin projets), après le Go et les réglages Supabase du Prompt 09 (compte administrateur, SMTP, URL de redirection, modèle d'email).
+- **Dernier prompt terminé** : Prompt 10 (dashboard, onglet Projets). En attente de l'exécution de `0003_project_photo_size.sql`, de la validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 11 (admin clients, équipe et messages), après le Go.
 - **Branche de travail** : `main` (développement, avant mise en ligne).
-- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), dashboard avec onglets Showreel et Réglages publiés immédiatement sur le site.
+- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), dashboard avec onglets Showreel, Projets (création, modification, ordre, publication, suppression, miniature et photos téléversées) et Réglages, publiés immédiatement sur le site.
 
 ## 2. Feuille de route des prompts
 
@@ -24,8 +24,8 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 | 06 | Services, Le studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité (blocs NINEA, RCCM, siège masqués tant qu'ils manquent) | | Fait, validé |
 | 07 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, client Supabase service, emails avec Resend (notification et accusé de réception sans le message du visiteur) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, MX intouchés), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` | Fait, validé |
 | 08 | Audit 1 | Contrôle complet des prompts 01 à 07 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | | Fait, validé |
-| 09 | Authentification | Connexion, mot de passe oublié (`/admin/mot-de-passe-oublie`, `/admin/nouveau-mot-de-passe`), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (jamais commité) | Fait, en attente de validation |
-| 10 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication, client et titre obligatoires, « Voir la page » désactivé si non publié | | À faire |
+| 09 | Authentification | Connexion, mot de passe oublié (`/admin/mot-de-passe-oublie`, `/admin/nouveau-mot-de-passe`), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (jamais commité) | Fait, validé |
+| 10 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication, client et titre obligatoires, « Voir la page » désactivé si non publié | Exécution de `0003_project_photo_size.sql` | Fait, en attente de validation |
 | 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | | À faire |
 | 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | | À faire |
 | 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | | À faire |
@@ -115,11 +115,18 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - Onglet Réglages : hero, chiffres clés (4 au maximum, ajout et retrait sans perte de saisie), coordonnées, promesse de réponse, changement du mot de passe (12 caractères minimum).
   - Validation zod partagée navigateur et serveur (`src/lib/admin/schemas.ts`, 14 tests, 100 au total) ; publication immédiate par `updateTag` (D71) vérifiée en local.
   - Décisions D70 à D76.
+- **Prompt 10 (onglet Projets)** :
+  - Migration `0003_project_photo_size.sql` (largeur et hauteur des photos, contraintes positives), validée deux fois sur Postgres 16 ; types mis à jour ; la fiche publique réserve la place exacte des photos quand les dimensions existent (D57 sinon) et lit les photos avec `*` (fonctionne avant comme après 0003).
+  - `/admin/projets` : tous les projets dans l'ordre du site (miniature, client, titre, Publié ou Brouillon, À la une, catégorie, année, vidéos et photos), Monter et Descendre (ordre enregistré en une action), Voir la page, Modifier, Nouveau projet.
+  - `/admin/projets/nouveau` et `/admin/projets/[id]` : informations, adresse générée et vérifiée (avertissement si un projet publié change d'adresse), livrables et vidéos (ajout, retrait, ordre, doublon refusé, aperçu), miniature et photos (téléversement direct vers `media`, compression WebP, progression, erreurs par fichier, texte alternatif, ordre, suppression), suppression du projet avec confirmation et nettoyage du stockage.
+  - Server Actions `src/app/admin/project-actions.ts` (requireAdmin, zod, client à cookies, updateTag de `projects`, `project:<slug>` et de l'ancien slug) ; fonctions pures testées : slug, chemins de stockage, redimensionnement, déplacement (119 tests au total).
+  - `requireAdmin()` appelle `connection()` (erreurs « Date.now() pendant le prérendu » supprimées) ; identifiants de l'éditeur uniques par instance ; notifications et liste cohérentes avec les pages gardées en mémoire par le routeur.
+  - Décisions D77 à D83.
 
 ## 4. Reste à faire
 
-- Prompts 10 à 14 (voir la feuille de route).
-- Réglages Supabase du Prompt 09 à faire par Ziza (rapport du Prompt 09).
+- Prompts 11 à 14 (voir la feuille de route).
+- Exécution de `0003_project_photo_size.sql` par Ziza (rapport du Prompt 10).
 - Recommandations de l'audit 1 non appliquées (rapport du Prompt 08) : effacement automatique des messages après 24 mois, CSP, code 404 à la première visite (P10).
 
 ## 5. Problèmes ouverts
@@ -172,6 +179,7 @@ Claude Code ne marque jamais une migration comme exécutée : seul Ziza le confi
 | 0001 | `supabase/migrations/0001_init.sql` | Migration de structure : tables, fonctions `is_admin()` et `set_updated_at()`, GRANT explicites, index, RLS, bucket `media` et ses policies (lecture par l'API réservée aux administrateurs). Corrigée au Prompt 01, avant toute exécution | Oui (2026-11-17) |
 | 0001 (seed) | `supabase/seed/0001_seed.sql` | Données de départ : réglages, 8 projets, 8 clients, 3 membres de l'équipe. À exécuter après la migration `0001_init.sql` | Oui (2026-11-17, contrôle 1, 8, 8, 3) |
 | 0002 | `supabase/migrations/0002_contact_rate_limit.sql` | Table `contact_submissions` (empreintes d'IP des envois récents du formulaire), RLS sans policy, accès réservé à la clé service. À exécuter après `0001_init.sql` | Oui (2026-11-17) |
+| 0003 | `supabase/migrations/0003_project_photo_size.sql` | Colonnes `width` et `height` de `project_photos` (nullables, strictement positives si renseignées). À exécuter après `0002` | Non |
 
 ## 8. Variables d'environnement
 

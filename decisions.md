@@ -557,3 +557,52 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : `createClient()` (`src/lib/supabase/server.ts`) lit les cookies avant de vérifier les variables d'environnement.
 - **Raison** : Pendant le build, la lecture des cookies suspend le prérendu des pages du dashboard (rendu à la requête) ; dans l'ordre inverse, un build sans variables échouait sur les pages du dashboard. À l'exécution, une variable absente lève toujours l'erreur claire de `missingVariableError` (D43).
 - **Alternative écartée** : Rendre les pages du dashboard entièrement dynamiques par une option de segment (incompatible avec Cache Components).
+
+## D77 : Dimensions des photos (migration 0003, complète D57)
+
+- **Date** : 2026-11-17 (Prompt 10)
+- **Décision** : `project_photos.width` et `height` (int, nullables, strictement positifs si renseignés) sont enregistrés au téléversement. La fiche publique les passe à `next/image` (place exacte réservée, aucun saut de mise en page) ; sans dimensions, la règle de D57 (1800 x 1200, hauteur automatique) s'applique. La fiche lit les photos avec `project_photos(*)` pour fonctionner avant comme après l'exécution de 0003.
+- **Raison** : Le dashboard connaît la taille de chaque image ; le déploiement Vercel précède l'exécution de la migration par Ziza.
+- **Alternative écartée** : Sélection explicite des colonnes (fiche cassée tant que 0003 n'est pas exécutée).
+
+## D78 : Création d'un projet en deux temps, médias enregistrés immédiatement
+
+- **Date** : 2026-11-17 (Prompt 10)
+- **Décision** : « Créer le projet » enregistre informations, adresse, livrables et vidéos ; la miniature et les photos s'ajoutent ensuite sur la page du projet. Chaque téléversement, remplacement ou suppression de miniature ou de photo est enregistré aussitôt (Server Action) ; l'ordre et les textes alternatifs des photos, comme le reste du formulaire, sont enregistrés par « Enregistrer le projet ». Un nouveau projet est placé en fin de liste, en brouillon (case « Publié » décochée), année en cours proposée.
+- **Raison** : Les fichiers sont rangés sous l'identifiant du projet ; sans projet en base, un formulaire abandonné laisserait des fichiers orphelins.
+- **Alternative écartée** : Identifiant généré dans le navigateur et fichiers envoyés avant la création (orphelins en cas d'abandon).
+
+## D79 : Téléversement direct et compression dans le navigateur
+
+- **Date** : 2026-11-17 (Prompt 10)
+- **Décision** : Les images sont réduites dans le navigateur (photos 2400 px, miniature 1600 px sur le grand côté, orientation corrigée), encodées en WebP qualité 0,82, puis envoyées directement au bucket `media` avec le client navigateur à cookies (policies is_admin). Si le navigateur ne sait pas encoder le WebP (certaines versions de Safari), l'image est encodée en JPEG 0,82 et le chemin finit par `.jpg`. Un fichier qui n'est pas une image (PDF par exemple) ou un SVG est refusé avec un message clair. Ces valeurs remplacent celles du cahier 7.2 (1800 px, JPEG 82 %) à la demande du Prompt 10.
+- **Raison** : Les Server Actions de Vercel limitent la taille des requêtes ; les photos de téléphone dépassent souvent 5 Mo.
+- **Alternative écartée** : Envoi par une Server Action ; compression côté serveur (dépendance lourde).
+
+## D80 : Chemins de stockage et aucun fichier orphelin
+
+- **Date** : 2026-11-17 (Prompt 10)
+- **Décision** : Photos `projects/<id du projet>/<uuid>.webp`, miniatures `thumbs/<id du projet>-<uuid>.webp` (aucun nom de fichier fourni par l'utilisateur). Les Server Actions n'acceptent que ces chemins pour le projet concerné. Enregistrement en base refusé ou en échec : le fichier est supprimé (par l'action, ou par `discardUploads`, qui ne supprime jamais un fichier encore référencé). Photo supprimée ou miniature remplacée ou retirée : fichier supprimé. Projet supprimé : fichiers connus en base, plus tout fichier du dossier `projects/<id>/` et toute miniature `thumbs/<id>-...`, supprimés. Un échec de suppression de fichier est consigné sans bloquer l'action.
+- **Raison** : Prompt 10 (D, point 4) ; le bucket n'est pas parcouru par d'autres règles.
+- **Alternative écartée** : Nettoyage périodique du bucket.
+
+## D81 : Ordre des listes par boutons, sans glisser-déposer
+
+- **Date** : 2026-11-17 (Prompt 10)
+- **Décision** : Projets, livrables, vidéos et photos se réordonnent avec des boutons Monter et Descendre (Placer avant et après pour les photos), nommés pour les lecteurs d'écran, le focus restant sur le bouton de l'élément déplacé. L'ordre des projets est enregistré immédiatement en une seule Server Action (positions de tous les projets) ; celui des livrables, vidéos et photos avec le projet. Les livrables sont une liste de lignes (et non un champ multiligne comme dans le prototype), à la demande du Prompt 10.
+- **Raison** : Le prototype n'utilise que des boutons ; le glisser-déposer accessible au clavier aurait demandé une dépendance.
+- **Alternative écartée** : Glisser-déposer.
+
+## D82 : Écritures des projets sans transaction SQL
+
+- **Date** : 2026-11-17 (Prompt 10)
+- **Décision** : L'enregistrement d'un projet enchaîne la ligne du projet, puis les vidéos (mises à jour et ajouts avant les retraits), puis la position et le texte alternatif des photos. En cas d'échec partiel, un message dit ce qui n'a pas été enregistré ; rien n'est supprimé avant que le reste ait réussi. L'adresse est vérifiée avant l'écriture (message clair si elle est prise) et l'erreur d'unicité de la base est aussi traduite.
+- **Raison** : Une fonction SQL transactionnelle aurait demandé une migration hors du périmètre de 0003.
+- **Alternative écartée** : Fonction RPC transactionnelle (à envisager si un besoin apparaît).
+
+## D83 : Dashboard et pages gardées en mémoire par le routeur
+
+- **Date** : 2026-11-17 (Prompt 10)
+- **Décision** : `requireAdmin()` appelle `connection()` avant de lire la session (la vérification du jeton lit l'heure, interdite pendant un prérendu ; erreurs constatées au journal depuis le Prompt 09). Les identifiants HTML de l'éditeur de projet sont préfixés par `useId()`. La liste des projets reprend les données du serveur quand elles changent ; la page « Nouveau projet » est vidée après la création ; une notification n'est jamais réaffichée en entier au retour sur une page ; la notification transmise par l'adresse est retirée avec `history.replaceState(null, ...)`. La navigation du dashboard est lue dans une frontière Suspense (adresse dynamique `/admin/projets/[id]`).
+- **Raison** : Next.js 16 garde les pages quittées en mémoire (masquées) : identifiants en double, états anciens réaffichés.
+- **Alternative écartée** : Clé aléatoire à chaque rendu (formulaire remonté après chaque action serveur, téléversement interrompu).

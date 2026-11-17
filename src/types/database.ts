@@ -79,6 +79,9 @@ type ProjectPhotosRow = {
   storage_path: string;
   alt: string | null;
   position: number;
+  /** Dimensions en pixels, enregistrées au téléversement (migration 0003), null si inconnues. */
+  width: number | null;
+  height: number | null;
 };
 
 type ClientsRow = {

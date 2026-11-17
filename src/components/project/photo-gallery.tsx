@@ -5,7 +5,18 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { trapTab } from "@/lib/focus-trap";
 
-export type GalleryPhoto = { id: string; src: string; alt: string };
+export type GalleryPhoto = {
+  id: string;
+  src: string;
+  alt: string;
+  /** Dimensions réelles (migration 0003), sinon null. */
+  width: number | null;
+  height: number | null;
+};
+
+// Dimensions de référence quand celles de la photo sont inconnues (D57).
+const FALLBACK_WIDTH = 1800;
+const FALLBACK_HEIGHT = 1200;
 
 const SWIPE_THRESHOLD = 50;
 
@@ -62,8 +73,8 @@ export function PhotoGallery({ photos, label }: { photos: GalleryPhoto[]; label:
               <Image
                 src={photo.src}
                 alt=""
-                width={1800}
-                height={1200}
+                width={photo.width ?? FALLBACK_WIDTH}
+                height={photo.height ?? FALLBACK_HEIGHT}
                 sizes="(min-width: 1001px) 33vw, (min-width: 561px) 50vw, 100vw"
                 className="h-auto w-full transition-transform duration-[600ms] group-hover:scale-[1.03]"
               />

@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,6 +17,9 @@ export const REFUSED_PATH = "/admin/login?refus=1";
  * Renvoie le client à cookies (RLS is_admin) et l'utilisateur.
  */
 export async function requireAdmin() {
+  // Rendu à la requête : la vérification de session lit l'heure courante
+  // (expiration du jeton), interdite pendant un prérendu (Cache Components).
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },

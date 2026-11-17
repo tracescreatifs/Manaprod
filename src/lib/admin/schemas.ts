@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { SLUG_MAX, SLUG_PATTERN } from "@/lib/admin/slug";
+import { PROJECT_CATEGORIES } from "@/types/database";
 import { extractYouTubeId } from "@/lib/youtube";
 
 // Validation des formulaires du dashboard (cahier 7), partagée entre le
@@ -175,3 +177,155 @@ export const settingsSchema = z.object({
 });
 
 export type SettingsInput = z.infer<typeof settingsSchema>;
+
+// ---------------------------------------------------------------------
+// Projets (cahier 7.2)
+// ---------------------------------------------------------------------
+
+export const PROJECT_LIMITS = {
+  client: 120,
+  title: 160,
+  description: 4000,
+  deliverables: 30,
+  deliverable: 160,
+  videos: 20,
+  videoTitle: 120,
+  photos: 200,
+  alt: 200,
+  yearMin: 1990,
+} as const;
+
+/** Année maximale acceptée : l'année en cours plus un an. */
+export const projectYearMax = () => new Date().getFullYear() + 1;
+
+const uuid = z.uuid({ error: "Identifiant invalide." });
+
+const required = (label: string, max: number) =>
+  z.preprocess(
+    line,
+    z
+      .string({ error: `Indiquez ${label}.` })
+      .min(1, { error: `Indiquez ${label}.` })
+      .max(max, { error: `${max} caractères au maximum.` }),
+  );
+
+const projectVideo = z.object({
+  id: uuid.optional(),
+  url: z.preprocess(
+    line,
+    z
+      .string({ error: "Collez le lien de la vidéo YouTube." })
+      .min(1, { error: "Collez le lien de la vidéo YouTube, ou retirez la ligne." })
+      .max(300, { error: "Ce lien est trop long." }),
+  ),
+  title: optionalLine(PROJECT_LIMITS.videoTitle, `${PROJECT_LIMITS.videoTitle} caractères au maximum.`),
+});
+
+export const projectSchema = z
+  .object({
+    client: required("le client", PROJECT_LIMITS.client),
+    title: required("le titre du projet", PROJECT_LIMITS.title),
+    slug: z.preprocess(
+      line,
+      z
+        .string({ error: "Indiquez l’adresse de la page." })
+        .min(1, { error: "Indiquez l’adresse de la page." })
+        .max(SLUG_MAX, { error: `${SLUG_MAX} caractères au maximum.` })
+        .regex(SLUG_PATTERN, {
+          error: "Uniquement des lettres minuscules sans accent, des chiffres et des tirets simples (par exemple unicef-staff-team-awards).",
+        }),
+    ),
+    category: z.enum(PROJECT_CATEGORIES, { error: "Choisissez une catégorie dans la liste." }),
+    year: z.preprocess(
+      (value) => (value === "" || value === null || value === undefined ? null : Number(value)),
+      z
+        .number({ error: "Indiquez une année en chiffres, par exemple 2026." })
+        .int({ error: "Indiquez une année en chiffres, par exemple 2026." })
+        .min(PROJECT_LIMITS.yearMin, { error: `L’année doit être comprise entre ${PROJECT_LIMITS.yearMin} et ${projectYearMax()}.` })
+        .refine((year) => year <= projectYearMax(), {
+          error: `L’année doit être comprise entre ${PROJECT_LIMITS.yearMin} et ${projectYearMax()}.`,
+        })
+        .nullable(),
+    ),
+    // Paragraphes séparés par des sauts de ligne : seuls les espaces en
+    // tête et en fin sont retirés.
+    description: z.preprocess(
+      (value) => {
+        const v = typeof value === "string" ? value.replace(/\r\n?/g, "\n").trim() : value;
+        return v === "" || v === undefined ? null : v;
+      },
+      z
+        .string()
+        .max(PROJECT_LIMITS.description, { error: `La description ne doit pas dépasser ${PROJECT_LIMITS.description} caractères.` })
+        .nullable(),
+    ),
+    // Lignes vides ignorées (liste vide autorisée).
+    deliverables: z.preprocess(
+      (value) => (Array.isArray(value) ? value.map(line).filter((d) => d !== "") : value),
+      z
+        .array(z.string().max(PROJECT_LIMITS.deliverable, { error: `${PROJECT_LIMITS.deliverable} caractères au maximum.` }), {
+          error: "Livrables illisibles.",
+        })
+        .max(PROJECT_LIMITS.deliverables, { error: `${PROJECT_LIMITS.deliverables} livrables au maximum.` }),
+    ),
+    featured: z.boolean({ error: "Valeur invalide." }),
+    published: z.boolean({ error: "Valeur invalide." }),
+    videos: z
+      .array(projectVideo, { error: "Vidéos illisibles." })
+      .max(PROJECT_LIMITS.videos, { error: `${PROJECT_LIMITS.videos} vidéos au maximum.` }),
+    photos: z
+      .array(
+        z.object({
+          id: uuid,
+          alt: optionalLine(PROJECT_LIMITS.alt, `${PROJECT_LIMITS.alt} caractères au maximum.`),
+        }),
+        { error: "Photos illisibles." },
+      )
+      .max(PROJECT_LIMITS.photos),
+  })
+  .transform((data, ctx) => {
+    const seen = new Map<string, number>();
+    const videos = data.videos.map((video, index) => {
+      const youtubeId = extractYouTubeId(video.url);
+      if (!youtubeId) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["videos", index, "url"],
+          message: "Ce lien n’est pas reconnu comme une vidéo YouTube.",
+        });
+      } else if (seen.has(youtubeId)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["videos", index, "url"],
+          message: `Cette vidéo est déjà dans la liste (vidéo ${(seen.get(youtubeId) ?? 0) + 1}).`,
+        });
+      } else {
+        seen.set(youtubeId, index);
+      }
+      return { id: video.id, url: video.url, title: video.title, youtubeId: youtubeId ?? "" };
+    });
+    if (ctx.issues.length > 0) return z.NEVER;
+    return { ...data, videos };
+  });
+
+export type ProjectInput = z.input<typeof projectSchema>;
+export type ProjectData = z.output<typeof projectSchema>;
+
+/** Nouvel ordre des projets : tous les identifiants, sans doublon. */
+export const projectOrderSchema = z
+  .array(uuid, { error: "Ordre illisible." })
+  .min(1)
+  .max(500)
+  .refine((ids) => new Set(ids).size === ids.length, { error: "Ordre illisible." });
+
+/** Photos téléversées à enregistrer (chemins vérifiés par l'action). */
+export const uploadedPhotosSchema = z
+  .array(
+    z.object({
+      path: z.string().max(200),
+      width: z.number().int().positive().max(20000),
+      height: z.number().int().positive().max(20000),
+    }),
+  )
+  .min(1)
+  .max(50);
