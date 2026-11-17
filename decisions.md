@@ -508,3 +508,52 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : Chaque lecture publique est découpée en deux : une fonction `"use cache"` qui passe par `cachedRead()` (`src/lib/data/source.ts`) et renvoie un résultat (données, ou message d'erreur), puis une fonction publique qui appelle `unwrap()` et lève l'erreur hors du cache. `cacheLife` est conditionnel : `max` en cas de succès, `seconds` en cas d'échec (l'échec n'est pas gardé). `getNextProject()` n'a plus de cache propre : il est calculé à partir de `getProjects()`.
 - **Raison** : Constaté à l'audit : une erreur levée à l'intérieur d'une fonction `"use cache"` pendant un rendu à la demande (fiche d'un projet publié après le build, base indisponible) bloquait la réponse au visiteur plus de 110 s, jusqu'au délai maximal de Vercel. Avec ce découpage, la page d'erreur répond immédiatement ; une erreur au build fait toujours échouer le build (jamais avalée, D43, D47).
 - **Alternative écartée** : Lever l'erreur dans la fonction mise en cache (réponse bloquée) ; avaler l'erreur et renvoyer des données vides (erreur masquée).
+
+## D70 : Protection du dashboard en deux couches
+
+- **Date** : 2026-11-17 (Prompt 09)
+- **Décision** : `src/proxy.ts` (convention Next.js 16, ex-middleware) ne s'exécute que sur `/admin` et `/admin/...`. Il rafraîchit la session Supabase, renvoie vers `/admin/login` sans session, ferme la session d'un compte connecté qui n'est pas dans `admin_users` (« Accès réservé aux administrateurs ») et pose `Cache-Control: no-store`. Pages ouvertes sans session : `/admin/login`, `/admin/mot-de-passe-oublie`, `/admin/confirmer` ; `/admin/nouveau-mot-de-passe` exige une session (celle du lien de réinitialisation). Deuxième couche : `requireAdmin()` (getUser puis `is_admin`) en tête de chaque page protégée et de chaque Server Action. Toutes les écritures passent par le client à cookies (RLS `is_admin`), jamais par la clé service.
+- **Raison** : Seul le proxy peut écrire les cookies (rafraîchissement, déconnexion) ; les Server Actions restent appelables directement, d'où la seconde vérification. Le proxy ne touche pas les pages publiques, qui restent statiques.
+- **Alternative écartée** : Proxy sur tout le site (pages publiques rendues dynamiques) ; vérification uniquement dans les pages (cookies jamais rafraîchis).
+
+## D71 : Publication immédiate par updateTag
+
+- **Date** : 2026-11-17 (Prompt 09)
+- **Décision** : Après chaque enregistrement réussi des réglages ou du showreel, la Server Action appelle `updateTag(CACHE_TAGS.settings)`. La requête suivante sur le site relit la base. Un enregistrement qui ne modifie aucune ligne (écriture refusée par la RLS) est signalé comme un échec, sans invalidation.
+- **Raison** : Cahier 7.7 (modification visible en moins de 10 secondes). `updateTag` est l'API de Next.js 16 réservée aux Server Actions, avec lecture de ses propres écritures ; `revalidateTag` sert l'ancienne valeur une dernière fois.
+- **Alternative écartée** : `revalidateTag` (une visite avec l'ancienne valeur) ; durée de cache courte (site plus lent, base plus sollicitée).
+
+## D72 : Groupe de routes (site) pour les pages publiques
+
+- **Date** : 2026-11-17 (Prompt 09)
+- **Décision** : Les pages publiques, leur transition (`template.tsx`) et leur page d'erreur sont dans `src/app/(site)/`, dont la mise en page ajoute l'en-tête et le pied de page. La mise en page racine ne garde que le document, la police, `noindex` et le lien d'évitement. La page 404 racine ajoute elle-même l'en-tête et le pied de page. Les adresses ne changent pas.
+- **Raison** : Le dashboard ne doit afficher ni la navigation publique ni le pied de page du site.
+- **Alternative écartée** : Masquer l'en-tête selon l'adresse dans un composant client (rendu plus lourd, logique fragile).
+
+## D73 : Adresses des onglets du dashboard
+
+- **Date** : 2026-11-17 (Prompt 09)
+- **Décision** : Chaque onglet a son adresse (`/admin/showreel`, `/admin/reglages`, puis les suivants aux Prompts 10 et 11) dans le groupe `src/app/admin/(dashboard)/`. `/admin` ouvre `/admin/showreel`, qui est aussi la page d'arrivée après la connexion. Seuls les onglets existants sont affichés. Les réglages sont relus dans le dashboard par le client à cookies, sans cache (`getAdminSettings()`), dans une frontière Suspense.
+- **Raison** : Le prototype affiche tous les onglets sur une seule page ; des adresses distinctes permettent le retour arrière, le lien direct et l'onglet actif (`aria-current`). La lecture sans cache montre toujours la valeur réellement enregistrée.
+- **Alternative écartée** : Une page unique avec onglets en état local (adresse non partageable).
+
+## D74 : Lien de réinitialisation au format token_hash
+
+- **Date** : 2026-11-17 (Prompt 09)
+- **Décision** : L'email « Reset password » de Supabase pointe vers `{{ .SiteURL }}/admin/confirmer?token_hash={{ .TokenHash }}&type=recovery`. La route `/admin/confirmer` appelle `verifyOtp` (type recovery), puis renvoie vers `/admin/nouveau-mot-de-passe` ; un lien invalide, expiré ou déjà utilisé renvoie vers `/admin/mot-de-passe-oublie?lien=invalide` avec un message clair. La demande de lien répond toujours « Si un compte existe pour cette adresse, un email vient d’être envoyé. » Après le nouveau mot de passe, le visiteur arrive sur le dashboard avec la notification « Mot de passe modifié. » (un compte non administrateur est refusé par le proxy).
+- **Raison** : Format recommandé par Supabase pour un rendu serveur (fonctionne même si le lien est ouvert dans un autre navigateur que celui de la demande, contrairement au flux PKCE). La réponse identique ne révèle pas l'existence d'un compte.
+- **Alternative écartée** : Lien par défaut `{{ .ConfirmationURL }}` (jeton dans le fragment d'URL, illisible côté serveur).
+
+## D75 : Écarts assumés avec le prototype du dashboard
+
+- **Date** : 2026-11-17 (Prompt 09)
+- **Décision** : Pas de bouton « Publier » ni de badge « Modifications non publiées » dans la barre (la publication est immédiate, D71) ; à la place, la barre affiche l'email du compte connecté et « Déconnexion ». « Retirer le showreel » demande une confirmation. Les chiffres clés sont une liste de 0 à 4 lignes avec « Ajouter un chiffre clé » et « Retirer », au lieu de 4 lignes fixes. Mots de passe : 12 caractères minimum, 72 au maximum (limite de Supabase Auth).
+- **Raison** : Le cahier prime pour le fonctionnel (règle d'or) ; le prototype fonctionnait par export de fichier.
+- **Alternative écartée** : Reproduire le bouton « Publier » (bouton factice).
+
+## D76 : Client Supabase serveur : cookies lus avant les variables
+
+- **Date** : 2026-11-17 (Prompt 09)
+- **Décision** : `createClient()` (`src/lib/supabase/server.ts`) lit les cookies avant de vérifier les variables d'environnement.
+- **Raison** : Pendant le build, la lecture des cookies suspend le prérendu des pages du dashboard (rendu à la requête) ; dans l'ordre inverse, un build sans variables échouait sur les pages du dashboard. À l'exécution, une variable absente lève toujours l'erreur claire de `missingVariableError` (D43).
+- **Alternative écartée** : Rendre les pages du dashboard entièrement dynamiques par une option de segment (incompatible avec Cache Components).

@@ -5,9 +5,11 @@ import { getSupabaseEnv } from "@/lib/env";
 
 // Client Supabase pour les composants serveur, les Server Actions et les
 // route handlers. Utilise la clé publique anon : la RLS s'applique.
+// Les cookies sont lus avant les variables : pendant le prérendu, la lecture
+// des cookies suspend la page (rendu à la requête), sans erreur de build.
 export async function createClient() {
-  const { url, anonKey } = getSupabaseEnv();
   const cookieStore = await cookies();
+  const { url, anonKey } = getSupabaseEnv();
 
   return createServerClient(url, anonKey, {
     cookies: {
@@ -21,8 +23,8 @@ export async function createClient() {
           );
         } catch {
           // Appel depuis un composant serveur : l'écriture des cookies y est
-          // impossible. Le rafraîchissement de session sera assuré par le
-          // proxy d'authentification (Prompt 09).
+          // impossible. Le rafraîchissement de session est assuré par le
+          // proxy (src/proxy.ts).
         }
       },
     },

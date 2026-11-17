@@ -1,25 +1,24 @@
 import type { Metadata } from "next";
-import { ButtonLink } from "@/components/button-link";
+import { NotFoundContent } from "@/components/pages/not-found-content";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
   title: "Page introuvable | MANA PROD",
   description: "Cette page n’existe pas ou n’est pas encore disponible.",
 };
 
-// Page 404 personnalisée, dans la charte du prototype (titre .title, texte .lede).
+// Page 404 personnalisée, pour toute adresse inconnue et pour une fiche
+// projet inexistante. Rendue hors du groupe (site) : elle reprend donc
+// elle-même l'en-tête et le pied de page du site.
 export default function NotFound() {
   return (
-    <main className="wrap pt-[clamp(128px,14vw,210px)] pb-[clamp(72px,10vw,150px)]">
-      <p className="text-sm text-muted">Erreur 404</p>
-      <h1 className="mt-4 text-[clamp(40px,6.8vw,112px)] leading-[0.98] font-extrabold tracking-[-0.035em] text-balance">
-        Page introuvable
-      </h1>
-      <p className="mt-[clamp(24px,3vw,40px)] max-w-[34em] text-[clamp(22px,2.3vw,34px)] leading-[1.28] font-medium tracking-[-0.01em] text-[#C5D3D6]">
-        Cette page n’existe pas ou n’est pas encore disponible.
-      </p>
-      <p className="mt-10">
-        <ButtonLink href="/">Retour à l’accueil</ButtonLink>
-      </p>
-    </main>
+    <>
+      <SiteHeader />
+      <div id="contenu" tabIndex={-1} className="outline-none">
+        <NotFoundContent />
+      </div>
+      <SiteFooter />
+    </>
   );
 }

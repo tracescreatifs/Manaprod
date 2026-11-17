@@ -1,13 +1,13 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-17, fin du Prompt 08.
+Dernière mise à jour : 2026-11-17, fin du Prompt 09.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 08 (audit 1 du site public). En attente de validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 09 (authentification et coquille du dashboard), après le Go et les prérequis du Prompt 09.
+- **Dernier prompt terminé** : Prompt 09 (authentification, coquille du dashboard, onglets Showreel et Réglages). En attente de validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 10 (admin projets), après le Go et les réglages Supabase du Prompt 09 (compte administrateur, SMTP, URL de redirection, modèle d'email).
 - **Branche de travail** : `main` (développement, avant mise en ligne).
-- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`.
+- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), dashboard avec onglets Showreel et Réglages publiés immédiatement sur le site.
 
 ## 2. Feuille de route des prompts
 
@@ -23,8 +23,8 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 | 05 | Réalisations et fiche projet | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | | Fait, validé |
 | 06 | Services, Le studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité (blocs NINEA, RCCM, siège masqués tant qu'ils manquent) | | Fait, validé |
 | 07 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, client Supabase service, emails avec Resend (notification et accusé de réception sans le message du visiteur) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, MX intouchés), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` | Fait, validé |
-| 08 | Audit 1 | Contrôle complet des prompts 01 à 07 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | | Fait, en attente de validation |
-| 09 | Authentification | Connexion, mot de passe oublié (`/admin/mot-de-passe-oublie`, `/admin/nouveau-mot-de-passe`), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (jamais commité) | À faire |
+| 08 | Audit 1 | Contrôle complet des prompts 01 à 07 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | | Fait, validé |
+| 09 | Authentification | Connexion, mot de passe oublié (`/admin/mot-de-passe-oublie`, `/admin/nouveau-mot-de-passe`), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (jamais commité) | Fait, en attente de validation |
 | 10 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication, client et titre obligatoires, « Voir la page » désactivé si non publié | | À faire |
 | 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | | À faire |
 | 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | | À faire |
@@ -106,10 +106,20 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - Transitions coupées avec `prefers-reduced-motion` ; `npm audit fix` (P7 résolu) ; actions GitHub en v7.
   - Lighthouse mobile (données simulées) : performance de 97 à 100 et accessibilité 100 sur les 7 pages publiques.
   - Décisions D66 à D69 ; constats détaillés dans le rapport du Prompt 08.
+- **Prompt 09 (authentification et dashboard)** :
+  - Pages publiques déplacées dans le groupe de routes `(site)` (en-tête et pied de page), le dashboard a sa propre mise en page (D72). Pages publiques toujours statiques.
+  - `src/proxy.ts` limité à `/admin` : rafraîchissement de la session, redirection vers `/admin/login`, déconnexion d'un compte non administrateur (D70). `requireAdmin()` (`src/lib/admin/auth.ts`) dans chaque page protégée et chaque Server Action.
+  - `/admin/login`, `/admin/mot-de-passe-oublie` (réponse identique que le compte existe ou non), route `/admin/confirmer` (lien token_hash, verifyOtp de type recovery, D74), `/admin/nouveau-mot-de-passe`.
+  - Coquille : barre (logo, email du compte, « Ouvrir le site », « Déconnexion »), onglets Showreel et Réglages (latéraux, horizontaux sous 1000 px), notifications annoncées, alerte avant de quitter une page modifiée.
+  - Onglet Showreel : lien YouTube (tous formats), titre, aperçu youtube-nocookie, « Retirer le showreel », conseil de visibilité.
+  - Onglet Réglages : hero, chiffres clés (4 au maximum, ajout et retrait sans perte de saisie), coordonnées, promesse de réponse, changement du mot de passe (12 caractères minimum).
+  - Validation zod partagée navigateur et serveur (`src/lib/admin/schemas.ts`, 14 tests, 100 au total) ; publication immédiate par `updateTag` (D71) vérifiée en local.
+  - Décisions D70 à D76.
 
 ## 4. Reste à faire
 
-- Prompts 09 à 14 (voir la feuille de route).
+- Prompts 10 à 14 (voir la feuille de route).
+- Réglages Supabase du Prompt 09 à faire par Ziza (rapport du Prompt 09).
 - Recommandations de l'audit 1 non appliquées (rapport du Prompt 08) : effacement automatique des messages après 24 mois, CSP, code 404 à la première visite (P10).
 
 ## 5. Problèmes ouverts
@@ -129,6 +139,7 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 | P11 | Les mentions légales annoncent une conservation des messages de 24 mois, mais aucun effacement automatique n'existe | Conformité | Recommandation : effacement au Prompt 11 (onglet Messages), action manuelle ou tâche planifiée |
 | P12 | Pas de politique de sécurité du contenu (CSP) | Aucun à court terme | Recommandation : la définir au Prompt 13 (YouTube, Supabase, styles de Next.js) |
 | P13 | La page d'erreur, comme la 404 d'une première visite (P10), répond avec le code 200 sur un rendu à la demande (rendu en flux) | Aucun pour le visiteur | À revoir au Prompt 13 avec P10 |
+| P14 | Après une déconnexion, le routeur peut demander deux préchargements de `/admin/login` qui répondent 404 (console du navigateur, observé une fois en local). La page de connexion s'affiche normalement | Aucun | À observer sur Vercel ; à revoir à l'audit 2 (Prompt 12) |
 
 ## 6. Contenus à fournir par le client
 
@@ -148,7 +159,7 @@ Section 15 du cahier des charges (version 1.5).
 | 10 | Validation par le client de toute la page Mentions légales, dont la durée de conservation des messages (24 mois après le dernier échange) l'adresse de l'hébergeur Vercel étant publiée depuis le Prompt 07 (D64) | Prompt 06 | En attente |
 | 11 | Accès au DNS de manaprod.com (WordPress.com) | Prompt 07 (Resend) et Prompt 14 (domaine) | Obtenu : utilisé pour Resend, à réutiliser au Prompt 14 |
 | 12 | Email : adresse d'expédition et adresse de réception des demandes (Resend retenu) | Prompt 07 | En attente |
-| 13 | Adresse email de l'administrateur principal | Prompt 09 | En attente |
+| 13 | Adresse email de l'administrateur principal | Prompt 09 | Obtenu : premier administrateur Ziza (adresse personnelle, déclarée par SQL hors dépôt) ; Amath ajouté plus tard par le même SQL |
 | 14 | Logos des 8 clients (PNG transparent recommandé, pas de SVG) | Prompt 11 (saisis dans le dashboard) | En attente |
 | 15 | Version anglaise souhaitée en V2 ? | Hors V1 | En attente |
 
