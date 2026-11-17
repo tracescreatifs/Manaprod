@@ -4,8 +4,10 @@ import { getSupabaseEnv, missingVariableError } from "@/lib/env";
 import { deriveIpHashKey } from "@/lib/contact/ip-hash";
 import type { Database } from "@/types/database";
 
-// Client Supabase avec la clé service : contourne la RLS. Seul usage :
-// formulaire de contact (insertion des messages et limitation des envois).
+// Client Supabase avec la clé service : contourne la RLS. Deux usages
+// seulement : le formulaire de contact (/api/contact : insertion des messages
+// et limitation des envois) et l'effacement des messages de plus de 24 mois
+// (/api/keepalive, D87).
 // Serveur uniquement (server-only), jamais dans une fonction "use cache".
 // C'est le seul fichier qui lit SUPABASE_SERVICE_ROLE_KEY.
 

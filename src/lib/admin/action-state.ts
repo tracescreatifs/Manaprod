@@ -20,3 +20,6 @@ export const failure = (message: string, errors?: FieldErrors): ActionState => (
   errors,
   at: Date.now(),
 });
+
+/** Résultat horodaté maintenant (nouvelle notification), pour un résultat construit dans le navigateur. */
+export const stamped = (state: ActionState): ActionState => ({ ...state, at: Date.now() });

@@ -1,3 +1,6 @@
+"use client";
+
+import { useId } from "react";
 import { Field, errorProps, inputClass } from "@/components/admin/field";
 import type { FieldErrors } from "@/lib/admin/schemas";
 import { PASSWORD_MIN } from "@/lib/admin/schemas";
@@ -5,8 +8,10 @@ import { PASSWORD_MIN } from "@/lib/admin/schemas";
 // Nouveau mot de passe et confirmation (même règle partout : 12 caractères
 // minimum, confirmation identique).
 export function PasswordFields({ errors, idPrefix = "" }: { errors: FieldErrors; idPrefix?: string }) {
-  const pid = `${idPrefix}password`;
-  const cid = `${idPrefix}confirmation`;
+  // Identifiants uniques même quand le routeur garde la page en mémoire (D83).
+  const ns = useId();
+  const pid = `${ns}-${idPrefix}password`;
+  const cid = `${ns}-${idPrefix}confirmation`;
   return (
     <>
       <Field id={pid} label="Nouveau mot de passe" hint={`${PASSWORD_MIN} caractères minimum.`} error={errors.password}>

@@ -114,7 +114,7 @@ export function ProjectMedia({
   }
 
   async function clearThumbnail() {
-    if (!window.confirm("Retirer la miniature ? Le site utilisera celle de la première vidéo.")) return;
+    if (!window.confirm("Retirer la miniature ? Le site utilisera celle de la première vidéo, sinon la première photo.")) return;
     setThumbBusy("Retrait en cours");
     const result = await removeProjectThumbnail(projectId);
     setThumbBusy(null);
@@ -216,13 +216,13 @@ export function ProjectMedia({
       <Panel title="Miniature">
         <div className="flex flex-wrap items-start gap-5">
           <div className="relative aspect-[16/10] w-[260px] max-w-full overflow-hidden border border-line bg-bg">
-            <ProjectThumb thumbnailPath={currentThumbnail} videoId={fallbackVideoId} client={client} sizes="260px" />
+            <ProjectThumb thumbnailPath={currentThumbnail} videoId={fallbackVideoId} photoPath={photos[0]?.path ?? null} client={client} sizes="260px" />
           </div>
           <div className="min-w-0 flex-[1_1_260px]">
             <p className="mb-4 text-sm text-muted">
               {currentThumbnail
                 ? "Miniature personnalisée."
-                : "Miniature automatique : celle de la première vidéo YouTube. Téléversez une image pour la remplacer."}{" "}
+                : "Miniature automatique : celle de la première vidéo YouTube, sinon la première photo. Téléversez une image pour la remplacer."}{" "}
               Image réduite à {THUMBNAIL_MAX_SIDE} px avant l’envoi.
             </p>
             <div className="flex flex-wrap gap-2.5">

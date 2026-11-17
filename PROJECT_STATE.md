@@ -1,13 +1,13 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-17, fin du Prompt 10.
+Dernière mise à jour : 2026-11-17, fin du Prompt 11.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 10 (dashboard, onglet Projets). En attente de l'exécution de `0003_project_photo_size.sql`, de la validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 11 (admin clients, équipe et messages), après le Go.
+- **Dernier prompt terminé** : Prompt 11 (dashboard, onglets Clients, Équipe et Messages, effacement automatique des messages). En attente de validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 12 (audit 2), après le Go.
 - **Branche de travail** : `main` (développement, avant mise en ligne).
-- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), dashboard avec onglets Showreel, Projets (création, modification, ordre, publication, suppression, miniature et photos téléversées) et Réglages, publiés immédiatement sur le site.
+- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lectures mises en cache (réglages, projets, clients), accueil complet (hero, studio, sélection, clients, appel final), page Réalisations avec filtres, fiches projet, pages Services, Le studio, Mentions légales et Contact (formulaire, limitation des envois, emails Resend), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`, authentification du dashboard (connexion, mot de passe oublié, proxy limité à `/admin`), dashboard complet (Showreel, Projets, Clients, Équipe, Réglages, Messages) publié immédiatement sur le site, effacement automatique des messages de plus de 24 mois.
 
 ## 2. Feuille de route des prompts
 
@@ -25,8 +25,8 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 | 07 | Contact | Formulaire, validation serveur, pot de miel, migration `0002_` de limitation des envois (IP hachée, purge), enregistrement en base, client Supabase service, emails avec Resend (notification et accusé de réception sans le message du visiteur) | Accès au DNS de manaprod.com (vérification du domaine dans Resend, MX intouchés), compte Resend, domaine vérifié, variables `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` | Fait, validé |
 | 08 | Audit 1 | Contrôle complet des prompts 01 à 07 : sécurité, mobile 360 px, accessibilité, cohérence avec les prototypes | | Fait, validé |
 | 09 | Authentification | Connexion, mot de passe oublié (`/admin/mot-de-passe-oublie`, `/admin/nouveau-mot-de-passe`), protection de `/admin`, coquille du dashboard (adresse de l'admin connecté, déconnexion), onglets Showreel et Réglages, revalidation du cache après chaque enregistrement | Compte administrateur créé dans Supabase Auth ; SMTP de Resend configuré dans Supabase Auth ; URL de redirection de l'authentification réglées ; SQL de déclaration de l'administrateur fourni dans le rapport (jamais commité) | Fait, validé |
-| 10 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication, client et titre obligatoires, « Voir la page » désactivé si non publié | Exécution de `0003_project_photo_size.sql` | Fait, en attente de validation |
-| 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | | À faire |
+| 10 | Admin projets | Onglet Projets complet : vidéos, téléversement des photos et de la miniature, livrables, ordre, publication, client et titre obligatoires, « Voir la page » désactivé si non publié | Exécution de `0003_project_photo_size.sql` | Fait, validé |
+| 11 | Admin clients, équipe et messages | Onglets Clients (avec logos), Équipe, Messages | | Fait, en attente de validation |
 | 12 | Audit 2 | Contrôle complet des prompts 09 à 11, en particulier RLS et stockage | | À faire |
 | 13 | Qualité | SEO (métadonnées, sitemap, Open Graph, données structurées), accessibilité AA, performance (section 11) | | À faire |
 | 14 | Mise en ligne | Vérifications de la section 12 de la méthode et de la section 12 du cahier, retrait du `noindex` global, guide pas à pas pour pointer manaprod.com vers Vercel sans modifier les MX | Accès au DNS de manaprod.com | À faire |
@@ -122,12 +122,20 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - Server Actions `src/app/admin/project-actions.ts` (requireAdmin, zod, client à cookies, updateTag de `projects`, `project:<slug>` et de l'ancien slug) ; fonctions pures testées : slug, chemins de stockage, redimensionnement, déplacement (119 tests au total).
   - `requireAdmin()` appelle `connection()` (erreurs « Date.now() pendant le prérendu » supprimées) ; identifiants de l'éditeur uniques par instance ; notifications et liste cohérentes avec les pages gardées en mémoire par le routeur.
   - Décisions D77 à D83.
+- **Prompt 11 (onglets Clients, Équipe et Messages)** :
+  - Registre : 0003 exécutée. Identifiants uniques (`useId`) sur les pages d'accès et les formulaires Showreel et Réglages.
+  - Site public : image des cartes de projet dans l'ordre miniature, première vidéo, première photo, carte typographique, la première photo étant lue dans la même requête (D84).
+  - `/admin/clients` : liste ordonnable, ajout, nom, logo téléversé (520 px, WebP avec transparence, repli PNG), « Afficher en blanc », retrait, suppression ; aperçu tel que sur le bandeau (D85).
+  - `/admin/equipe` : liste ordonnable, ajout, nom, titre, présentation courte (300 caractères), photo recadrée en 4:5 (position Haut, Centre ou Bas, aperçu exact), 1000 px de large ; les photos de départ (`/team/...`) ne sont jamais supprimées du bucket (D86).
+  - `/admin/messages` : filtres Tous, À traiter, Traités, pagination par 30, date à l'heure de Dakar, message en texte brut, traité ou à traiter, répondre (mailto), suppression confirmée ; nombre de messages à traiter dans la navigation (D88).
+  - `/api/keepalive` efface les messages de plus de 24 mois avec la clé service et renvoie seulement leur nombre (D87, P11 résolu).
+  - Navigation dans l'ordre du cahier : Showreel, Projets, Clients, Équipe, Réglages, Messages. 136 tests au total.
+  - Décisions D84 à D88.
 
 ## 4. Reste à faire
 
-- Prompts 11 à 14 (voir la feuille de route).
-- Exécution de `0003_project_photo_size.sql` par Ziza (rapport du Prompt 10).
-- Recommandations de l'audit 1 non appliquées (rapport du Prompt 08) : effacement automatique des messages après 24 mois, CSP, code 404 à la première visite (P10).
+- Prompts 12 à 14 (voir la feuille de route).
+- Recommandations de l’audit 1 non appliquées (rapport du Prompt 08) : CSP, code 404 à la première visite (P10).
 
 ## 5. Problèmes ouverts
 
@@ -143,7 +151,7 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 | P8 | Liens vers des pages pas encore créées (404 et erreurs de préchargement dans la console) | Aucun | Fermé au Prompt 07 : toutes les pages publiques existent |
 | P9 | Fenêtre modale du showreel : quand le focus est dans le lecteur YouTube (après un clic dans la vidéo), Échap est reçue par la page de YouTube et ne ferme pas la fenêtre | Aucun (bouton de fermeture et clic sur le fond disponibles) | Limite connue des iframes d'un autre domaine (D51), acceptée sauf avis contraire |
 | P10 | Première visite d'une adresse de fiche inexistante (`/realisations/nimporte-quoi`) : la page 404 s'affiche mais la réponse HTTP vaut 200, puis 404 aux visites suivantes (rendu en flux de Cache Components). La page porte `noindex` | Aucun pour le visiteur ; léger pour le référencement après la mise en ligne | À revoir au Prompt 13 (qualité, SEO) |
-| P11 | Les mentions légales annoncent une conservation des messages de 24 mois, mais aucun effacement automatique n'existe | Conformité | Recommandation : effacement au Prompt 11 (onglet Messages), action manuelle ou tâche planifiée |
+| P11 | Les mentions légales annoncent une conservation des messages de 24 mois, mais aucun effacement automatique n'existait | Conformité | Résolu au Prompt 11 : `/api/keepalive` efface les messages de plus de 24 mois tous les 6 jours (D87) |
 | P12 | Pas de politique de sécurité du contenu (CSP) | Aucun à court terme | Recommandation : la définir au Prompt 13 (YouTube, Supabase, styles de Next.js) |
 | P13 | La page d'erreur, comme la 404 d'une première visite (P10), répond avec le code 200 sur un rendu à la demande (rendu en flux) | Aucun pour le visiteur | À revoir au Prompt 13 avec P10 |
 | P14 | Après une déconnexion, le routeur peut demander deux préchargements de `/admin/login` qui répondent 404 (console du navigateur, observé une fois en local). La page de connexion s'affiche normalement | Aucun | À observer sur Vercel ; à revoir à l'audit 2 (Prompt 12) |
@@ -167,7 +175,7 @@ Section 15 du cahier des charges (version 1.5).
 | 11 | Accès au DNS de manaprod.com (WordPress.com) | Prompt 07 (Resend) et Prompt 14 (domaine) | Obtenu : utilisé pour Resend, à réutiliser au Prompt 14 |
 | 12 | Email : adresse d'expédition et adresse de réception des demandes (Resend retenu) | Prompt 07 | En attente |
 | 13 | Adresse email de l'administrateur principal | Prompt 09 | Obtenu : premier administrateur Ziza (adresse personnelle, déclarée par SQL hors dépôt) ; Amath ajouté plus tard par le même SQL |
-| 14 | Logos des 8 clients (PNG transparent recommandé, pas de SVG) | Prompt 11 (saisis dans le dashboard) | En attente |
+| 14 | Logos des 8 clients (PNG transparent recommandé, pas de SVG) | Saisie dans le dashboard (onglet Clients, depuis le Prompt 11) | En attente |
 | 15 | Version anglaise souhaitée en V2 ? | Hors V1 | En attente |
 
 ## 7. Registre des migrations
@@ -179,7 +187,7 @@ Claude Code ne marque jamais une migration comme exécutée : seul Ziza le confi
 | 0001 | `supabase/migrations/0001_init.sql` | Migration de structure : tables, fonctions `is_admin()` et `set_updated_at()`, GRANT explicites, index, RLS, bucket `media` et ses policies (lecture par l'API réservée aux administrateurs). Corrigée au Prompt 01, avant toute exécution | Oui (2026-11-17) |
 | 0001 (seed) | `supabase/seed/0001_seed.sql` | Données de départ : réglages, 8 projets, 8 clients, 3 membres de l'équipe. À exécuter après la migration `0001_init.sql` | Oui (2026-11-17, contrôle 1, 8, 8, 3) |
 | 0002 | `supabase/migrations/0002_contact_rate_limit.sql` | Table `contact_submissions` (empreintes d'IP des envois récents du formulaire), RLS sans policy, accès réservé à la clé service. À exécuter après `0001_init.sql` | Oui (2026-11-17) |
-| 0003 | `supabase/migrations/0003_project_photo_size.sql` | Colonnes `width` et `height` de `project_photos` (nullables, strictement positives si renseignées). À exécuter après `0002` | Non |
+| 0003 | `supabase/migrations/0003_project_photo_size.sql` | Colonnes `width` et `height` de `project_photos` (nullables, strictement positives si renseignées). À exécuter après `0002` | Oui (2026-11-17) |
 
 ## 8. Variables d'environnement
 

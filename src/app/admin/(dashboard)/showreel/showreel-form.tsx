@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, startTransition, type FormEvent } from "react";
+import { useActionState, useState, startTransition, type FormEvent, useId } from "react";
 import { Info } from "lucide-react";
 import { removeShowreel, saveShowreel } from "@/app/admin/actions";
 import { Field, errorProps, inputClass } from "@/components/admin/field";
@@ -18,6 +18,8 @@ type Saved = { url: string; title: string };
 const latest = (a: ActionState, b: ActionState) => ((a.at ?? 0) >= (b.at ?? 0) ? a : b);
 
 export function ShowreelForm({ initial }: { initial: Saved & { hasShowreel: boolean } }) {
+  // Identifiants uniques même quand le routeur garde la page en mémoire (D83).
+  const ns = useId();
   const [saveState, saveAction, saving] = useActionState(saveShowreel, idleState);
   const [removeState, removeAction, removing] = useActionState(removeShowreel, idleState);
 
@@ -63,13 +65,13 @@ export function ShowreelForm({ initial }: { initial: Saved & { hasShowreel: bool
       <form action={saveAction} onSubmit={onSubmit} noValidate>
         <Panel title="Lien YouTube">
           <Field
-            id="sr-url"
+            id={`${ns}-sr-url`}
             label="Lien de la vidéo"
             error={errors.url}
             hint={url.trim() && !videoId && !errors.url ? "Lien non reconnu pour l’instant." : undefined}
           >
             <input
-              id="sr-url"
+              id={`${ns}-sr-url`}
               name="url"
               type="url"
               inputMode="url"
@@ -77,18 +79,18 @@ export function ShowreelForm({ initial }: { initial: Saved & { hasShowreel: bool
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className={inputClass}
-              {...errorProps("sr-url", errors.url)}
+              {...errorProps(`${ns}-sr-url`, errors.url)}
             />
           </Field>
-          <Field id="sr-title" label="Titre affiché sur le bouton" error={errors.title}>
+          <Field id={`${ns}-sr-title`} label="Titre affiché sur le bouton" error={errors.title}>
             <input
-              id="sr-title"
+              id={`${ns}-sr-title`}
               name="title"
               maxLength={SHOWREEL_TITLE_MAX}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className={inputClass}
-              {...errorProps("sr-title", errors.title)}
+              {...errorProps(`${ns}-sr-title`, errors.title)}
             />
           </Field>
 

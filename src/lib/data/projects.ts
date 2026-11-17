@@ -14,6 +14,8 @@ export type ProjectSummary = {
   thumbnailPath: string | null;
   /** Identifiant YouTube de la première vidéo (par position), ou null. */
   videoId: string | null;
+  /** Chemin de la première photo (par position), ou null (D84). */
+  photoPath: string | null;
 };
 
 const HOME_FALLBACK_COUNT = 6;
@@ -28,13 +30,15 @@ async function loadHomeProjects(): Promise<Loaded<ProjectSummary[]>> {
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "slug, client, title, category, year, thumbnail_path, featured, project_videos(youtube_id, position)",
+        "slug, client, title, category, year, thumbnail_path, featured, project_videos(youtube_id, position), first_photo:project_photos(storage_path, position)",
       )
       .eq("published", true)
       .order("position", { ascending: true })
       .order("created_at", { ascending: true })
       .order("position", { referencedTable: "project_videos", ascending: true })
-      .limit(1, { referencedTable: "project_videos" });
+      .limit(1, { referencedTable: "project_videos" })
+      .order("position", { referencedTable: "first_photo", ascending: true })
+      .limit(1, { referencedTable: "first_photo" });
     if (error) throw supabaseError(error.message);
 
     const projects = data.map((row) => ({
@@ -47,6 +51,7 @@ async function loadHomeProjects(): Promise<Loaded<ProjectSummary[]>> {
         year: row.year,
         thumbnailPath: row.thumbnail_path,
         videoId: row.project_videos[0]?.youtube_id ?? null,
+        photoPath: row.first_photo[0]?.storage_path ?? null,
       } satisfies ProjectSummary,
     }));
 
@@ -83,13 +88,15 @@ async function loadProjects(): Promise<Loaded<ProjectListItem[]>> {
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "slug, client, title, category, year, thumbnail_path, first_video:project_videos(youtube_id, position), videos:project_videos(count), photos:project_photos(count)",
+        "slug, client, title, category, year, thumbnail_path, first_video:project_videos(youtube_id, position), first_photo:project_photos(storage_path, position), videos:project_videos(count), photos:project_photos(count)",
       )
       .eq("published", true)
       .order("position", { ascending: true })
       .order("created_at", { ascending: true })
       .order("position", { referencedTable: "first_video", ascending: true })
-      .limit(1, { referencedTable: "first_video" });
+      .limit(1, { referencedTable: "first_video" })
+      .order("position", { referencedTable: "first_photo", ascending: true })
+      .limit(1, { referencedTable: "first_photo" });
     if (error) throw supabaseError(error.message);
 
     return data.map((row) => ({
@@ -100,6 +107,7 @@ async function loadProjects(): Promise<Loaded<ProjectListItem[]>> {
       year: row.year,
       thumbnailPath: row.thumbnail_path,
       videoId: row.first_video[0]?.youtube_id ?? null,
+      photoPath: row.first_photo[0]?.storage_path ?? null,
       videoCount: row.videos[0]?.count ?? 0,
       photoCount: row.photos[0]?.count ?? 0,
     }));

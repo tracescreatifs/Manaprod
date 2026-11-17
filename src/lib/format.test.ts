@@ -86,3 +86,12 @@ describe("formatDateFr", () => {
     expect(formatDateFr("2027-01-01")).toBe("1 janvier 2027");
   });
 });
+
+import { formatMessageDate } from "./format";
+
+describe("formatMessageDate", () => {
+  it("affiche la date et l'heure de Dakar en français", () => {
+    expect(formatMessageDate("2026-11-17T23:45:00Z")).toBe("17 novembre 2026 à 23:45");
+    expect(formatMessageDate("2026-01-01T00:05:00+01:00")).toBe("31 décembre 2025 à 23:05");
+  });
+});

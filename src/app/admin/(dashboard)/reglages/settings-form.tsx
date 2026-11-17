@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState, type FormEvent } from "react";
+import { useActionState, useRef, useState, type FormEvent, useId } from "react";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { saveSettings } from "@/app/admin/actions";
 import { Field, errorProps, inputClass } from "@/components/admin/field";
@@ -28,6 +28,8 @@ type StatRow = SiteStat & { key: number };
 const snapshot = (values: SettingsValues) => JSON.stringify(values);
 
 export function SettingsForm({ initial }: { initial: SettingsValues }) {
+  // Identifiants uniques même quand le routeur garde la page en mémoire (D83).
+  const ns = useId();
   const [state, action, pending] = useActionState(saveSettings, idleState);
   const nextKey = useRef(initial.stats.length);
 
@@ -83,26 +85,26 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
   return (
     <form action={action} onSubmit={onSubmit} noValidate>
       <Panel title="Hero (accueil)">
-        <Field id="s-ht" label="Phrase principale" error={errors.heroTitle}>
+        <Field id={`${ns}-s-ht`} label="Phrase principale" error={errors.heroTitle}>
           <textarea
-            id="s-ht"
+            id={`${ns}-s-ht`}
             name="heroTitle"
             rows={2}
             required
             value={fields.heroTitle}
             onChange={set("heroTitle")}
             className={`${inputClass} min-h-[90px] resize-y`}
-            {...(errors.heroTitle ? { "aria-invalid": true, "aria-describedby": "s-ht-erreur" } : {})}
+            {...(errors.heroTitle ? { "aria-invalid": true, "aria-describedby": `${ns}-s-ht-erreur` } : {})}
           />
         </Field>
-        <Field id="s-hs" label="Ligne au-dessus" error={errors.heroSub} className="!mb-0">
+        <Field id={`${ns}-s-hs`} label="Ligne au-dessus" error={errors.heroSub} className="!mb-0">
           <input
-            id="s-hs"
+            id={`${ns}-s-hs`}
             name="heroSub"
             value={fields.heroSub}
             onChange={set("heroSub")}
             className={inputClass}
-            {...errorProps("s-hs", errors.heroSub)}
+            {...errorProps(`${ns}-s-hs`, errors.heroSub)}
           />
         </Field>
       </Panel>
@@ -115,8 +117,8 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
             {stats.map((row, index) => {
               const vErr = errors[`stats.${index}.value`];
               const lErr = errors[`stats.${index}.label`];
-              const vid = `s-n${row.key}`;
-              const lid = `s-l${row.key}`;
+              const vid = `${ns}-s-n${row.key}`;
+              const lid = `${ns}-s-l${row.key}`;
               return (
                 <li
                   key={row.key}
@@ -175,49 +177,49 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
 
       <Panel title="Coordonnées">
         <div className="grid grid-cols-1 gap-x-5 min-[1000px]:grid-cols-2">
-          <Field id="s-ph" label="Téléphone" error={errors.phone}>
+          <Field id={`${ns}-s-ph`} label="Téléphone" error={errors.phone}>
             <input
-              id="s-ph"
+              id={`${ns}-s-ph`}
               name="phone"
               type="tel"
               autoComplete="off"
               value={fields.phone}
               onChange={set("phone")}
               className={inputClass}
-              {...errorProps("s-ph", errors.phone)}
+              {...errorProps(`${ns}-s-ph`, errors.phone)}
             />
           </Field>
-          <Field id="s-em" label="Email" error={errors.email}>
+          <Field id={`${ns}-s-em`} label="Email" error={errors.email}>
             <input
-              id="s-em"
+              id={`${ns}-s-em`}
               name="email"
               type="email"
               autoComplete="off"
               value={fields.email}
               onChange={set("email")}
               className={inputClass}
-              {...errorProps("s-em", errors.email)}
+              {...errorProps(`${ns}-s-em`, errors.email)}
             />
           </Field>
-          <Field id="s-ci" label="Localisation" error={errors.city}>
+          <Field id={`${ns}-s-ci`} label="Localisation" error={errors.city}>
             <input
-              id="s-ci"
+              id={`${ns}-s-ci`}
               name="city"
               value={fields.city}
               onChange={set("city")}
               className={inputClass}
-              {...errorProps("s-ci", errors.city)}
+              {...errorProps(`${ns}-s-ci`, errors.city)}
             />
           </Field>
-          <Field id="s-re" label="Promesse de réponse" error={errors.replyPromise}>
+          <Field id={`${ns}-s-re`} label="Promesse de réponse" error={errors.replyPromise}>
             <input
-              id="s-re"
+              id={`${ns}-s-re`}
               name="replyPromise"
               required
               value={fields.replyPromise}
               onChange={set("replyPromise")}
               className={inputClass}
-              {...errorProps("s-re", errors.replyPromise)}
+              {...errorProps(`${ns}-s-re`, errors.replyPromise)}
             />
           </Field>
         </div>

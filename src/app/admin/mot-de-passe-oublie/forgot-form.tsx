@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useId } from "react";
 import { requestPasswordReset } from "@/app/admin/actions";
 import { Field, errorProps, inputClass } from "@/components/admin/field";
 import { FormMessage } from "@/components/admin/form-message";
@@ -9,6 +9,8 @@ import { btnSolid } from "@/components/admin/ui";
 import { idleState } from "@/lib/admin/action-state";
 
 export function ForgotForm() {
+  // Identifiants uniques même quand le routeur garde la page en mémoire (D83).
+  const ns = useId();
   const [state, action, pending] = useActionState(requestPasswordReset, idleState);
   const errors = state.errors ?? {};
   // Champ contrôlé : l’adresse reste saisie après une tentative refusée.
@@ -16,9 +18,9 @@ export function ForgotForm() {
 
   return (
     <form action={action} noValidate>
-      <Field id="email" label="Email" error={errors.email}>
+      <Field id={`${ns}-email`} label="Email" error={errors.email}>
         <input
-          id="email"
+          id={`${ns}-email`}
           name="email"
           type="email"
           autoComplete="username"
@@ -26,7 +28,7 @@ export function ForgotForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className={inputClass}
-          {...errorProps("email", errors.email)}
+          {...errorProps(`${ns}-email`, errors.email)}
         />
       </Field>
       <FormMessage state={state} />

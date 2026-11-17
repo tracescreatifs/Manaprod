@@ -418,7 +418,7 @@ export async function removeProjectThumbnail(id: unknown): Promise<ActionState> 
   }
   if (project.thumbnail_path) await removeFiles(supabase, [project.thumbnail_path]);
   publish(project.slug);
-  return success("Miniature retirée. Le site utilise celle de la première vidéo.");
+  return success("Miniature retirée. Le site utilise celle de la première vidéo, sinon la première photo.");
 }
 
 /**

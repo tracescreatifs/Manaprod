@@ -40,7 +40,9 @@ export async function generateMetadata({
     ? mediaUrl(project.thumbnail_path)
     : project.videos[0]
       ? youTubeThumbnailUrl(project.videos[0].youtube_id)
-      : null;
+      : project.photos[0]
+        ? mediaUrl(project.photos[0].storage_path)
+        : null;
 
   return {
     title,

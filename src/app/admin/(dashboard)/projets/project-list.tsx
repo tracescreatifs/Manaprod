@@ -64,7 +64,7 @@ export function ProjectList({ initial }: { initial: AdminProjectRow[] }) {
               className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-4 border-t border-line py-3.5 first:border-t-0 min-[1000px]:grid-cols-[96px_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.8fr)_auto]"
             >
               <div className="relative aspect-[16/10] w-[72px] overflow-hidden bg-bg min-[1000px]:w-24">
-                <ProjectThumb thumbnailPath={p.thumbnailPath} videoId={p.videoId} client={p.client} sizes="96px" />
+                <ProjectThumb thumbnailPath={p.thumbnailPath} videoId={p.videoId} photoPath={p.photoPath} client={p.client} sizes="96px" />
               </div>
               <div className="min-w-0">
                 <b className="block font-semibold break-words">{p.client}</b>

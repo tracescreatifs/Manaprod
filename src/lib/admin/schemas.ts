@@ -329,3 +329,25 @@ export const uploadedPhotosSchema = z
   )
   .min(1)
   .max(50);
+
+// ---------------------------------------------------------------------
+// Clients (cahier 7.3) et équipe (cahier 7.4)
+// ---------------------------------------------------------------------
+
+export const CLIENT_NAME_MAX = 80;
+
+export const clientSchema = z.object({
+  name: required("le nom du client", CLIENT_NAME_MAX),
+});
+
+export const TEAM_LIMITS = { name: 80, role: 80, bio: 300 } as const;
+
+export const teamMemberSchema = z.object({
+  name: required("le nom", TEAM_LIMITS.name),
+  role: optionalLine(TEAM_LIMITS.role, `Le titre ne doit pas dépasser ${TEAM_LIMITS.role} caractères.`),
+  // Texte court : retours à la ligne remplacés par des espaces.
+  bio: optionalLine(TEAM_LIMITS.bio, `La présentation ne doit pas dépasser ${TEAM_LIMITS.bio} caractères.`),
+});
+
+/** Ordre d'une liste (clients, équipe) : tous les identifiants, sans doublon. */
+export const orderSchema = projectOrderSchema;

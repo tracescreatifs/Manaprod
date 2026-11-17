@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useId } from "react";
 import { login } from "@/app/admin/actions";
 import { Field, errorProps, inputClass } from "@/components/admin/field";
 import { FormMessage } from "@/components/admin/form-message";
@@ -9,6 +9,8 @@ import { btnSolid } from "@/components/admin/ui";
 import { idleState } from "@/lib/admin/action-state";
 
 export function LoginForm() {
+  // Identifiants uniques même quand le routeur garde la page en mémoire (D83).
+  const ns = useId();
   const [state, action, pending] = useActionState(login, idleState);
   const errors = state.errors ?? {};
   // Champ contrôlé : l’adresse reste saisie après une tentative refusée.
@@ -16,9 +18,9 @@ export function LoginForm() {
 
   return (
     <form action={action} noValidate>
-      <Field id="email" label="Email" error={errors.email}>
+      <Field id={`${ns}-email`} label="Email" error={errors.email}>
         <input
-          id="email"
+          id={`${ns}-email`}
           name="email"
           type="email"
           autoComplete="username"
@@ -26,18 +28,18 @@ export function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className={inputClass}
-          {...errorProps("email", errors.email)}
+          {...errorProps(`${ns}-email`, errors.email)}
         />
       </Field>
-      <Field id="password" label="Mot de passe" error={errors.password}>
+      <Field id={`${ns}-password`} label="Mot de passe" error={errors.password}>
         <input
-          id="password"
+          id={`${ns}-password`}
           name="password"
           type="password"
           autoComplete="current-password"
           required
           className={inputClass}
-          {...errorProps("password", errors.password)}
+          {...errorProps(`${ns}-password`, errors.password)}
         />
       </Field>
       <FormMessage state={state} />

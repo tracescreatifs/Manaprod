@@ -59,3 +59,14 @@ export function formatDateFr(date: string): string {
     year: "numeric",
   }).format(new Date(`${date}T12:00:00`));
 }
+
+const MESSAGE_DATE = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: "Africa/Dakar",
+  dateStyle: "long",
+  timeStyle: "short",
+});
+
+/** Date et heure de réception d'un message, à l'heure de Dakar (fr-FR). */
+export function formatMessageDate(iso: string): string {
+  return MESSAGE_DATE.format(new Date(iso));
+}

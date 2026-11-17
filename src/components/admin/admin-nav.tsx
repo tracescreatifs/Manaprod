@@ -2,26 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Film, FolderOpen, Settings } from "lucide-react";
+import { Film, FolderOpen, Mail, Settings, UserRound, Users } from "lucide-react";
 
-// Onglets du dashboard (prototype .adm__side) : uniquement ceux qui
-// existent. Navigation latérale, horizontale sous 1000 px.
+// Onglets du dashboard (prototype .adm__side), dans l'ordre du cahier.
+// Navigation latérale, horizontale sous 1000 px. L'onglet Messages porte le
+// nombre de messages à traiter.
 const TABS = [
   { href: "/admin/showreel", label: "Showreel", Icon: Film },
   { href: "/admin/projets", label: "Projets", Icon: FolderOpen },
+  { href: "/admin/clients", label: "Clients", Icon: Users },
+  { href: "/admin/equipe", label: "Équipe", Icon: UserRound },
   { href: "/admin/reglages", label: "Réglages", Icon: Settings },
+  { href: "/admin/messages", label: "Messages", Icon: Mail },
 ];
 
-export function AdminNav() {
-  return <NavList pathname={usePathname()} />;
+export function AdminNav({ unhandled }: { unhandled: number }) {
+  return <NavList pathname={usePathname()} unhandled={unhandled} />;
 }
 
-/** Même navigation sans onglet actif (repli pendant la lecture de l'adresse). */
+/** Même navigation sans onglet actif ni compteur (repli pendant la lecture). */
 export function AdminNavFallback() {
-  return <NavList pathname={null} />;
+  return <NavList pathname={null} unhandled={0} />;
 }
 
-function NavList({ pathname }: { pathname: string | null }) {
+function NavList({ pathname, unhandled }: { pathname: string | null; unhandled: number }) {
   return (
     <nav
       aria-label="Dashboard"
@@ -40,6 +44,12 @@ function NavList({ pathname }: { pathname: string | null }) {
           >
             <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
             {label}
+            {href === "/admin/messages" && unhandled > 0 ? (
+              <span className="ml-auto inline-grid min-w-6 place-items-center bg-teal px-1.5 py-1 text-xs font-bold text-ink">
+                {unhandled}
+                <span className="sr-only"> à traiter</span>
+              </span>
+            ) : null}
           </Link>
         );
       })}

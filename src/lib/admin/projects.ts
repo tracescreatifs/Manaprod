@@ -16,6 +16,7 @@ export type AdminProjectRow = {
   featured: boolean;
   thumbnailPath: string | null;
   videoId: string | null;
+  photoPath: string | null;
   videoCount: number;
   photoCount: number;
 };
@@ -25,12 +26,14 @@ export async function getAdminProjects(): Promise<AdminProjectRow[]> {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      "id, slug, client, title, category, year, published, featured, thumbnail_path, first_video:project_videos(youtube_id, position), videos:project_videos(count), photos:project_photos(count)",
+      "id, slug, client, title, category, year, published, featured, thumbnail_path, first_video:project_videos(youtube_id, position), first_photo:project_photos(storage_path, position), videos:project_videos(count), photos:project_photos(count)",
     )
     .order("position", { ascending: true })
     .order("created_at", { ascending: true })
     .order("position", { referencedTable: "first_video", ascending: true })
-    .limit(1, { referencedTable: "first_video" });
+    .limit(1, { referencedTable: "first_video" })
+    .order("position", { referencedTable: "first_photo", ascending: true })
+    .limit(1, { referencedTable: "first_photo" });
   if (error) throw new Error(`[MANA PROD] Dashboard : lecture des projets impossible (${error.message}).`);
   return data.map((row) => ({
     id: row.id,
@@ -43,6 +46,7 @@ export async function getAdminProjects(): Promise<AdminProjectRow[]> {
     featured: row.featured,
     thumbnailPath: row.thumbnail_path,
     videoId: row.first_video[0]?.youtube_id ?? null,
+    photoPath: row.first_photo[0]?.storage_path ?? null,
     videoCount: row.videos[0]?.count ?? 0,
     photoCount: row.photos[0]?.count ?? 0,
   }));

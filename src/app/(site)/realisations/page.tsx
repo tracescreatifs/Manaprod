@@ -5,6 +5,13 @@ import { getProjects } from "@/lib/data/projects";
 import { getSiteSettings } from "@/lib/data/settings";
 import { plural } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
+import { coverImagePath, type CoverSource } from "@/lib/project-cover";
+
+/** URL de l'image de la carte (D84) : miniature, sinon première photo sans vidéo. */
+function imageUrl(project: CoverSource): string | null {
+  const path = coverImagePath(project);
+  return path ? mediaUrl(path) : null;
+}
 import { PROJECT_CATEGORIES } from "@/types/database";
 
 export const metadata: Metadata = {
@@ -41,7 +48,7 @@ export default async function RealisationsPage() {
                 title: project.title,
                 category: project.category,
                 year: project.year,
-                imageUrl: project.thumbnailPath ? mediaUrl(project.thumbnailPath) : null,
+                imageUrl: imageUrl(project),
                 videoId: project.videoId,
                 videoCount: project.videoCount,
                 photoCount: project.photoCount,

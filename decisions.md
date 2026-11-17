@@ -606,3 +606,38 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : `requireAdmin()` appelle `connection()` avant de lire la session (la vérification du jeton lit l'heure, interdite pendant un prérendu ; erreurs constatées au journal depuis le Prompt 09). Les identifiants HTML de l'éditeur de projet sont préfixés par `useId()`. La liste des projets reprend les données du serveur quand elles changent ; la page « Nouveau projet » est vidée après la création ; une notification n'est jamais réaffichée en entier au retour sur une page ; la notification transmise par l'adresse est retirée avec `history.replaceState(null, ...)`. La navigation du dashboard est lue dans une frontière Suspense (adresse dynamique `/admin/projets/[id]`).
 - **Raison** : Next.js 16 garde les pages quittées en mémoire (masquées) : identifiants en double, états anciens réaffichés.
 - **Alternative écartée** : Clé aléatoire à chaque rendu (formulaire remonté après chaque action serveur, téléversement interrompu).
+
+## D84 : Image des cartes de projet
+
+- **Date** : 2026-11-17 (Prompt 11, arbitrage du rapport du Prompt 10)
+- **Décision** : La carte d'un projet (accueil, Réalisations) affiche, dans l'ordre : la miniature téléversée, sinon la miniature de la première vidéo, sinon la première photo (par position), sinon la carte typographique. Les lectures publiques récupèrent le chemin de la première photo dans la même requête (relation `first_photo` limitée à une ligne), sans requête par projet. La règle est une fonction pure testée (`coverImagePath`, `src/lib/project-cover.ts`), reprise par les aperçus du dashboard et par l'image Open Graph de la fiche. Pas de bouton « utiliser une photo comme miniature ».
+- **Raison** : Une photo supprimée casserait une miniature qui pointerait vers son fichier.
+- **Alternative écartée** : Copier le chemin d'une photo dans `thumbnail_path`.
+
+## D85 : Onglet Clients, enregistrement par action
+
+- **Date** : 2026-11-17 (Prompt 11)
+- **Décision** : Chaque action de l'onglet Clients est enregistrée aussitôt (ajout, nom, logo, « Afficher en blanc », ordre, suppression), au lieu du bouton « Enregistrer les clients » du prototype. Un client est d'abord ajouté par son nom, puis son logo s'ajoute sur sa ligne. Logo : réduit à 520 px, WebP avec transparence, repli PNG si le navigateur ne sait pas encoder le WebP (arbitrage du Prompt 10), chemin `clients/<id>-<uuid>.webp|png`, SVG refusé. Aperçu sur fond sombre avec le même filtre que le bandeau (gris, ou blanc). Les saisies de nom en cours sont conservées quand la page reçoit de nouvelles données du serveur.
+- **Raison** : Les fichiers sont rangés sous l'identifiant du client (aucun orphelin, D80) ; le site est mis à jour à chaque action (D71).
+- **Alternative écartée** : Enregistrement groupé de toute la liste.
+
+## D86 : Onglet Équipe et recadrage 4:5
+
+- **Date** : 2026-11-17 (Prompt 11)
+- **Décision** : Mêmes principes que D85 (ajout par le nom et le titre, puis photo et présentation sur la ligne ; nom, titre et présentation enregistrés par le bouton « Enregistrer » de la ligne). Photo recadrée dans le navigateur au format 4:5 : centrée en largeur, position verticale au choix (Haut, Centre, Bas), aperçu de l'image exacte qui sera envoyée, 1000 px de large, WebP (repli JPEG), chemin `team/<id>-<uuid>`. Présentation : une ligne de 300 caractères au plus. Les chemins statiques (`/team/...`, photos de départ, D06) ne sont jamais envoyés à la suppression du bucket (`removeMediaFiles`, `src/lib/admin/storage.ts`).
+- **Raison** : Cahier 7.4 et Prompt 11 ; un recadrage libre aurait demandé une dépendance.
+- **Alternative écartée** : Recadrage libre à la souris.
+
+## D87 : Effacement automatique des messages (P11)
+
+- **Date** : 2026-11-17 (Prompt 11)
+- **Décision** : `/api/keepalive` (cron tous les 6 jours, `CRON_SECRET`) efface les lignes de `contact_messages` reçues il y a plus de 24 mois calendaires (`retentionCutoff`, testée), avec le client service : deuxième et dernier usage autorisé de la clé service, après `/api/contact`. La réponse ne contient que `{ ok, deleted }` ; les logs ne contiennent que le nombre de messages effacés. Cette requête maintient aussi la base active.
+- **Raison** : Les mentions légales annoncent une conservation de 24 mois ; la route du cron existe et est protégée.
+- **Alternative écartée** : Fonction planifiée dans Postgres (pg_cron, réglage hors dépôt) ; bouton manuel dans le dashboard.
+
+## D88 : Onglet Messages
+
+- **Date** : 2026-11-17 (Prompt 11)
+- **Décision** : Liste du plus récent au plus ancien, 30 par page, filtres Tous, À traiter, Traités dans l'adresse (`?filtre=a-traiter`, `?page=2`). Date et heure à l'heure de Dakar (fr-FR). Message affiché en texte brut (React échappe le HTML, sauts de ligne conservés). Actions : marquer traité ou à traiter, répondre (mailto, objet « Votre demande à MANA PROD »), supprimer en deux temps. Après chaque action, `refresh()` met à jour la liste et le nombre de messages à traiter affiché dans la navigation (lu par le layout du dashboard, dans une frontière Suspense).
+- **Raison** : Cahier 7.6 et Prompt 11.
+- **Alternative écartée** : Compteur rafraîchi par interrogation périodique.

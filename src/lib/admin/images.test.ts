@@ -36,3 +36,41 @@ describe("fitWithin", () => {
     expect(fitWithin(800, 600, 2400)).toEqual({ width: 800, height: 600 });
   });
 });
+
+import { clientLogoPath, cropRect, isClientLogoPath, isStaticPath, isTeamPhotoPath, teamPhotoPath } from "./images";
+
+describe("chemins des logos et des photos de l'équipe", () => {
+  it("construit et reconnaît les chemins", () => {
+    expect(clientLogoPath(P, F, "png")).toBe(`clients/${P}-${F}.png`);
+    expect(teamPhotoPath(P, F, "webp")).toBe(`team/${P}-${F}.webp`);
+    expect(isClientLogoPath(P, clientLogoPath(P, F, "webp"))).toBe(true);
+    expect(isClientLogoPath(P, clientLogoPath(P, F, "png"))).toBe(true);
+    expect(isTeamPhotoPath(P, teamPhotoPath(P, F, "jpg"))).toBe(true);
+  });
+  it("refuse les chemins d'un autre élément, mal formés ou statiques", () => {
+    expect(isClientLogoPath(P, clientLogoPath(OTHER, F, "webp"))).toBe(false);
+    expect(isClientLogoPath(P, `clients/${P}-${F}.svg`)).toBe(false);
+    expect(isClientLogoPath(P, `clients/${P}-${F}.jpg`)).toBe(false);
+    expect(isTeamPhotoPath(P, teamPhotoPath(OTHER, F, "webp"))).toBe(false);
+    expect(isTeamPhotoPath(P, "/team/babou.jpg")).toBe(false);
+    expect(isTeamPhotoPath(P, `team/${P}-${F}.png`)).toBe(false);
+  });
+  it("reconnaît les fichiers du dossier public", () => {
+    expect(isStaticPath("/team/babou.jpg")).toBe(true);
+    expect(isStaticPath(teamPhotoPath(P, F, "webp"))).toBe(false);
+  });
+});
+
+describe("cropRect (format 4:5)", () => {
+  it("recadre une photo verticale selon la position choisie", () => {
+    expect(cropRect(3024, 4032, 4 / 5, "haut")).toEqual({ x: 0, y: 0, width: 3024, height: 3780 });
+    expect(cropRect(3024, 4032, 4 / 5, "centre")).toEqual({ x: 0, y: 126, width: 3024, height: 3780 });
+    expect(cropRect(3024, 4032, 4 / 5, "bas")).toEqual({ x: 0, y: 252, width: 3024, height: 3780 });
+  });
+  it("centre horizontalement une photo paysage", () => {
+    expect(cropRect(4032, 3024, 4 / 5, "haut")).toEqual({ x: 807, y: 0, width: 2419, height: 3024 });
+  });
+  it("garde une image déjà au bon format", () => {
+    expect(cropRect(800, 1000, 4 / 5, "bas")).toEqual({ x: 0, y: 0, width: 800, height: 1000 });
+  });
+});
