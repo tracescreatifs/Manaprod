@@ -10,6 +10,19 @@ function missing(name: string): Error {
   );
 }
 
+// Variables Supabase si elles sont toutes présentes, sinon null (sans erreur).
+// Sert au seul cas du prérendu pendant le build (voir isBuildPhase).
+export function readSupabaseEnv(): { url: string; anonKey: string } | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return url && anonKey ? { url, anonKey } : null;
+}
+
+// Vrai pendant `next build` (prérendu des pages), faux à l'exécution.
+export function isBuildPhase(): boolean {
+  return process.env.NEXT_PHASE === "phase-production-build";
+}
+
 export function getSupabaseEnv(): { url: string; anonKey: string } {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

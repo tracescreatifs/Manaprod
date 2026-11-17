@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
 import { Logo } from "@/components/logo";
-import { CONTACT, NAV_LINKS, SIGNATURE } from "@/lib/site";
+import { getSiteSettings, siteContact } from "@/lib/data/settings";
+import { NAV_LINKS, SIGNATURE } from "@/lib/site";
 
 // Année courante pour la mention ©. Avec Cache Components, un appel direct à
 // new Date() casserait le prérendu : l'année est calculée dans une fonction
@@ -15,7 +16,11 @@ async function CurrentYear() {
 const linkClass = "inline-flex min-h-11 items-center transition-colors duration-200";
 
 // Pied de page (cahier 6.8, prototype .ftr). Aucun lien vers /admin.
-export function SiteFooter() {
+// Coordonnées lues dans les réglages ; une valeur vide est masquée.
+export async function SiteFooter() {
+  const contact = siteContact(await getSiteSettings());
+  const hasContact = Boolean(contact.phone || contact.email || contact.city);
+
   return (
     <footer className="border-t border-line pt-[clamp(40px,5vw,72px)] pb-8">
       <div className="wrap">
@@ -42,25 +47,35 @@ export function SiteFooter() {
             </ul>
           </nav>
 
-          <div>
-            <p className="text-sm text-muted">Contact</p>
-            <ul>
-              <li>
-                <a href={CONTACT.phoneHref} className={`${linkClass} hover:text-teal`}>
-                  {CONTACT.phone}
-                </a>
-              </li>
-              <li>
-                <a
-                  href={`mailto:${CONTACT.email}`}
-                  className={`${linkClass} break-all hover:text-teal`}
-                >
-                  {CONTACT.email}
-                </a>
-              </li>
-              <li>{CONTACT.city}</li>
-            </ul>
-          </div>
+          {hasContact ? (
+            <div>
+              <p className="text-sm text-muted">Contact</p>
+              <ul>
+                {contact.phone ? (
+                  <li>
+                    {contact.phoneHref ? (
+                      <a href={contact.phoneHref} className={`${linkClass} hover:text-teal`}>
+                        {contact.phone}
+                      </a>
+                    ) : (
+                      contact.phone
+                    )}
+                  </li>
+                ) : null}
+                {contact.email ? (
+                  <li>
+                    <a
+                      href={`mailto:${contact.email}`}
+                      className={`${linkClass} break-all hover:text-teal`}
+                    >
+                      {contact.email}
+                    </a>
+                  </li>
+                ) : null}
+                {contact.city ? <li>{contact.city}</li> : null}
+              </ul>
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-12 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm text-muted">

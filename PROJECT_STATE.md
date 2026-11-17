@@ -1,13 +1,13 @@
 # PROJECT_STATE.md : état du projet Mana Prod
 
-Dernière mise à jour : 2026-11-16, fin du Prompt 02.
+Dernière mise à jour : 2026-11-17, fin du Prompt 03.
 
 ## 1. Où en est le projet
 
-- **Dernier prompt terminé** : Prompt 02 (fondations de l'interface et utilitaires YouTube). En attente de validation et du Go de Ziza.
-- **Prochaine étape** : Prompt 03 (données : types, couche de lecture, keepalive, cron, région Paris), après le Go et les actions Ziza listées dans le rapport du Prompt 02.
+- **Dernier prompt terminé** : Prompt 03 (couche de données typée, réglages en base, keepalive, région Paris, intégration continue). En attente de validation et du Go de Ziza.
+- **Prochaine étape** : Prompt 04 (accueil complet), après le Go.
 - **Branche de travail** : `main` (développement, avant mise en ligne).
-- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, page d'accueil minimale, site entier en `noindex`. Aucun accès à la base.
+- **Code applicatif** : socle Next.js 16.4.6, en-tête, menu mobile, pied de page, bouton-lien, composants de mouvement, transition entre pages, page 404, utilitaires YouTube testés, types de la base, lecture des réglages mise en cache (accueil minimal et pied de page), route `/api/keepalive` et cron, intégration continue, site entier en `noindex`.
 
 ## 2. Feuille de route des prompts
 
@@ -17,8 +17,8 @@ Reprise de la section 13 du cahier des charges (version 1.5). Renumérotée au P
 |---|---|---|---|---|
 | 00 | Initialisation | Organisation du dépôt, lecture du cahier et des prototypes, création de `CLAUDE.md`, `PROJECT_STATE.md`, `decisions.md`, `.gitignore`, `.env.example`. Aucun code applicatif | Dépôt GitHub créé avec le kit | Fait, validé |
 | 01 | Socle | Arbitrages du Prompt 00, correction de `0001_init.sql` avant exécution (GRANT, lecture du bucket), projet Next.js (App Router, TypeScript strict, lint, Tailwind), tokens de la charte, Schibsted Grotesk via `next/font`, clients Supabase serveur et navigateur sans crash si variables absentes, favicon et icônes, photos de l'équipe dans `public/team/`, site en `noindex`, page d'accueil minimale | Projet Vercel créé et relié au dépôt, `NEXT_PUBLIC_SITE_URL` saisie | Fait, validé |
-| 02 | Interface | Logo et LogoEmpile, en-tête et menu mobile, pied de page, bouton-lien, apparition au défilement, révélation mot par mot, transition entre pages, page 404, utilitaires YouTube avec tests. Sans base de données | | Fait, en attente de validation |
-| 03 | Données | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, route `/api/keepalive` et cron Vercel tous les 6 jours, région des fonctions Vercel à Paris (`cdg1`) dans `vercel.json` | Projet Supabase créé en région Paris (`eu-west-3`), inscriptions publiques désactivées, `0001_init.sql` puis `seed/0001_seed.sql` exécutés et confirmés, variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `CRON_SECRET` saisies | À faire |
+| 02 | Interface | Logo et LogoEmpile, en-tête et menu mobile, pied de page, bouton-lien, apparition au défilement, révélation mot par mot, transition entre pages, page 404, utilitaires YouTube avec tests. Sans base de données | | Fait, validé |
+| 03 | Données | Types `src/types/database.ts` écrits à la main d'après `0001_init.sql`, couche de lecture des données avec étiquettes de cache, route `/api/keepalive` et cron Vercel tous les 6 jours, région des fonctions Vercel à Paris (`cdg1`) dans `vercel.json` | Projet Supabase créé en région Paris (`eu-west-3`), inscriptions publiques désactivées, `0001_init.sql` puis `seed/0001_seed.sql` exécutés et confirmés, variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `CRON_SECRET` saisies | Fait, en attente de validation |
 | 04 | Accueil | Page d'accueil complète (section 6.2) : hero rendu côté serveur, iframe chargée ensuite, filigrane à 6 % (composant Symbole), sélection avec repli sur les 6 premiers projets publiés | | À faire |
 | 05 | Réalisations et fiche projet | Liste avec filtres, grille, aperçu au survol ; fiche projet (vidéos, photos, visionneuse, livrables, projet suivant) | | À faire |
 | 06 | Services, Le studio et mentions légales | Pages Services et Le studio (compteurs, équipe, équipement), page `/mentions-legales` avec section confidentialité (blocs NINEA, RCCM, siège masqués tant qu'ils manquent) | | À faire |
@@ -59,11 +59,18 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
   - `src/lib/youtube.ts` (extraction de l'identifiant, URL du lecteur nocookie et du hero, miniatures) et 43 tests Vitest.
   - Composants `Logo` et `LogoEmpile` (SVG officiels en ligne, PROD en `#8FA3A8`), `SiteHeader` (transparent puis opaque sur l'accueil, menu mobile plein écran accessible), `SiteFooter` (année en cache d'un jour), `ButtonLink`, `Reveal`, `WordReveal`, transition entre pages (`src/app/template.tsx`), page 404 (`src/app/not-found.tsx`).
   - Page d'accueil minimale : `LogoEmpile`, signature révélée mot par mot, coordonnées en fondu ; `public/brand/` supprimé.
+- **Prompt 03** :
+  - Registre : `0001_init.sql` et `seed/0001_seed.sql` exécutés par Ziza (confirmé le 2026-11-17) ; variables Supabase et `CRON_SECRET` saisies.
+  - `src/types/database.ts` : 8 tables (Row, Insert, Update, Relationships), `is_admin`, `SiteStat`, `PROJECT_CATEGORIES` ; contrôle automatique contre le SQL (59 colonnes).
+  - `src/lib/supabase/public.ts` (client sans session), `src/lib/data/tags.ts`, `src/lib/data/settings.ts` (`getSiteSettings()` en cache, `siteContact()`), `src/lib/phone.ts` et ses tests.
+  - Accueil minimal et pied de page alimentés par `site_settings` ; plus aucune coordonnée en dur.
+  - `/api/keepalive`, `vercel.json` (cron `0 6 */6 * *`, région `cdg1`), `.github/workflows/ci.yml`.
+  - Décisions D41 à D46.
 
 ## 4. Reste à faire
 
-- Prompts 03 à 14 (voir la feuille de route).
-- Actions Ziza avant le Prompt 03 (rapport du Prompt 02).
+- Prompts 04 à 14 (voir la feuille de route).
+- Vérifications Ziza du Prompt 03 sur Vercel et GitHub (rapport du Prompt 03).
 
 ## 5. Problèmes ouverts
 
@@ -71,7 +78,7 @@ Détail dans `decisions.md` (D08 à D31, D36 et D37) et dans le cahier v1.5. Num
 |---|---|---|---|
 | P1 | Vérification du domaine d'expédition dans Resend impossible sans accès au DNS de manaprod.com (WordPress.com) | Prompt 07 | Arbitré (D09) : accès DNS demandé dès maintenant, à obtenir avant le Prompt 07 |
 | P2 | Limitation de débit par IP sans stockage partagé dans `0001_init.sql` | Prompt 07 | Arbitré (D10) : migration `0002_` au Prompt 07 |
-| P3 | Cron anti-pause prévu trop tard | Stabilité de la base | Résolu dans la feuille de route (D08, D36) : Prompt 03 |
+| P3 | Cron anti-pause prévu trop tard | Stabilité de la base | Résolu au Prompt 03 : route `/api/keepalive` et cron Vercel (production uniquement) |
 | P4 | Page mentions légales absente de l'arborescence | Mise en ligne | Résolu dans le cahier v1.4 (D11) : Prompt 06 ; identifiants légaux à fournir |
 | P5 | Écarts entre le cahier et le prototype du dashboard | Prompts 09 et 10 | Arbitré (D21, D22, D25, D27) : le cahier prime |
 | P6 | Délai de réponse : 24h (site, base) ou 48h (plaquette) | Prompt 06 | Arbitré (D16) : 24h par défaut, à confirmer par le client |
@@ -106,8 +113,8 @@ Claude Code ne marque jamais une migration comme exécutée : seul Ziza le confi
 
 | N° | Fichier | Objet | Exécutée par Ziza |
 |---|---|---|---|
-| 0001 | `supabase/migrations/0001_init.sql` | Migration de structure : tables, fonctions `is_admin()` et `set_updated_at()`, GRANT explicites, index, RLS, bucket `media` et ses policies (lecture par l'API réservée aux administrateurs). Corrigée au Prompt 01, avant toute exécution | Non |
-| 0001 (seed) | `supabase/seed/0001_seed.sql` | Données de départ : réglages, 8 projets, 8 clients, 3 membres de l'équipe. À exécuter après la migration `0001_init.sql` | Non |
+| 0001 | `supabase/migrations/0001_init.sql` | Migration de structure : tables, fonctions `is_admin()` et `set_updated_at()`, GRANT explicites, index, RLS, bucket `media` et ses policies (lecture par l'API réservée aux administrateurs). Corrigée au Prompt 01, avant toute exécution | Oui (2026-11-17) |
+| 0001 (seed) | `supabase/seed/0001_seed.sql` | Données de départ : réglages, 8 projets, 8 clients, 3 membres de l'équipe. À exécuter après la migration `0001_init.sql` | Oui (2026-11-17, contrôle 1, 8, 8, 3) |
 
 ## 8. Variables d'environnement
 
@@ -116,9 +123,9 @@ Saisies par Ziza dans Vercel. Noms et commentaires dans `.env.example`.
 | Variable | Usage | Côté | Nécessaire à partir du | Saisie par Ziza |
 |---|---|---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | URL du site (Vercel puis manaprod.com) | Public | Prompt 01 | Oui (URL Vercel) |
-| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase | Public | Prompt 03 | Non |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (lecture soumise à la RLS) | Public | Prompt 03 | Non |
-| `CRON_SECRET` | Protège `/api/keepalive` | Serveur uniquement | Prompt 03 | Non |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase | Public | Prompt 03 | Oui |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique (lecture soumise à la RLS) | Public | Prompt 03 | Oui |
+| `CRON_SECRET` | Protège `/api/keepalive` | Serveur uniquement | Prompt 03 | Oui |
 | `SUPABASE_SERVICE_ROLE_KEY` | Clé service, seul usage : insertion des messages de contact | Serveur uniquement | Prompt 07 | Non |
 | `RESEND_API_KEY` | Envoi des emails | Serveur uniquement | Prompt 07 | Non |
 | `CONTACT_TO_EMAIL` | Adresse qui reçoit les demandes | Serveur uniquement | Prompt 07 | Non |

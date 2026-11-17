@@ -1,15 +1,8 @@
-// Informations fixes du site (cahier des charges, sections 1 et 5).
-// Les coordonnées seront lues dans les réglages de la base à partir du
-// Prompt 04 ; ces valeurs sont celles de la section 1 du cahier.
+// Informations fixes du site, qui ne sont pas en base (textes du prototype et
+// navigation). Les coordonnées et la phrase du hero viennent de site_settings.
 
+// Signature de l'agence, texte fixe du pied de page du prototype.
 export const SIGNATURE = "C’est toujours celui qui éclaire qui demeure dans l’obscurité.";
-
-export const CONTACT = {
-  phone: "+221 78 011 43 08",
-  phoneHref: "tel:+221780114308",
-  email: "amathndiaye@manaprod.com",
-  city: "Dakar, Sénégal",
-} as const;
 
 // Navigation principale (en-tête et pied de page), dans l'ordre du prototype.
 export const NAV_LINKS = [

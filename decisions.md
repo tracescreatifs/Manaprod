@@ -305,3 +305,45 @@ Chaque entrée : date, décision, raison, alternative écartée. Une décision p
 - **Décision** : Les éléments animés portent l'attribut `data-reveal`. Une règle CSS les affiche directement (opacité 1, aucun déplacement) quand l'utilisateur demande moins d'animations (`prefers-reduced-motion`), et une règle dans `noscript` fait de même sans JavaScript. La transition entre pages ne joue pas au premier chargement, seulement lors des navigations.
 - **Raison** : Le contenu reste lisible sans JavaScript et dès le premier rendu pour les personnes qui réduisent les animations, sans attendre l'hydratation. Ne pas animer le premier chargement évite de retarder le premier affichage (LCP).
 - **Alternative écartée** : Détection du réglage en JavaScript seulement (contenu caché jusqu'à l'hydratation) ; transition aussi au premier chargement.
+
+## D41 : Titre du hero animé en CSS au Prompt 04
+
+- **Date** : 2026-11-17 (Prompt 03)
+- **Décision** : Au Prompt 04, le titre du hero est révélé mot par mot avec une animation CSS (comme le prototype), et non avec `WordReveal` en Motion. Le composant `WordReveal` reste utilisé sur la page d'accueil minimale jusqu'à son remplacement.
+- **Raison** : Une animation CSS démarre dès le premier rendu, sans attendre l'hydratation de JavaScript : le titre, probable élément LCP, s'affiche plus tôt. Les animations restent coupées avec `prefers-reduced-motion`.
+- **Alternative écartée** : `WordReveal` en Motion (animation lancée seulement après l'hydratation, LCP retardé).
+
+## D42 : Client Supabase sans session pour les lectures publiques
+
+- **Date** : 2026-11-17 (Prompt 03)
+- **Décision** : `src/lib/supabase/public.ts` crée un client supabase-js sans session (`persistSession`, `autoRefreshToken` et `detectSessionInUrl` à false), clé anon, typé avec `Database`, protégé par `server-only`. Il sert à toutes les lectures publiques mises en cache et à `/api/keepalive`. Le client à cookies (`server.ts`) n'est jamais utilisé dans une fonction `"use cache"` et reste réservé aux usages authentifiés (Prompt 09).
+- **Raison** : Avec Cache Components, une fonction `"use cache"` ne peut pas lire les cookies. Une lecture publique n'a pas besoin de session : la clé anon et la RLS suffisent.
+- **Alternative écartée** : Client à cookies dans les fonctions mises en cache (erreur `next-request-in-use-cache`) ; lecture sans cache (une requête à la base à chaque visite).
+
+## D43 : Build sans variables Supabase
+
+- **Date** : 2026-11-17 (Prompt 03)
+- **Décision** : Si les variables Supabase manquent pendant `next build` (détecté par `NEXT_PHASE`), `getSiteSettings()` écrit un avertissement explicite dans les logs du build et renvoie null : la page est prérendue sans les blocs qui dépendent de la base. À l'exécution (hors build), une variable manquante lève l'erreur claire de `getSupabaseEnv()`. Une erreur renvoyée par Supabase (clé invalide, base injoignable) n'est jamais avalée : elle fait échouer le build ou la requête avec un message en français.
+- **Raison** : Solution la plus simple qui respecte à la fois « build sans secrets » (intégration continue, build local) et « erreur claire à l'exécution » : le seul cas toléré est l'absence de variables pendant le build, toujours signalée dans les logs. Testé dans les deux cas (avec et sans variables) et avec une erreur Supabase simulée.
+- **Alternative écartée** : Rendu dynamique de toutes les pages (perte du prérendu et des performances) ; échec du build sans variables (contraire à la méthode) ; valeurs de secours en dur (coordonnées dupliquées dans le code).
+
+## D44 : Durée de cache des réglages
+
+- **Date** : 2026-11-17 (Prompt 03)
+- **Décision** : `getSiteSettings()` utilise `cacheTag("settings")` et `cacheLife("max")`. Les étiquettes sont des constantes partagées dans `src/lib/data/tags.ts`.
+- **Raison** : Les réglages ne changent que par le dashboard, qui invalidera l'étiquette `settings` à chaque enregistrement (Prompt 09) : c'est le cas décrit par la documentation de Next.js 16 pour une longue durée de cache avec étiquette. Jusqu'au Prompt 09, une modification faite directement dans Supabase apparaît au déploiement suivant (redéploiement).
+- **Alternative écartée** : Durée courte (`hours`, `days`), qui multiplie les lectures de la base sans utilité une fois la revalidation par étiquette en place.
+
+## D45 : Route keepalive
+
+- **Date** : 2026-11-17 (Prompt 03)
+- **Décision** : `GET /api/keepalive` appelle `connection()` (jamais mise en cache), compare l'en-tête `Authorization` à `Bearer CRON_SECRET` à temps constant (empreintes SHA-256 comparées avec `timingSafeEqual`, de longueur toujours égale), répond 401 sans détail en cas d'échec, 500 avec un message clair si `CRON_SECRET` manque, puis lit une ligne de `site_settings` (colonne `id` seulement) et renvoie `{ ok, at }`. Planification Vercel `0 6 */6 * *` et région `cdg1` dans `vercel.json`.
+- **Raison** : Le secret ne peut pas être deviné par mesure du temps de réponse, la longueur du secret ne fuit pas, et la réponse ne contient aucune donnée de la base.
+- **Alternative écartée** : Comparaison directe des chaînes (sensible au temps) ; GitHub Action planifiée (décision D07).
+
+## D46 : Intégration continue GitHub Actions
+
+- **Date** : 2026-11-17 (Prompt 03)
+- **Décision** : `.github/workflows/ci.yml` : à chaque push et pull request vers `main`, Node 22, `npm ci`, lint, types, tests et build, sans aucune variable d'environnement ni secret, avec des droits en lecture seule sur le dépôt.
+- **Raison** : Vérifie automatiquement chaque push, y compris la règle « build sans secrets ».
+- **Alternative écartée** : Vérifications seulement dans la session de Claude Code (aucune trace sur GitHub).
